@@ -27,6 +27,7 @@ void testArchiveCanBeOpenedAndClosed(){
     GobArchive* archive = gobOpenArchive("tests/resources/test.gob");
 
     assert(archive != NULL);
+    assert(gobCountFiles(archive) == 1);
     
     gobCloseArchive(archive);
 }

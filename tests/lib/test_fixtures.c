@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdio.h>
 #include "../headers/test_fixtures.h"
 
 void runTest(TestFixture*, int);
