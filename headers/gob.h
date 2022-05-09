@@ -19,6 +19,7 @@ int gobPrintArchive(GobArchive*);
 uint32 gobCountFiles(GobArchive*);
 GobFile* gobListFiles(GobArchive*);
 GobFile* gobGetFile(GobArchive*, char*);
+char* gobGetFileName(GobFile*);
 
 InMemoryFile* gobReadFile(GobFile*);
 void gobCloseFile(InMemoryFile*);

@@ -5,13 +5,13 @@
 #include <assert.h>
 #include <string.h>
 
-void testSuccess();
-void testArchiveCanBeOpenedAndClosed();
+void testGobListFiles();
+void testGobReadFile();
 
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
-        &testSuccess,
-        &testArchiveCanBeOpenedAndClosed
+        &testGobListFiles,
+        &testGobReadFile,
     };
 
     TestFixture fixture = createFixture();
@@ -23,16 +23,17 @@ int main(int argc, char** argv){
     runTests(&fixture);
 }
 
-void testArchiveCanBeOpenedAndClosed(){
+void testGobListFiles(){
     GobArchive* archive = gobOpenArchive("tests/resources/test.gob");
+    GobFile* files = gobListFiles(archive);
 
     assert(archive != NULL);
     assert(gobCountFiles(archive) == 1);
+    assert(strcmp("HELLO.TXT", gobGetFileName(files)) == 0);
     
     gobCloseArchive(archive);
 }
-
-void testSuccess() {
+void testGobReadFile() {
     GobArchive* archive = gobOpenArchive("tests/resources/test.gob");
     GobFile* helloFile = gobGetFile(archive, "HELLO.TXT");
     InMemoryFile* hello = gobReadFile(helloFile);

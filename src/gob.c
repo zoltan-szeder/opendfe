@@ -68,6 +68,10 @@ GobFile* gobGetFile(GobArchive* archive, char* file_name){
     return NULL;
 }
 
+char* gobGetFileName(GobFile* gob_file) {
+    return gob_file->name;
+}
+
 InMemoryFile* gobReadFile(GobFile* gob_file){
     GobArchive* archive = gob_file->parent;
     FILE* stream = archive->stream;
