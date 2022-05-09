@@ -3,42 +3,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-GOB_ARCHIVE* create_gob_archive_instance();
-int gob_archive_fread(GOB_ARCHIVE*, FILE*);
+int gobReadArchive(GobArchive*, FILE*);
+int gobReadArchiveFile(GobFile*, FILE*);
 
 int fread_uint32(uint32* number, FILE* stream);
 
-struct gob_archive {
+struct GobArchive {
     char magic[4];
-    uint32 directory_offset;
-    uint32 file_count;
+    uint32 directoryOffset;
+    uint32 fileCount;
 
-    GOB_FILE* files;
+    GobFile* files;
 
     FILE* stream;
 };
 
-struct gob_file {
+struct GobFile {
     uint32 offset;
     uint32 length;
     char name[13];
 
-    GOB_ARCHIVE* parent;
+    GobArchive* parent;
 };
 
-GOB_ARCHIVE* gob_archive_fopen(char* filename) {
+GobArchive* gobOpenArchive(char* filename) {
     FILE* gob_file = fopen(filename, "rb");
     if(NULL == gob_file) return NULL;
 
-    GOB_ARCHIVE* gob_archive = malloc(sizeof(GOB_ARCHIVE));
+    GobArchive* gob_archive = malloc(sizeof(GobArchive));
     if(NULL == gob_archive) return NULL;
 
-    gob_archive_fread(gob_archive, gob_file);
+    gobReadArchive(gob_archive, gob_file);
 
     return gob_archive;
 }
 
-int gob_archive_fclose(GOB_ARCHIVE* gob_archive) {
+int gobCloseArchive(GobArchive* gob_archive) {
     FILE* stream = gob_archive->stream;
 
     free(gob_archive->files);
@@ -47,24 +47,24 @@ int gob_archive_fclose(GOB_ARCHIVE* gob_archive) {
     return fclose(stream);
 }
 
-uint32 gob_count_files(GOB_ARCHIVE* gob_archive){
-    return gob_archive->file_count;
+uint32 gobCountFiles(GobArchive* gob_archive){
+    return gob_archive->fileCount;
 }
 
-GOB_FILE* gob_list_files(GOB_ARCHIVE* gob_archive){
+GobFile* gobListFiles(GobArchive* gob_archive){
     return gob_archive->files;
 }
 
-GOB_FILE* gob_get_file(GOB_ARCHIVE* gob_archive, char* file_name){
-    for(int i = 0; i < gob_archive->file_count; i++) {
-        GOB_FILE* gob_file = &(gob_archive->files[i]);
+GobFile* gobGetFile(GobArchive* gob_archive, char* file_name){
+    for(int i = 0; i < gob_archive->fileCount; i++) {
+        GobFile* gob_file = &(gob_archive->files[i]);
         if(strcmp(file_name, gob_file->name) == 0) return gob_file;
     }
     return NULL;
 }
 
-IN_MEM_FILE* gob_read_file(GOB_FILE* gob_file){
-    GOB_ARCHIVE* gob_archive = gob_file->parent;
+InMemoryFile* gobReadFile(GobFile* gob_file){
+    GobArchive* gob_archive = gob_file->parent;
     FILE* stream = gob_archive->stream;
 
     int failure = fseek(stream, gob_file->offset, SEEK_SET);
@@ -77,7 +77,7 @@ IN_MEM_FILE* gob_read_file(GOB_FILE* gob_file){
     if(objects == 0) return NULL;
     content[gob_file->length-1] = (char) 0;
 
-    IN_MEM_FILE* file = malloc(sizeof(IN_MEM_FILE));
+    InMemoryFile* file = malloc(sizeof(InMemoryFile));
     if(!file) return NULL;
 
     file->content = content;
@@ -86,54 +86,54 @@ IN_MEM_FILE* gob_read_file(GOB_FILE* gob_file){
     return file;
 }
 
-void gob_close_file(IN_MEM_FILE* file) {
+void gobCloseFile(InMemoryFile* file) {
     free(file->content);
     free(file);
 }
 
 
-int print_gob_archive(GOB_ARCHIVE* gob_archive){
+int gobPrintArchive(GobArchive* gob_archive){
     uint32* magic = (uint32*) &(gob_archive->magic);
 
     printf("Magic: 0x%x\n", *magic);
-    printf("Directory offset: %d\n", gob_archive->directory_offset);
-    printf("Number of Files: %d\n", gob_archive->file_count);
+    printf("Directory offset: %d\n", gob_archive->directoryOffset);
+    printf("Number of Files: %d\n", gob_archive->fileCount);
     printf("Files:\n");
-    for(int i = 0; i < gob_archive->file_count; i++) {
-        GOB_FILE* gob_file = &(gob_archive->files[i]);
+    for(int i = 0; i < gob_archive->fileCount; i++) {
+        GobFile* gob_file = &(gob_archive->files[i]);
         printf("\t%s (%d-%d)\n", gob_file->name, gob_file->offset, gob_file->offset + gob_file->length);
     }
 
     return 0;
 }
 
-int gob_file_fread(GOB_FILE* gob_file, FILE* stream) {
-    int objects = fread(gob_file, 2*sizeof(uint32) + 13*sizeof(char), 1, stream);
-    if(!objects) return 0;
-
-    return 1;
-}
-
-int gob_archive_fread(GOB_ARCHIVE* gob_archive, FILE* stream) {
+int gobReadArchive(GobArchive* gob_archive, FILE* stream) {
     gob_archive->stream = stream;
 
     int objects = 0;
     objects = fread(gob_archive, sizeof(uint32), 2, stream);
     if(!objects) return 0;
 
-    int failure = fseek(stream, (long) gob_archive->directory_offset, SEEK_SET);
+    int failure = fseek(stream, (long) gob_archive->directoryOffset, SEEK_SET);
     if(failure) return 0;
-    objects = fread_uint32(&(gob_archive->file_count), stream);
+    objects = fread_uint32(&(gob_archive->fileCount), stream);
     if(!objects) return 0;
 
-    gob_archive->files = malloc(gob_archive->file_count*sizeof(GOB_FILE));
+    gob_archive->files = malloc(gob_archive->fileCount*sizeof(GobFile));
     if(!gob_archive->files) return 0;
-    for(int i = 0; i < gob_archive->file_count; i++) {
-        GOB_FILE* gob_file = &(gob_archive->files[i]);
+    for(int i = 0; i < gob_archive->fileCount; i++) {
+        GobFile* gob_file = &(gob_archive->files[i]);
         gob_file->parent = gob_archive;
-        objects = gob_file_fread(gob_file, stream);
+        objects = gobReadArchiveFile(gob_file, stream);
         if(!objects) return 0;
     }
+
+    return 1;
+}
+
+int gobReadArchiveFile(GobFile* gob_file, FILE* stream) {
+    int objects = fread(gob_file, 2*sizeof(uint32) + 13*sizeof(char), 1, stream);
+    if(!objects) return 0;
 
     return 1;
 }
