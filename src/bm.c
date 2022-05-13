@@ -3,6 +3,7 @@
 
 #include "../headers/types.h"
 #include "../headers/bm.h"
+#include "../headers/pal.h"
 
 #define BM_NORMAL 0x36
 #define BM_TRANSPARENT 0x3e
@@ -48,6 +49,10 @@ void bmCloseFile(BMFile* bmFile) {
     free(bmFile);
 }
 
+uint32 bmGlBindImageTexture(BMFile* bmFile, Palette* palette) {
+    return 0;
+}
+
 void bmPrintFile(BMFile* bmFile) {
     BMHeader* bmHeader = bmFile->header;
     uint32* magic = (uint32*) &(bmHeader->magic);
@@ -61,6 +66,4 @@ void bmPrintFile(BMFile* bmFile) {
     printf("logSizeY: %d\n", bmHeader->logSizeY);
     printf("compressed: %d\n", bmHeader->compressed);
     printf("dataSize: %d\n", bmHeader->dataSize);
-    printf("fileSize: %d\n", (int) sizeof(BMHeader) + bmHeader->dataSize);
-    printf("data: %d\n", (char) *(bmFile->data));
 }

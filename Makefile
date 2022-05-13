@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -rdynamic -g -O2 -Wall -I ./headers -I ./tests/headers/
-LIBS = 
+LIBS = -lglut -lGL -lGLU -lm
 LD = gcc
 LDFLAGS = 
 
