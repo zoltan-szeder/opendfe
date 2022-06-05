@@ -1,5 +1,5 @@
-#include "../headers/gob.h"
-#include "../headers/types.h"
+#include "gob.h"
+#include "types.h"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>

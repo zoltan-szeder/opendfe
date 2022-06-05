@@ -1,6 +1,6 @@
-#include "../headers/bm.h"
-#include "headers/test_fixtures.h"
-#include "../headers/pal.h"
+#include "bm.h"
+#include "test_fixtures.h"
+#include "pal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

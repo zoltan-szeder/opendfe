@@ -1,5 +1,5 @@
-#include "../headers/gob.h"
-#include "headers/test_fixtures.h"
+#include "gob.h"
+#include "test_fixtures.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

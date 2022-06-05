@@ -4,13 +4,10 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "types.h"
+#include "inmemoryfile.h"
 
 typedef struct GobArchive GobArchive;
 typedef struct GobFile GobFile;
-typedef struct {
-    uint32 length;
-    char* content;
-} InMemoryFile;
 
 GobArchive* gobOpenArchive(char* file_name);
 int gobCloseArchive(GobArchive*);

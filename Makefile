@@ -1,13 +1,13 @@
 CC = gcc
-CFLAGS = -rdynamic -g -O2 -Wall -I ./headers -I ./tests/headers/
-LIBS = -lglut -lGL -lGLU -lm
+CFLAGS = -rdynamic -g -O2 -Wall -I include -I tests/include/
+LIBS = -lglfw -lGLEW -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lm
 LD = gcc
 LDFLAGS = 
 
 MC = valgrind
 MCFLAGS = --leak-check=full --error-exitcode=1 -q
 
-SOURCES = $(wildcard src/*.c)
+SOURCES = $(wildcard src/**/*.c) $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)
 
 TESTS = $(wildcard tests/test_*.c)

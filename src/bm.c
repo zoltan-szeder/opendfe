@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "../headers/types.h"
-#include "../headers/bm.h"
-#include "../headers/pal.h"
+#include "types.h"
+#include "inmemoryfile.h"
+#include "bm.h"
+#include "pal.h"
 
 #define BM_NORMAL 0x36
 #define BM_TRANSPARENT 0x3e
@@ -43,6 +45,22 @@ BMFile* bmOpenFile(char* file) {
     return bmFile;
 }
 
+BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
+    BMFile* bmFile = malloc(sizeof(BMFile));
+    BMHeader* bmHeader = malloc(sizeof(BMHeader));
+
+    memcpy(bmHeader, file->content, sizeof(BMHeader));
+    bmFile->header = bmHeader;
+
+    char* mbFileDataPtr = file->content + sizeof(BMHeader);
+
+    bmFile->data = malloc(bmHeader->dataSize);
+
+    memcpy(bmFile->data, mbFileDataPtr, bmHeader->dataSize);
+
+    return bmFile;
+}
+
 void bmCloseFile(BMFile* bmFile) {
     free(bmFile->header);
     free(bmFile->data);
@@ -50,6 +68,7 @@ void bmCloseFile(BMFile* bmFile) {
 }
 
 uint32 bmGlBindImageTexture(BMFile* bmFile, Palette* palette) {
+    // TODO: Implement
     return 0;
 }
 
