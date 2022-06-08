@@ -1,20 +1,14 @@
 #ifndef PAL_H
 #define PAL_H
 
-#include "types.h"
+#include "math/vec.h"
+#include "inmemoryfile.h"
 
 typedef struct {
-    uint8 r;
-    uint8 g;
-    uint8 b;
-} Color;
-
-typedef struct {
-    Color colors[256];
+    ucvec3 colors[256];
 } Palette;
 
-Palette* palReadFile(char*);
-void palCloseFile(Palette*);
-
+Palette* palOpenInMemoryFile(InMemoryFile* file);
+void palClose(Palette* pal);
 
 #endif

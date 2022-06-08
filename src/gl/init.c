@@ -5,7 +5,6 @@
 #include "gl/init.h"
 #include "file.h"
 
-unsigned int createShaderProgram();
 unsigned int loadShader(GLenum shaderType, char* glslFile);
 
 unsigned int initializeOpenGl() {
@@ -17,18 +16,17 @@ unsigned int initializeOpenGl() {
 	}
 
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-    return createShaderProgram();
+	return loadShaderProgram("src/shaders/gui.vs", "src/shaders/gui.frag");
 }
 
-
-unsigned int createShaderProgram(){
+unsigned int loadShaderProgram(char* vsFile, char* fragFile) {
 	unsigned int shaderProgram = glCreateProgram();
 
-    unsigned int vertexShader = loadShader(GL_VERTEX_SHADER, "src/shaders/vertex.glsl");
+    unsigned int vertexShader = loadShader(GL_VERTEX_SHADER, vsFile);
     if(vertexShader == 0) return 0;
 	glAttachShader(shaderProgram, vertexShader);
 
-    unsigned int fragmentShader = loadShader(GL_FRAGMENT_SHADER, "src/shaders/fragment.glsl");
+    unsigned int fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragFile);
     if(fragmentShader == 0) return 0;
 	glAttachShader(shaderProgram, fragmentShader);
 

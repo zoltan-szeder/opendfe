@@ -1,33 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "types.h"
 #include "inmemoryfile.h"
 #include "bm.h"
 #include "pal.h"
+#include "math/vec.h"
+#include <GL/glew.h>
 
-#define BM_NORMAL 0x36
-#define BM_TRANSPARENT 0x3e
-#define BM_WEAPON 0x08
-
-typedef struct {
-    char magic[4];
-    uint16 sizeX;
-    uint16 sizeY;
-    uint16 idemX;
-    uint16 idemY;
-    uint8 transparent;
-    uint8 logSizeY;
-    uint16 compressed;
-    uint32 dataSize;
-    char pad[12];
-} BMHeader;
-
-struct BMFile {
-    BMHeader* header;
-    char* data;
-};
+bool bmIsTransparent(BMFile* bmFile, int colorIndex);
 
 BMFile* bmOpenFile(char* file) {
     BMFile* bmFile = malloc(sizeof(BMFile));
@@ -61,15 +44,57 @@ BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
     return bmFile;
 }
 
-void bmCloseFile(BMFile* bmFile) {
+void bmClose(BMFile* bmFile) {
     free(bmFile->header);
     free(bmFile->data);
     free(bmFile);
 }
 
 uint32 bmGlBindImageTexture(BMFile* bmFile, Palette* palette) {
-    // TODO: Implement
-    return 0;
+    ucvec4* data = bmCreateTexture(bmFile, palette);
+
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bmFile->header->sizeY, bmFile->header->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    bmDeleteTexture(data);
+    return texture;
+}
+
+ucvec4* bmCreateTexture(BMFile* bmFile, Palette* palette) {
+    ucvec4* texture = malloc(bmFile->header->dataSize * sizeof(ucvec4));
+
+    for (int i =0; i<bmFile->header->dataSize; i++) {
+        int colorIndex = bmFile->data[i];
+        ucvec3* paletteColor = palette->colors + bmFile->data[i];
+        ucvec4* pixel = texture + i;
+
+        pixel->r = paletteColor->r;
+        pixel->g = paletteColor->g;
+        pixel->b = paletteColor->b;
+        if(bmIsTransparent(bmFile, colorIndex))
+            pixel->a = 0;
+        else
+            pixel->a = 1;
+    }
+
+    return texture;
+}
+
+void bmDeleteTexture(ucvec4* texture) {
+    free(texture);
+}
+
+bool bmIsTransparent(BMFile* bmFile, int colorIndex) {
+    uint8 transparent = bmFile->header->transparent;
+    return (transparent == BM_TRANSPARENT && colorIndex == '\x00')
+        || (transparent == BM_WEAPON      && colorIndex == '\x08');
 }
 
 void bmPrintFile(BMFile* bmFile) {

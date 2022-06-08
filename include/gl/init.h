@@ -5,4 +5,6 @@
 
 unsigned int initializeOpenGl();
 
+unsigned int loadShaderProgram(char* vsFile, char* fragFile);
+
 #endif
