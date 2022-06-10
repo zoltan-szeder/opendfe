@@ -7,7 +7,7 @@ LDFLAGS =
 MC = valgrind
 MCFLAGS = --leak-check=full --error-exitcode=1 -q
 
-SOURCES = $(wildcard src/**/*.c) $(wildcard src/*.c)
+SOURCES = $(wildcard src/*/*/*.c) $(wildcard src/*/*.c) $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)
 
 TESTS = $(wildcard tests/test_*.c)

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 
-#include "gl/init.h"
+#include "dgl/opengl/init.h"
 #include "file.h"
 
 unsigned int loadShader(GLenum shaderType, char* glslFile);

@@ -1,8 +1,8 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "glwindow.h"
-#include "gl/init.h"
+#include "dgl/opengl/window.h"
+#include "dgl/opengl/init.h"
 
 // settings
 const unsigned int SCR_WIDTH = 800;

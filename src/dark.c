@@ -4,13 +4,10 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
-#include "gl/init.h"
 
 #include "dgl/main.h"
 #include "dgl/model.h"
 #include "dgl/texture.h"
-#include "glwindow.h"
-#include "gl/init.h"
 #include "file.h"
 #include "gob.h"
 #include "bm.h"

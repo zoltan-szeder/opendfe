@@ -1,5 +1,5 @@
-#ifndef GL_INIT_H
-#define GL_INIT_H
+#ifndef DGL_OPENGL_INIT_H
+#define DGL_OPENGL_INIT_H
 
 #include <GL/gl.h>
 

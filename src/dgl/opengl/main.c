@@ -4,8 +4,8 @@
 
 #include "dgl/main.h"
 #include "dgl/model.h"
-#include "gl/init.h"
-#include "glwindow.h"
+#include "dgl/opengl/init.h"
+#include "dgl/opengl/window.h"
 
 struct Display {
     GLFWwindow* window;
