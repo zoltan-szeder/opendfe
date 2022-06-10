@@ -2,6 +2,7 @@
 #define BM_H
 #include "pal.h"
 #include "inmemoryfile.h"
+#include "img.h"
 
 #define BM_NORMAL 0x36
 #define BM_TRANSPARENT 0x3e
@@ -32,10 +33,11 @@ BMFile* bmOpenFile(char*);
 BMFile* bmOpenInMemoryFile(InMemoryFile*);
 void bmClose(BMFile*);
 
-uint32 bmGlBindImageTexture(BMFile*, Palette*);
+uint32 bmGlBindImageTexture(Image8Bit*);
 void bmPrintFile(BMFile*);
 
-ucvec4* bmCreateTexture(BMFile*, Palette*);
+Image8Bit* bmCreateImage(BMFile*, Palette*);
+ucvec3* bmCreateRGBImage(BMFile*, Palette*);
 void bmDeleteTexture(ucvec4* texture);
 
 #endif

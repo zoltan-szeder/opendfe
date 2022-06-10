@@ -1,6 +1,9 @@
 #include <GL/glew.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb/stb_image_write.h>
 #include "gl/init.h"
 
 #include "display/main.h"
@@ -33,7 +36,17 @@ int main(int argc, char** argv) {
     gobCloseFile(palInMem);
     gobCloseArchive(palArchive);
 
-    uint32 texture = bmGlBindImageTexture(bm, pal);
+
+    stbi_write_png("palette.png", 16, 16, 3, pal->colors, 16*3);
+
+    printf("\n%d\n", bm->data[0]);
+    Image8Bit* image = bmCreateImage(bm, pal);
+    uint32 width = image->width;
+    uint32 height = image->height;
+    uint32 channels = image->channels;
+    stbi_write_png("image.png", width, height, channels, image->data, height*channels);
+
+    uint32 texture = bmGlBindImageTexture(image);
     bmClose(bm);
     palClose(pal);
 
@@ -43,10 +56,10 @@ int main(int argc, char** argv) {
 
     float vertices[]= {
         // x      y     z     r     g     b     s     t
-         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 10.0f, 10.0f,
+         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 10.0f, 0.0f,
         -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
     };
 
     unsigned int indices[] = {

@@ -1,7 +1,10 @@
 #ifndef MATH_VEC_H
 #define MATH_VEC_H
 
+#include "types.h"
+
 typedef union {
+    uint8 data[4];
     struct {
         unsigned char x;
         unsigned char y;
@@ -23,6 +26,7 @@ typedef union {
 } ucvec4;
 
 typedef union {
+    uint8 data[3];
     struct {
         unsigned char x;
         unsigned char y;
@@ -41,6 +45,7 @@ typedef union {
 } ucvec3;
 
 typedef union {
+    uint8 data[2];
     struct {
         unsigned char x;
         unsigned char y;
