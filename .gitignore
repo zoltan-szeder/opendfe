@@ -5,3 +5,4 @@ vgcore.*
 *.o
 *.so
 *.kdev4
+*.png

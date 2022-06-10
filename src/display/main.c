@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 
-#include "display/main.h"
-#include "display/model.h"
+#include "dgl/main.h"
+#include "dgl/model.h"
 #include "gl/init.h"
 #include "glwindow.h"
 
@@ -44,10 +44,7 @@ void dglDraw(Display* display, GameState* state) {
 
         glUseProgram(display->guiShader);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, state->texture);
-
-        modelDraw(state->model);
+        dglModelDraw(state->model);
 
         glfwSwapBuffers(display->window);
         glfwPollEvents();

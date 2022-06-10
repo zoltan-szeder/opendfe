@@ -2,19 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb/stb_image_write.h>
-#include "gl/init.h"
-
 #include "dgl/main.h"
 #include "dgl/model.h"
-#include "glwindow.h"
-#include "gl/init.h"
+#include "dgl/texture.h"
 #include "file.h"
 #include "gob.h"
 #include "bm.h"
 #include "pal.h"
-
 
 Palette* palExtract(char* gobFile, char* palFile) {
     GobArchive* palArchive = gobOpenArchive(gobFile);
@@ -40,27 +34,50 @@ BMFile* bmExtract(char* gobFile, char* bmFile) {
     return bm;
 }
 
-int main(int argc, char** argv) {
-    if(argc < 6) return 1;
-    BMFile* bm = bmExtract(argv[1], argv[2]);
-    if(bm == NULL) {
-        printf("Could not find %s in %s\n", argv[2], argv[1]);
-        return 1;
-    }
-    Palette* pal = palExtract(argv[3], argv[4]);
-    if(pal == NULL) {
-        printf("Could not find %s in %s\n", argv[4], argv[3]);
-        return 1;
-    }
 
+int main(int argc, char** argv) {
+    Display* display = dglCreateDisplay();
+
+    if(argc < 5) return 1;
+    BMFile* bm = bmExtract(argv[1], argv[2]);
+    Palette* pal = palExtract(argv[3], argv[4]);
     Image8Bit* image = bmCreateImage(bm, pal);
-    uint32 width = image->width;
-    uint32 height = image->height;
-    uint32 channels = image->channels;
-    stbi_write_png(argv[5], width, height, channels, image->data, width*channels);
+
+    DglTexture* texture = dglTextureCreate(image);
 
     img8bDelete(image);
     bmClose(bm);
     palClose(pal);
-}
 
+    float vertices[]= {
+        // x      y     z     r     g     b     s     t
+         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    unsigned int indices[] = {
+        0, 1, 3,
+        1, 2, 3
+    };
+
+    GameState gamestate;
+    gamestate.model = dglModelCreate(vertices, sizeof(vertices), indices, sizeof(indices));
+    dglModelBindTexture(gamestate.model, texture);
+
+    GameControl gameControl;
+    gameControl.shouldExit = false;
+    while(!gameControl.shouldExit)
+    {
+        dglReadInputs(display, &gameControl);
+
+        dglDraw(display, &gamestate);
+    }
+
+    dglDestroyDisplay(display);
+    dglModelDelete(gamestate.model);
+    dglTextureDelete(texture);
+
+    return 0;
+}

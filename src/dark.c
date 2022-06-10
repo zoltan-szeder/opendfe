@@ -2,12 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb/stb_image_write.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 #include "gl/init.h"
 
-#include "display/main.h"
-#include "display/model.h"
+#include "dgl/main.h"
+#include "dgl/model.h"
+#include "dgl/texture.h"
 #include "glwindow.h"
 #include "gl/init.h"
 #include "file.h"
@@ -36,30 +37,32 @@ int main(int argc, char** argv) {
     gobCloseFile(palInMem);
     gobCloseArchive(palArchive);
 
-
-    stbi_write_png("palette.png", 16, 16, 3, pal->colors, 16*3);
-
-    printf("\n%d\n", bm->data[0]);
     Image8Bit* image = bmCreateImage(bm, pal);
-    uint32 width = image->width;
-    uint32 height = image->height;
-    uint32 channels = image->channels;
-    stbi_write_png("image.png", width, height, channels, image->data, height*channels);
-
-    uint32 texture = bmGlBindImageTexture(image);
     bmClose(bm);
     palClose(pal);
 
-    GameState gamestate;
-    GameControl gameControl;
-    gameControl.shouldExit = false;
+    int width;
+    int height;
+    int nrChannels;
+    unsigned char *data = stbi_load("grenade.png", &width, &height, &nrChannels, 0);
+
+    Image8Bit img;
+    img.width = width;
+    img.height = height;
+    img.depth = 1;
+    img.channels = nrChannels;
+    img.data = data;
+
+    DglTexture* texture = dglTextureCreate(&img);
+    img8bDelete(image);
+
 
     float vertices[]= {
         // x      y     z     r     g     b     s     t
-         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 10.0f, 10.0f,
-         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 10.0f, 0.0f,
+         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
         -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
+        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
     };
 
     unsigned int indices[] = {
@@ -67,17 +70,22 @@ int main(int argc, char** argv) {
         1, 2, 3
     };
 
-    gamestate.texture = texture;
-    gamestate.model = modelCreate(vertices, sizeof(vertices), indices, sizeof(indices));
+    GameState gamestate;
+    gamestate.model = dglModelCreate(vertices, sizeof(vertices), indices, sizeof(indices));
+    dglModelBindTexture(gamestate.model, texture);
 
+    GameControl gameControl;
+    gameControl.shouldExit = false;
     while(!gameControl.shouldExit)
     {
-        *dglReadInputs(display, &gameControl);
+        dglReadInputs(display, &gameControl);
 
         dglDraw(display, &gamestate);
     }
 
     dglDestroyDisplay(display);
+    dglModelDelete(gamestate.model);
+    dglTextureDelete(texture);
 
     return 0;
 }
