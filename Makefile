@@ -32,8 +32,8 @@ compile: $(OBJECTS)
 
 assemble-tools: $(TOOL_OUTPUTS)
 
-tools/%.out: $(OBJECTS) $(TOOL_OBJECTS)
-	$(LD) -o $@ $(filter-out src/dark.o,$^) $(LDFLAGS) $(LIBS)
+tools/%.out: tools/%.o $(OBJECTS)
+	$(LD) -o $@ $1 $(filter-out src/dark.o,$^) $(LDFLAGS) $(LIBS)
 
 compile-tools: $(TOOL_OBJECTS)
 

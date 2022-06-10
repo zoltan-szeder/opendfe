@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "pal.h"
+#include "drivers/pal.h"
 #include "inmemoryfile.h"
 
 Palette* palOpenInMemoryFile(InMemoryFile* file){

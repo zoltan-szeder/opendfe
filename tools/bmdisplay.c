@@ -1,65 +1,39 @@
-#include <GL/glew.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "dgl/main.h"
 #include "dgl/model.h"
 #include "dgl/texture.h"
-#include "file.h"
-#include "gob.h"
-#include "bm.h"
-#include "pal.h"
 
-Palette* palExtract(char* gobFile, char* palFile) {
-    GobArchive* palArchive = gobOpenArchive(gobFile);
-    InMemoryFile* palInMem = gobReadFile(gobGetFile(palArchive, palFile));
-
-    Palette* pal = palOpenInMemoryFile(palInMem);
-
-    gobCloseFile(palInMem);
-    gobCloseArchive(palArchive);
-
-    return pal;
-}
-
-BMFile* bmExtract(char* gobFile, char* bmFile) {
-    GobArchive* bmArchive = gobOpenArchive(gobFile);
-    InMemoryFile* bmInMem = gobReadFile(gobGetFile(bmArchive, bmFile));
-
-    BMFile* bm = bmOpenInMemoryFile(bmInMem);
-
-    gobCloseFile(bmInMem);
-    gobCloseArchive(bmArchive);
-
-    return bm;
-}
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 
 
 int main(int argc, char** argv) {
     Display* display = dglCreateDisplay();
 
-    if(argc < 5) return 1;
-    BMFile* bm = bmExtract(argv[1], argv[2]);
-    Palette* pal = palExtract(argv[3], argv[4]);
-    Image8Bit* image = bmCreateImage(bm, pal);
+    if(argc < 2) return 1;
+
+    int width, height, channels;
+    unsigned char *data = stbi_load(argv[1], &width, &height, &channels, 0);
+
+    Image8Bit* image = img8bCreate2D(width, height, channels);
+    image->data = data;
 
     DglTexture* texture = dglTextureCreate(image);
-
     img8bDelete(image);
-    bmClose(bm);
-    palClose(pal);
 
     float vertices[]= {
-        // x      y     z     r     g     b     s     t
-         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    //     x      y     z       r     g     b       s     t
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
     };
 
     unsigned int indices[] = {
-        0, 1, 3,
-        1, 2, 3
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
     };
 
     GameState gamestate;

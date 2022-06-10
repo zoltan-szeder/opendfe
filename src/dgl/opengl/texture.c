@@ -30,7 +30,7 @@ DglTexture* dglTextureCreate(Image8Bit* img){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     GLint format = dglGetImageFormat(img);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, img->height, img->width, 0, format, GL_UNSIGNED_BYTE, img->data);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, img->width, img->height, 0, format, GL_UNSIGNED_BYTE, img->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     tx->id = id;

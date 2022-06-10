@@ -1,5 +1,5 @@
-#ifndef GOB_H
-#define GOB_H
+#ifndef DRIVERS_GOB_H
+#define DRIVERS_GOB_H
 
 #include <stdio.h>
 #include <stddef.h>

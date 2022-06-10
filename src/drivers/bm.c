@@ -2,13 +2,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-
-#include "types.h"
-#include "inmemoryfile.h"
-#include "bm.h"
-#include "pal.h"
-#include "math/vec.h"
 #include <GL/glew.h>
+
+#include "drivers/bm.h"
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex);
 

@@ -1,6 +1,6 @@
-#ifndef BM_H
-#define BM_H
-#include "pal.h"
+#ifndef DRIVERS_BM_H
+#define DRIVERS_BM_H
+#include "drivers/pal.h"
 #include "inmemoryfile.h"
 #include "img.h"
 

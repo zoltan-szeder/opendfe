@@ -4,16 +4,11 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
-#include "gl/init.h"
 
-#include "dgl/main.h"
-#include "dgl/model.h"
-#include "glwindow.h"
-#include "gl/init.h"
 #include "file.h"
-#include "gob.h"
-#include "bm.h"
-#include "pal.h"
+#include "drivers/gob.h"
+#include "drivers/bm.h"
+#include "drivers/pal.h"
 
 
 Palette* palExtract(char* gobFile, char* palFile) {

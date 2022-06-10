@@ -19,8 +19,6 @@ Display* dglCreateDisplay() {
     unsigned int shaderProgram = initializeOpenGl();
     if (shaderProgram == 0) return NULL;
 
-    glUseProgram(shaderProgram);
-    glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
 
     Display* display = malloc(sizeof(Display));
     display->window = window;
@@ -43,6 +41,7 @@ void dglDraw(Display* display, GameState* state) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(display->guiShader);
+        glUniform1i(glGetUniformLocation(display->guiShader, "texture1"), 0);
 
         dglModelDraw(state->model);
 

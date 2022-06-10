@@ -9,9 +9,9 @@
 #include "dgl/model.h"
 #include "dgl/texture.h"
 #include "file.h"
-#include "gob.h"
-#include "bm.h"
-#include "pal.h"
+#include "drivers/gob.h"
+#include "drivers/bm.h"
+#include "drivers/pal.h"
 
 
 int main(int argc, char** argv) {

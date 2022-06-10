@@ -1,8 +1,9 @@
-#include "gob.h"
-#include "types.h"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+
+#include "drivers/gob.h"
+#include "types.h"
 
 int gobReadArchive(GobArchive*, FILE*);
 GobFile* gobReadArchiveFile(GobArchive*, GobFile*);

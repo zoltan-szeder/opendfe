@@ -1,5 +1,5 @@
-#ifndef PAL_H
-#define PAL_H
+#ifndef DRIVERS_PAL_H
+#define DRIVERS_PAL_H
 
 #include "math/vec.h"
 #include "inmemoryfile.h"
