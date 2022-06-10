@@ -62,7 +62,7 @@ uint32 bmGlBindImageTexture(Image8Bit* img) {
 int bmGetNormalizedPixelIndex(int w, int h, int i) {
     // BM contains pixels from bottomleft to topleft, then right
     int x = i/h;
-    int y = h-1-(i%h);
+    int y = i%h;
     return x + w*y;
 }
 

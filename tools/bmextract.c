@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -52,6 +53,7 @@ int main(int argc, char** argv) {
     uint32 width = image->width;
     uint32 height = image->height;
     uint32 channels = image->channels;
+    stbi_flip_vertically_on_write(true);
     stbi_write_png(argv[5], width, height, channels, image->data, width*channels);
 
     img8bDelete(image);
