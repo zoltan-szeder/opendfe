@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 
 #include "drivers/bm.h"
+#include "drivers/rle.h"
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex);
 
@@ -66,22 +67,26 @@ int bmGetNormalizedPixelIndex(int w, int h, int i) {
     return x + w*y;
 }
 
-Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
+void ucvec3Copy(ucvec3* dest, ucvec3* src) {
+    dest->r = src->r;
+    dest->g = src->g;
+    dest->b = src->b;
+}
+
+Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette) {
     int w = bmFile->header->sizeX;
     int h = bmFile->header->sizeY;
     Image8Bit* img = img8bCreate2D(w, h, 4);
     ucvec4* texture = (ucvec4*) img->data;
 
-    for (int i =0; i < bmFile->header->dataSize; i++) {
+    for (int i =0; i < w*h; i++) {
         int pxi = bmGetNormalizedPixelIndex(w, h, i);
 
-        unsigned char colorIndex = bmFile->data[i];
+        unsigned char colorIndex = data[i];
         ucvec3* paletteColor = palette->colors + colorIndex;
         ucvec4* pixel = texture + pxi;
 
-        pixel->r = paletteColor->r;
-        pixel->g = paletteColor->g;
-        pixel->b = paletteColor->b;
+        ucvec3Copy((ucvec3*) pixel, paletteColor);
         if(bmIsTransparent(bmFile, colorIndex)){
             pixel->a = 0;
         } else {
@@ -92,24 +97,30 @@ Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
     return img;
 }
 
-ucvec3* bmCreateRGBImage(BMFile* bmFile, Palette* palette) {
-    int w = bmFile->header->sizeX;
-    int h = bmFile->header->sizeY;
-    ucvec3* texture = malloc(bmFile->header->dataSize * sizeof(ucvec3));
+uint8* bmDecompress(BMFile* bmFile) {
+    int width = bmFile->header->sizeX;
+    int height = bmFile->header->sizeY;
+    int length = bmFile->header->dataSize;
 
-    for (int i =0; i<bmFile->header->dataSize; i++) {
-        int pxi = bmGetNormalizedPixelIndex(w, h, i);
+    uint32 compressed = bmFile->header->compressed;
+    if(compressed == BM_COMPRESSION_RLE0) {
+        return rle0Decompress(bmFile->data, length, width, height);
+    } else {
+        return rle1Decompress(bmFile->data, length, width, height);
+    }
+}
 
-        unsigned char colorIndex = bmFile->data[i];
-        ucvec3* paletteColor = palette->colors + colorIndex;
-        ucvec3* pixel = texture + pxi;
-
-        pixel->r = paletteColor->r;
-        pixel->g = paletteColor->g;
-        pixel->b = paletteColor->b;
+Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
+    uint32 compressed = bmFile->header->compressed;
+    if(compressed == BM_COMPRESSION_NONE) {
+        return bmCreateImageDecompressed(bmFile, bmFile->data, palette);
     }
 
-    return texture;
+    uint8* data = bmDecompress(bmFile);
+    Image8Bit* image = bmCreateImageDecompressed(bmFile, data, palette);
+    free(data);
+
+    return image;
 }
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex) {

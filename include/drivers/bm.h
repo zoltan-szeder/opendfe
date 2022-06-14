@@ -8,6 +8,10 @@
 #define BM_TRANSPARENT 0x3e
 #define BM_WEAPON 0x08
 
+#define BM_COMPRESSION_NONE 0
+#define BM_COMPRESSION_RLE0 2
+#define BM_COMPRESSION_RLE1 1
+
 typedef struct {
     char magic[4];      // "BM \x01e"
     uint16 sizeX;       // 1: multiple BM in the file; image width
@@ -37,6 +41,5 @@ uint32 bmGlBindImageTexture(Image8Bit*);
 void bmPrintFile(BMFile*);
 
 Image8Bit* bmCreateImage(BMFile*, Palette*);
-ucvec3* bmCreateRGBImage(BMFile*, Palette*);
 
 #endif

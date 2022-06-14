@@ -24,6 +24,8 @@ void testBmCreateImage_1();
 void testBmCreateImage_2();
 void testBmCreateImage_3();
 void testBmCreateImage_4();
+void testRLE0EncodedBmCreateImage();
+void testRLE1EncodedBmCreateImage();
 
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
@@ -32,6 +34,8 @@ int main(int argc, char** argv){
         &testBmCreateImage_2,
         &testBmCreateImage_3,
         &testBmCreateImage_4,
+        &testRLE0EncodedBmCreateImage,
+        &testRLE1EncodedBmCreateImage,
     };
 
     TestFixture fixture = createFixture();
@@ -74,13 +78,13 @@ void assertPixel(Image8Bit* img, uint32 i, uint8 r, uint8 g, uint8 b, uint8 a) {
         pixel->r, pixel->g, pixel->b, pixel->a,
         r, g, b, a));
 }
-
 BMHeader getTransparentHeader(int width, int height) {
     BMHeader header;
     header.sizeX = width;
     header.sizeY = height;
     header.dataSize = width * height;
     header.transparent = BM_TRANSPARENT;
+    header.compressed = BM_COMPRESSION_NONE;
 
     return header;
 }
@@ -170,6 +174,78 @@ void testBmCreateImage_4() {
     unsigned char image[] = {
         PX_R, PX_B,
         PX_G, PX_A,
+    };
+
+    BMFile bm;
+    bm.header = &header;
+    bm.data = image;
+
+    Palette pal = getSimplePalette();
+
+    Image8Bit* img = bmCreateImage(&bm, &pal);
+
+    // +-----> x
+    // | R G
+    // | B A
+    // v
+    // y
+    assertPixel(img, 0, COL_R); // BL
+    assertPixel(img, 1, COL_G); // BR
+    assertPixel(img, 2, COL_B); // TL
+    assertPixel(img, 3, COL_A); // TR
+
+    img8bDelete(img);
+}
+
+void testRLE0EncodedBmCreateImage() {
+    testCase("Test 2x2 RLE0 image");
+    BMHeader header = getTransparentHeader(2, 2);
+    header.compressed = BM_COMPRESSION_RLE0;
+    // +-----> y
+    // | R B
+    // | G A
+    // v
+    // x
+    header.dataSize = 7;
+    unsigned char image[] = {
+        '\x01', PX_R, '\x01', PX_B,
+        '\x01', PX_G, '\x81',
+    };
+
+    BMFile bm;
+    bm.header = &header;
+    bm.data = image;
+
+    Palette pal = getSimplePalette();
+
+    Image8Bit* img = bmCreateImage(&bm, &pal);
+
+    // +-----> x
+    // | R G
+    // | B A
+    // v
+    // y
+    assertPixel(img, 0, COL_R); // BL
+    assertPixel(img, 1, COL_G); // BR
+    assertPixel(img, 2, COL_B); // TL
+    assertPixel(img, 3, COL_A); // TR
+
+    img8bDelete(img);
+}
+
+void testRLE1EncodedBmCreateImage() {
+    testCase("Test 2x2 RLE1 image");
+    BMHeader header = getTransparentHeader(2, 2);
+    header.compressed = BM_COMPRESSION_RLE1;
+    // +-----> y
+    // | R B
+    // | G A
+    // v
+    // x
+    header.dataSize = 8;
+    unsigned char image[] = {
+        '\x01', PX_R, '\x81', PX_B,
+        '\x01', PX_G, '\x81', PX_A
     };
 
     BMFile bm;
