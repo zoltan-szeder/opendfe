@@ -37,7 +37,6 @@ BMFile* bmOpenFile(char*);
 BMFile* bmOpenInMemoryFile(InMemoryFile*);
 void bmClose(BMFile*);
 
-uint32 bmGlBindImageTexture(Image8Bit*);
 void bmPrintFile(BMFile*);
 
 Image8Bit* bmCreateImage(BMFile*, Palette*);

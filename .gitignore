@@ -6,3 +6,4 @@ vgcore.*
 *.so
 *.kdev4
 *.png
+*.kate-swp

@@ -2,12 +2,16 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <GL/glew.h>
 
 #include "drivers/bm.h"
 #include "drivers/rle.h"
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex);
+
+uint8* bmDecompress(BMFile* bmFile);
+Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette);
+int bmGetNormalizedPixelIndex(int w, int h, int i);
+void ucvec3Copy(ucvec3* dest, ucvec3* src);
 
 BMFile* bmOpenFile(char* file) {
     BMFile* bmFile = malloc(sizeof(BMFile));
@@ -47,30 +51,32 @@ void bmClose(BMFile* bmFile) {
     free(bmFile);
 }
 
-uint32 bmGlBindImageTexture(Image8Bit* img) {
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->height, img->width, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    return texture;
+
+
+Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
+    uint32 compressed = bmFile->header->compressed;
+    if(compressed == BM_COMPRESSION_NONE) {
+        return bmCreateImageDecompressed(bmFile, bmFile->data, palette);
+    }
+
+    uint8* data = bmDecompress(bmFile);
+    Image8Bit* image = bmCreateImageDecompressed(bmFile, data, palette);
+    free(data);
+
+    return image;
 }
 
-int bmGetNormalizedPixelIndex(int w, int h, int i) {
-    // BM contains pixels from bottomleft to topleft, then right
-    int x = i/h;
-    int y = i%h;
-    return x + w*y;
-}
+uint8* bmDecompress(BMFile* bmFile) {
+    int width = bmFile->header->sizeX;
+    int height = bmFile->header->sizeY;
+    int length = bmFile->header->dataSize;
 
-void ucvec3Copy(ucvec3* dest, ucvec3* src) {
-    dest->r = src->r;
-    dest->g = src->g;
-    dest->b = src->b;
+    uint32 compressed = bmFile->header->compressed;
+    if(compressed == BM_COMPRESSION_RLE0) {
+        return rle0Decompress(bmFile->data, length, width, height);
+    } else {
+        return rle1Decompress(bmFile->data, length, width, height);
+    }
 }
 
 Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette) {
@@ -97,30 +103,17 @@ Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* pale
     return img;
 }
 
-uint8* bmDecompress(BMFile* bmFile) {
-    int width = bmFile->header->sizeX;
-    int height = bmFile->header->sizeY;
-    int length = bmFile->header->dataSize;
-
-    uint32 compressed = bmFile->header->compressed;
-    if(compressed == BM_COMPRESSION_RLE0) {
-        return rle0Decompress(bmFile->data, length, width, height);
-    } else {
-        return rle1Decompress(bmFile->data, length, width, height);
-    }
+int bmGetNormalizedPixelIndex(int w, int h, int i) {
+    // BM contains pixels from bottomleft to topleft, then right
+    int x = i/h;
+    int y = i%h;
+    return x + w*y;
 }
 
-Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
-    uint32 compressed = bmFile->header->compressed;
-    if(compressed == BM_COMPRESSION_NONE) {
-        return bmCreateImageDecompressed(bmFile, bmFile->data, palette);
-    }
-
-    uint8* data = bmDecompress(bmFile);
-    Image8Bit* image = bmCreateImageDecompressed(bmFile, data, palette);
-    free(data);
-
-    return image;
+void ucvec3Copy(ucvec3* dest, ucvec3* src) {
+    dest->r = src->r;
+    dest->g = src->g;
+    dest->b = src->b;
 }
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex) {
