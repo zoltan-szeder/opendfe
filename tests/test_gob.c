@@ -1,9 +1,11 @@
-#include "gob.h"
-#include "test_fixtures.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+
+#include "test_fixtures.h"
+
+#include "drivers/gob.h"
 
 void testGobListFiles();
 void testGobReadFile();

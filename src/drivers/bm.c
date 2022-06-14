@@ -111,9 +111,6 @@ ucvec3* bmCreateRGBImage(BMFile* bmFile, Palette* palette) {
 
     return texture;
 }
-void bmDeleteTexture(ucvec4* texture) {
-    free(texture);
-}
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex) {
     uint8 transparent = bmFile->header->transparent;

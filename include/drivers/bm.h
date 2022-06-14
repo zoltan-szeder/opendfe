@@ -38,6 +38,5 @@ void bmPrintFile(BMFile*);
 
 Image8Bit* bmCreateImage(BMFile*, Palette*);
 ucvec3* bmCreateRGBImage(BMFile*, Palette*);
-void bmDeleteTexture(ucvec4* texture);
 
 #endif

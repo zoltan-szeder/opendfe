@@ -9,6 +9,8 @@ MCFLAGS = --leak-check=full --error-exitcode=1 -q
 
 SOURCES = $(wildcard src/*/*/*.c) $(wildcard src/*/*.c) $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)
+MAIN_OBJECT = src/dark.o
+LIB_OBJECTS = $(filter-out $(MAIN_OBJECT),$(OBJECTS))
 
 TESTS = $(wildcard tests/test_*.c)
 TEST_OBJECTS = $(TESTS:.c=.o)
@@ -32,13 +34,13 @@ compile: $(OBJECTS)
 
 assemble-tools: $(TOOL_OUTPUTS)
 
-tools/%.out: tools/%.o $(OBJECTS)
+tools/%.out: tools/%.o $(LIB_OBJECTS)
 	$(LD) -o $@ $1 $(filter-out src/dark.o,$^) $(LDFLAGS) $(LIBS)
 
 compile-tools: $(TOOL_OBJECTS)
 
 
-tests/test_%.out: src/%.o tests/test_%.o $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS)
+tests/test_%.out: tests/test_%.o $(LIB_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS)
 	$(LD) -o $@ $(filter-out tests/mocks/mock_$(subst src/,,$<),$^) $(LDFLAGS) $(LIBS)
 	$(MC) $(MCFLAGS) ./$@
 
