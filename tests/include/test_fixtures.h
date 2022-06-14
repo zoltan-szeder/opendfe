@@ -23,7 +23,7 @@ bool runTests(TestFixture*);
 
 void testCase(const char* testName);
 
-void assertEqual(long, long);
+void assertEquali(long, long);
 void assertTrue(bool);
 void assertTrueMsg(bool, char*);
 

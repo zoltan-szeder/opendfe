@@ -89,7 +89,7 @@ void testCase(const char* testName) {
     CURRENT_TEST_RESULT->name = testName;
 }
 
-void assertEqual(long c1, long c2) {
+void assertEquali(long c1, long c2) {
     assertTrueMsg(c1 == c2, error("%ld != %ld", c1, c2));
 }
 
