@@ -16,7 +16,7 @@ unsigned int initializeOpenGl() {
 	}
 
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-	return loadShaderProgram("src/shaders/gui.vs", "src/shaders/gui.frag");
+	return loadShaderProgram("src/dgl/opengl/shaders/hud.vs", "src/dgl/opengl/shaders/hud.frag");
 }
 
 unsigned int loadShaderProgram(char* vsFile, char* fragFile) {

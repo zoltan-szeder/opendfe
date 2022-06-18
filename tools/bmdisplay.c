@@ -8,9 +8,6 @@
 #include "drivers/bm.h"
 #include "drivers/gob.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-
 Palette* palExtract(char* gobFile, char* palFile) {
     GobArchive* palArchive = gobOpenArchive(gobFile);
     InMemoryFile* palInMem = gobReadFile(gobGetFile(palArchive, palFile));
@@ -28,6 +25,7 @@ BMFile* bmExtract(char* gobFile, char* bmFile) {
     InMemoryFile* bmInMem = gobReadFile(gobGetFile(bmArchive, bmFile));
 
     BMFile* bm = bmOpenInMemoryFile(bmInMem);
+    bmPrintFile(bm);
 
     gobCloseFile(bmInMem);
     gobCloseArchive(bmArchive);
@@ -53,14 +51,41 @@ int main(int argc, char** argv) {
     Image8Bit* image = bmCreateImage(bm, pal);
 
     DglTexture* texture = dglTextureCreate(image);
+
+    float sW = 640;
+    float sH = 480;
+
+    float sX = 2.0/sW;
+    float sY = -2.0/sH;
+
+    float tX = -1;
+    float tY = 1;
+
+    float iW = sX*image->width *2;
+    float iH = sY*image->height*2.41;
+
+    float iX = sX*330;
+    float iY = sY*264;
+
+    float pX = sX*413;
+    float pY = sY*375;
+
+    float x1 = tX + pX - iW/2.0;
+    float x2 = tX + pX + iW/2.0;
+    float y1 = tY + pY + iH/2.0;
+    float y2 = tY + pY - iH/2.0;
+
     img8bDelete(image);
+
+
+    printf("%g, %g, %g, %g\n", x1, x2, y1, y2);
 
     float vertices[]= {
     //     x      y     z       r     g     b       s     t
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
+           x2,    y2, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+           x2,    y1, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+           x1,    y1, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+           x1,    y2, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
     };
 
     unsigned int indices[] = {

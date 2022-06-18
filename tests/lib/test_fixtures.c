@@ -93,6 +93,18 @@ void assertEquali(long c1, long c2) {
     assertTrueMsg(c1 == c2, error("%ld != %ld", c1, c2));
 }
 
+void assertEquals(char* c1, char* c2, int length) {
+    char* ntc1 = malloc((length+1)*sizeof(char));
+    char* ntc2 = malloc((length+1)*sizeof(char));
+    memcpy(ntc1, c1, length);
+    ntc1[length] = 0;
+    memcpy(ntc2, c2, length);
+    ntc2[length] = 0;
+    assertTrueMsg(strncmp(ntc1, ntc2, length+1) == 0, error("\"%s\" != \"%s\"", ntc1, ntc2));
+    free(ntc1);
+    free(ntc2);
+}
+
 void assertTrue(bool flag) {
     assertTrueMsg(flag, error("false != true"));
 }
