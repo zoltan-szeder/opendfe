@@ -5,7 +5,7 @@
 #include "dgl/opengl/init.h"
 #include "file.h"
 
-unsigned int loadShader(GLenum shaderType, char* glslFile);
+OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFile);
 
 unsigned int initializeOpenGl() {
 	GLenum status = glewInit();
@@ -22,12 +22,14 @@ unsigned int initializeOpenGl() {
 unsigned int loadShaderProgram(char* vsFile, char* fragFile) {
 	unsigned int shaderProgram = glCreateProgram();
 
-    unsigned int vertexShader = loadShader(GL_VERTEX_SHADER, vsFile);
-    if(vertexShader == 0) return 0;
+    unsigned int vertexShader;
+    OptionalPtr* optionalVertexShader = loadShader(&vertexShader, GL_VERTEX_SHADER, vsFile);
+    if(optionalIsEmpty(optionalVertexShader)) return 0;
 	glAttachShader(shaderProgram, vertexShader);
 
-    unsigned int fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragFile);
-    if(fragmentShader == 0) return 0;
+    unsigned int fragmentShader;
+	OptionalPtr* optionalFragmentShader = loadShader(&fragmentShader,GL_FRAGMENT_SHADER, fragFile);
+    if(optionalIsEmpty(optionalFragmentShader)) return 0;
 	glAttachShader(shaderProgram, fragmentShader);
 
 	glLinkProgram(shaderProgram);
@@ -39,33 +41,39 @@ unsigned int loadShaderProgram(char* vsFile, char* fragFile) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		fprintf(stderr, "ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s", infoLog);
 	}
+
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
     return shaderProgram;
 }
 
-unsigned int loadShader(GLenum shaderType, char* glslFile) {
-	char* glsl = fileReadAll(glslFile);
+OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFile) {
+	OptionalPtr* optionalGlslFile = fileReadAll(glslFile);
+	if(optionalIsEmpty(optionalGlslFile))
+		return optionalGlslFile;
 
-	unsigned int shader = glCreateShader(shaderType);
-    if(shader == 0) return 0;
+	char* glsl = optionalGet(optionalGlslFile);
 
-	glShaderSource(shader, 1, (const char**) &glsl, NULL);
-	glCompileShader(shader);
+	*shaderId = glCreateShader(shaderType);
+    if(*shaderId == 0)
+		return optionalEmpty("dgl/opengl/init.c:loadShader - Could not allocate shader memory");
+
+	glShaderSource(*shaderId, 1, (const char**) &glsl, NULL);
+	glCompileShader(*shaderId);
 
 	free(glsl);
 
 	// check for shader compile errors
 	int success;
 	char infoLog[512];
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(*shaderId, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		glGetShaderInfoLog(shader, 512, NULL, infoLog);
+		glGetShaderInfoLog(*shaderId, 512, NULL, infoLog);
 		fprintf(stderr, "ERROR::SHADER::%d::COMPILATION_FAILED\n%s",shaderType, infoLog);
-        return 0;
+        return optionalEmpty("dgl/opengl/init.c:loadShader - Could not compile shader");
 	}
 
-	return shader;
+	return optionalOf(shaderId);
 }

@@ -9,7 +9,7 @@
 
 struct Display {
     GLFWwindow* window;
-    unsigned int guiShader;
+    unsigned int hudShader;
 };
 
 Display* dglCreateDisplay() {
@@ -22,7 +22,7 @@ Display* dglCreateDisplay() {
 
     Display* display = malloc(sizeof(Display));
     display->window = window;
-    display->guiShader = shaderProgram;
+    display->hudShader = shaderProgram;
     return display;
 }
 
@@ -40,8 +40,8 @@ void dglDraw(Display* display, GameState* state) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(display->guiShader);
-        glUniform1i(glGetUniformLocation(display->guiShader, "texture1"), 0);
+        glUseProgram(display->hudShader);
+        glUniform1i(glGetUniformLocation(display->hudShader, "texture1"), 0);
 
         dglModelDraw(state->model);
 
@@ -50,7 +50,7 @@ void dglDraw(Display* display, GameState* state) {
 }
 
 void dglDestroyDisplay(Display* display){
-    glDeleteProgram(display->guiShader);
+    glDeleteProgram(display->hudShader);
     terminateWindow();
     free(display);
 }

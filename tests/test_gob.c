@@ -7,13 +7,13 @@
 
 #include "drivers/gob.h"
 
-void testGobListFiles();
-void testGobReadFile();
+void testOpenMissingFile();
+void testReadFile();
 
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
-        &testGobListFiles,
-        &testGobReadFile,
+        &testOpenMissingFile,
+        &testReadFile,
     };
 
     TestFixture fixture = createFixture();
@@ -25,7 +25,7 @@ int main(int argc, char** argv){
     runTests(&fixture);
 }
 
-void testGobListFiles(){
+void testOpenMissingFile(){
     GobArchive* archive = gobOpenArchive("tests/resources/test.gob");
     GobFile* files = gobListFiles(archive);
 
@@ -35,14 +35,14 @@ void testGobListFiles(){
     
     gobCloseArchive(archive);
 }
-void testGobReadFile() {
+void testReadFile() {
     GobArchive* archive = gobOpenArchive("tests/resources/test.gob");
     GobFile* helloFile = gobGetFile(archive, "HELLO.TXT");
     InMemoryFile* hello = gobReadFile(helloFile);
 
     assert(gobCountFiles(archive) == 1);
-    assert(strcmp("Hello World", hello->content) == 0);
+    assertEquals("Hello World", hello->content, 12);
 
-    gobCloseFile(hello);
+    inMemFileDelete(hello);
     gobCloseArchive(archive);
 }

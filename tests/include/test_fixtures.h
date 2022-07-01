@@ -24,9 +24,12 @@ bool runTests(TestFixture*);
 void testCase(const char* testName);
 
 void assertEquali(long, long);
-void assertEquals(const char*, const char*, int);
+void assertEquals(char*, char*, int);
 void assertTrue(bool);
 void assertTrueMsg(bool, char*);
+void assertFalse(bool);
+void assertFalseMsg(bool, char*);
+void fail(char*);
 
 char* error(const char*, ...);
 

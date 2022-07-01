@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -rdynamic -g -O2 -Wall -I include -I tests/include/
+CFLAGS = -std=c11 -rdynamic -g -O2 -Wall -I include -I tests/include/
 LIBS = -lglfw -lGLEW -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lm
 LD = gcc
 LDFLAGS = 
@@ -45,7 +45,7 @@ tests/test_%.out: tests/test_%.o $(LIB_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJE
 	$(MC) $(MCFLAGS) ./$@
 
 clean:
-	rm -f $(TEST_OUTPUTS) $(TEST_OBJECTS) $(OBJECTS)
+	rm -f $(TEST_OUTPUTS) $(TEST_OBJECTS) $(OBJECTS) $(TOOL_OUTPUTS) $(TOOL_OBJECTS)
 
 .PHONY: test clean compile
 .PRECIOUS: $(OBJECTS) $(TEST_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS)

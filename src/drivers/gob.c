@@ -87,13 +87,10 @@ InMemoryFile* gobReadFile(GobFile* gob_file){
     if(objects == 0) return NULL;
     content[gob_file->length-1] = (char) 0;
 
-    InMemoryFile* file = malloc(sizeof(InMemoryFile));
-    if(!file) return NULL;
+    OptionalPtr* optionalFile = memFileCreate(content, gob_file->length);
+    if(optionalIsEmpty(optionalFile)) return NULL;
 
-    file->content = content;
-    file->length = gob_file->length;
-
-    return file;
+    return optionalGet(optionalFile);
 }
 
 void gobCloseFile(InMemoryFile* file) {

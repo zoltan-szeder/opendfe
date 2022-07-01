@@ -171,7 +171,7 @@ void testBmCreateImage_4() {
     // | G A
     // v
     // x
-    unsigned char image[] = {
+    uint8 image[] = {
         PX_R, PX_B,
         PX_G, PX_A,
     };

@@ -121,6 +121,18 @@ void assertTrueMsg(bool flag, char* error) {
     CURRENT_TEST_RESULT->size++;
 }
 
+void assertFalse(bool flag) {
+    assertTrue(!flag);
+}
+
+void assertFalseMsg(bool flag, char* msg) {
+    assertTrueMsg(!flag, msg);
+}
+
+void fail(char* msg) {
+    assertTrueMsg(false, msg);
+}
+
 char* error(const char* formatString, ...) {
     char* msg = malloc(1024*sizeof(char));
 

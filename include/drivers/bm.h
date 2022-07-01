@@ -13,7 +13,7 @@
 #define BM_COMPRESSION_RLE1 1
 
 typedef struct {
-    char magic[4];      // "BM \x01e"
+    char* magic;        // "BM \x01e"
     uint16 sizeX;       // 1: multiple BM in the file; image width
     uint16 sizeY;       // image height
     uint16 idemX;       // N/A
@@ -22,7 +22,7 @@ typedef struct {
     uint8 logSizeY;     // 0: weapon; log2(sizeY)
     uint16 compressed;  // 0: not compressed; 1: RLE compressed;
     uint32 dataSize;    // byte length of data after header
-    uint8 pad[12];      // 12 x '\x00'
+    uint8* pad;         // 12 x '\x00'
 } BMHeader;
 
 typedef struct {

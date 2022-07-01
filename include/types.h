@@ -14,6 +14,6 @@
 
 bool isLittleEndian();
 bool isBigEndian();
-void reverseEndianness(uint8* bytes, int lenght);
+void reverseEndianness(void* bytes, int lenght);
 
 #endif
