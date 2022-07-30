@@ -12,8 +12,13 @@
 #define uint64 unsigned long
 #define int64 long
 
+void setToLittleEndian();
+void setToBigEndian();
+void setToOriginalEndianness();
+
 bool isLittleEndian();
 bool isBigEndian();
+
 void reverseEndianness(void* bytes, int lenght);
 
 #endif

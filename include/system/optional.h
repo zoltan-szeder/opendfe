@@ -4,68 +4,24 @@
 #include "stdbool.h"
 #include "types.h"
 
-typedef struct {
-    bool isPresent;
-    char* message;
-} Optional;
+typedef struct Optional Optional;
 
-typedef struct {
-    bool isPresent;
-    const char* message;
-    void* value;
-} OptionalPtr;
+typedef struct OptionalPtr OptionalPtr;
 
-typedef struct {
-    bool isPresent;
-    const char* message;
-    uint8 value;
-} OptionalUInt8;
+typedef struct OptionalUInt8 OptionalUInt8;
+typedef struct OptionalUInt16 OptionalUInt16;
+typedef struct OptionalUInt32 OptionalUInt32;
+typedef struct OptionalUInt64 OptionalUInt64;
 
-typedef struct {
-    bool isPresent;
-    const char* message;
-    uint16 value;
-} OptionalUInt16;
-
-typedef struct {
-    bool isPresent;
-    const char* message;
-    uint32 value;
-} OptionalUInt32;
-
-typedef struct {
-    bool isPresent;
-    const char* message;
-    uint64 value;
-} OptionalUInt64;
-
-typedef struct {
-    bool isPresent;
-    const char* message;
-    int8 value;
-} OptionalInt8;
-
-typedef struct {
-    bool isPresent;
-    const char* message;
-    int16 value;
-} OptionalInt16;
-
-typedef struct {
-    bool isPresent;
-    const char* message;
-    int32 value;
-} OptionalInt32;
-
-typedef struct {
-    bool isPresent;
-    const char* message;
-    int64 value;
-} OptionalInt64;
+typedef struct OptionalInt8 OptionalInt8;
+typedef struct OptionalInt16 OptionalInt16;
+typedef struct OptionalInt32 OptionalInt32;
+typedef struct OptionalInt64 OptionalInt64;
 
 
 void* optionalEmpty(const char* message, ...);
 bool optionalIsEmpty(void*);
+Optional* optionalFirstEmpty(int length, ...);
 void optionalDelete(void*);
 char* optionalGetMessage(void*);
 

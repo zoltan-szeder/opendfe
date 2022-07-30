@@ -5,22 +5,27 @@
 
 #include "test_fixtures.h"
 
+#include "types.h"
 #include "system/memory.h"
 #include "inmemoryfile.h"
 
 void testRead1ByteFile();
 void testSeek();
+void testInMemFileReadAll();
 
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
         //&testRead1ByteFile,
         &testSeek,
+        &testInMemFileReadAll,
     };
 
     TestFixture fixture = createFixture();
 
     fixture.name = "inmemoryfile.c";
+    fixture.before = &setToLittleEndian;
     fixture.tests = testFunctions;
+    fixture.after = &setToOriginalEndianness;
     fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
 
     runTests(&fixture);
@@ -89,6 +94,17 @@ void assertOptionalUInt8(uint8 value,void* optional){
         assertEquali(value, optionalGetUInt8(optional));
     }
 }
+void assertOptionalBytes(char* expected,void* optional){
+    if(optionalIsEmpty(optional)) {
+        char* msg = optionalGetMessage(optional);
+        fail(error("%s", msg));
+        memoryRelease(msg);
+    } else {
+        void* actual = optionalGet(optional);
+        assertEquals(expected, actual, strlen(expected));
+        memoryRelease(actual);
+    }
+}
 
 void testSeek() {
     testCase("Test seek");
@@ -141,6 +157,43 @@ void testSeek() {
     assertOptionalIsEmpty(inMemFileReadLittleEndianUInt8(file));
     assertEquali(0, memFileSeek(file, 0, SEEK_CUR));
     assertEquali(1, memFileSeek(file, 1, SEEK_CUR));
+
+    inMemFileDelete(file);
+}
+
+void testInMemFileReadAll(){
+    testCase("testInMemFileReadAll");
+    char* content = "abcdefghij";
+
+    OptionalPtr* optionalFile = createTestInMemFile(content);
+    if(optionalIsEmpty(optionalFile)) {
+        fail(optionalGetMessage(optionalFile));
+        return;
+    }
+
+    InMemoryFile* file = optionalGet(optionalFile);
+
+    assertOptionalIsEmpty(inMemFileReadAll(file, "%c12"));
+    memFileSeek(file, 0, SEEK_SET);
+    assertOptionalBytes("a", inMemFileReadAll(file, "%c1"));
+    memFileSeek(file, 0, SEEK_SET);
+    assertOptionalBytes("ba", inMemFileReadAll(file, "%b2"));
+    memFileSeek(file, 0, SEEK_SET);
+    assertOptionalBytes("bac", inMemFileReadAll(file, "%b2%c1"));
+    memFileSeek(file, 0, SEEK_SET);
+    assertOptionalBytes("acb", inMemFileReadAll(file, "%c1%b2"));
+
+    setToBigEndian();
+
+    memFileSeek(file, 0, SEEK_SET);
+    assertOptionalBytes("abc", inMemFileReadAll(file, "%c1%b2"));
+    memFileSeek(file, 0, SEEK_SET);
+    assertOptionalBytes("cba", inMemFileReadAll(file, "%l3"));
+
+    setToLittleEndian();
+
+    memFileSeek(file, 0, SEEK_SET);
+    assertOptionalBytes("abcde", inMemFileReadAll(file, "%c1%l4"));
 
     inMemFileDelete(file);
 }

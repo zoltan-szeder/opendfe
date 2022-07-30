@@ -5,6 +5,65 @@
 #include "system/optional.h"
 #include "stddef.h"
 
+struct Optional {
+    bool isPresent;
+    char* message;
+};
+
+struct OptionalPtr {
+    bool isPresent;
+    const char* message;
+    void* value;
+};
+
+struct OptionalUInt8 {
+    bool isPresent;
+    const char* message;
+    uint8 value;
+};
+
+struct OptionalUInt16 {
+    bool isPresent;
+    const char* message;
+    uint16 value;
+};
+
+struct OptionalUInt32 {
+    bool isPresent;
+    const char* message;
+    uint32 value;
+};
+
+struct OptionalUInt64 {
+    bool isPresent;
+    const char* message;
+    uint64 value;
+};
+
+struct OptionalInt8 {
+    bool isPresent;
+    const char* message;
+    int8 value;
+};
+
+struct OptionalInt16 {
+    bool isPresent;
+    const char* message;
+    int16 value;
+};
+
+struct OptionalInt32 {
+    bool isPresent;
+    const char* message;
+    int32 value;
+};
+
+struct OptionalInt64 {
+    bool isPresent;
+    const char* message;
+    int64 value;
+};
+
 Optional MEMORY_ALLOCATION_ISSUE = {
     .isPresent = false,
     .message = "optional.c:optionalCreate - Could not allocate memory for Optional type"
@@ -25,6 +84,27 @@ void* optionalEmpty(const char* formatString, ...) {
 
 bool optionalIsEmpty(void* optional) {
     return !((Optional*) optional)->isPresent;
+}
+
+Optional* optionalFirstEmpty(int length, ...) {
+    if(length == 0)
+        return false;
+
+    va_list args;
+    va_start(args, length);
+
+    Optional* optional;
+    for(int i = 0; i < length; i++) {
+        optional = va_arg(args, Optional*);
+        if(optionalIsEmpty(optional)) {
+            va_end(args);
+            return optional;
+        }
+    }
+
+    va_end(args);
+
+    return NULL;
 }
 
 void optionalDelete(void* ptr) {
