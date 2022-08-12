@@ -18,14 +18,25 @@ int main(int argc, char** argv) {
     Display* display = dglCreateDisplay();
 
     if(argc < 5) return 1;
-    GobArchive* bmArchive = gobOpenArchive(argv[1]);
+    OptionalPtr* optionalGobArchive = gobOpenArchive(argv[1]);
+    if(optionalIsEmpty(optionalGobArchive)) {
+        printf("%s\n", optionalGetMessage(optionalGobArchive));
+        return 1;
+    }
+    GobArchive* bmArchive = optionalGet(optionalGobArchive);
+
     GobFile* bmFile = gobGetFile(bmArchive, argv[2]);
     InMemoryFile* bmInMem = gobReadFile(bmFile);
     BMFile* bm = bmOpenInMemoryFile(bmInMem);
     gobCloseFile(bmInMem);
     gobCloseArchive(bmArchive);
 
-    GobArchive* palArchive = gobOpenArchive(argv[3]);
+    OptionalPtr* optionalPalArchive = gobOpenArchive(argv[3]);
+    if(optionalIsEmpty(optionalPalArchive)) {
+        printf("%s\n", optionalGetMessage(optionalPalArchive));
+        return 1;
+    }
+    GobArchive* palArchive = optionalGet(optionalPalArchive);
     GobFile* paletteFile = gobGetFile(palArchive, argv[4]);
     InMemoryFile* palInMem = gobReadFile(paletteFile);
     Palette* pal = palOpenInMemoryFile(palInMem);

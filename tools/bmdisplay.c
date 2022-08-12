@@ -8,8 +8,11 @@
 #include "drivers/bm.h"
 #include "drivers/gob.h"
 
-Palette* palExtract(char* gobFile, char* palFile) {
-    GobArchive* palArchive = gobOpenArchive(gobFile);
+OptionalPtr* palExtract(char* gobFile, char* palFile) {
+    OptionalPtr* optionalPalArchive = gobOpenArchive(gobFile);
+    if(optionalIsEmpty(optionalPalArchive)) return optionalPalArchive;
+
+    GobArchive* palArchive = optionalGet(optionalPalArchive);
     InMemoryFile* palInMem = gobReadFile(gobGetFile(palArchive, palFile));
 
     Palette* pal = palOpenInMemoryFile(palInMem);
@@ -17,11 +20,14 @@ Palette* palExtract(char* gobFile, char* palFile) {
     gobCloseFile(palInMem);
     gobCloseArchive(palArchive);
 
-    return pal;
+    return optionalOf(pal);
 }
 
-BMFile* bmExtract(char* gobFile, char* bmFile) {
-    GobArchive* bmArchive = gobOpenArchive(gobFile);
+OptionalPtr* bmExtract(char* gobFile, char* bmFile) {
+    OptionalPtr* optionalGobArchive = gobOpenArchive(gobFile);
+    if(optionalIsEmpty(optionalGobArchive)) return optionalGobArchive;
+
+    GobArchive* bmArchive = optionalGet(optionalGobArchive);
     InMemoryFile* bmInMem = gobReadFile(gobGetFile(bmArchive, bmFile));
 
     BMFile* bm = bmOpenInMemoryFile(bmInMem);
@@ -30,24 +36,28 @@ BMFile* bmExtract(char* gobFile, char* bmFile) {
     gobCloseFile(bmInMem);
     gobCloseArchive(bmArchive);
 
-    return bm;
+    return optionalOf(bm);
 }
 
 int main(int argc, char** argv) {
     Display* display = dglCreateDisplay();
 
     if(argc < 5) return 1;
-    BMFile* bm = bmExtract(argv[1], argv[2]);
-    if(bm == NULL) {
+    OptionalPtr* optionalBm = bmExtract(argv[1], argv[2]);
+    if(optionalIsEmpty(optionalBm)) {
         printf("Could not find %s in %s\n", argv[2], argv[1]);
-        return 1;
+        printf("%s\n", optionalGetMessage(optionalBm));
     }
-    Palette* pal = palExtract(argv[3], argv[4]);
-    if(pal == NULL) {
+
+    OptionalPtr* optionalPal = palExtract(argv[3], argv[4]);
+    if(optionalIsEmpty(optionalPal)) {
         printf("Could not find %s in %s\n", argv[4], argv[3]);
+        printf("%s\n", optionalGetMessage(optionalPal));
         return 1;
     }
 
+    BMFile* bm = optionalGet(optionalBm);
+    Palette* pal = optionalGet(optionalPal);
     Image8Bit* image = bmCreateImage(bm, pal);
 
     DglTexture* texture = dglTextureCreate(image);

@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 }
 
 void testOpenMissingFile(){
-    GobArchive* archive = gobOpenArchive("tests/resources/test.gob");
+    GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
     GobFile* files = gobListFiles(archive);
 
     assert(archive != NULL);
@@ -36,7 +36,7 @@ void testOpenMissingFile(){
     gobCloseArchive(archive);
 }
 void testReadFile() {
-    GobArchive* archive = gobOpenArchive("tests/resources/test.gob");
+    GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
     GobFile* helloFile = gobGetFile(archive, "HELLO.TXT");
     InMemoryFile* hello = gobReadFile(helloFile);
 

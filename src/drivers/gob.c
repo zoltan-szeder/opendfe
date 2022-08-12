@@ -4,6 +4,8 @@
 
 #include "drivers/gob.h"
 #include "types.h"
+#include "file.h"
+#include "system/memory.h"
 
 int gobReadArchive(GobArchive*, FILE*);
 GobFile* gobReadArchiveFile(GobArchive*, GobFile*);
@@ -30,16 +32,16 @@ struct GobFile {
     GobArchive* parent;
 };
 
-GobArchive* gobOpenArchive(char* filename) {
-    FILE* gob_file = fopen(filename, "rb");
-    if(NULL == gob_file) return NULL;
+OptionalPtr* gobOpenArchive(char* filename) {
+    OptionalPtr* optionalFile = fileOpen(filename, "rb");
+    if(optionalIsEmpty(optionalFile)) return optionalFile;
 
-    GobArchive* archive = malloc(sizeof(GobArchive));
-    if(NULL == archive) return NULL;
+    OptionalPtr* optionalGob = memoryAllocate(sizeof(GobArchive));
+    if(optionalIsEmpty(optionalGob)) return optionalGob;
 
-    gobReadArchive(archive, gob_file);
-
-    return archive;
+    GobArchive* archive = optionalGet(optionalGob);
+    gobReadArchive(archive, optionalGet(optionalFile));
+    return optionalOf(archive);
 }
 
 int gobCloseArchive(GobArchive* archive) {

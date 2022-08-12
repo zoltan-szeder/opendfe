@@ -4,12 +4,13 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "types.h"
+#include "system/optional.h"
 #include "inmemoryfile.h"
 
 typedef struct GobArchive GobArchive;
 typedef struct GobFile GobFile;
 
-GobArchive* gobOpenArchive(char* file_name);
+OptionalPtr* gobOpenArchive(char* file_name);
 int gobCloseArchive(GobArchive*);
 int gobPrintArchive(GobArchive*);
 
