@@ -173,27 +173,27 @@ void testInMemFileReadAll(){
 
     InMemoryFile* file = optionalGet(optionalFile);
 
-    assertOptionalIsEmpty(inMemFileReadAll(file, "%c12"));
+    assertOptionalIsEmpty(inMemFileReadStruct(file, "%c12"));
     memFileSeek(file, 0, SEEK_SET);
-    assertOptionalBytes("a", inMemFileReadAll(file, "%c1"));
+    assertOptionalBytes("a", inMemFileReadStruct(file, "%c1"));
     memFileSeek(file, 0, SEEK_SET);
-    assertOptionalBytes("ba", inMemFileReadAll(file, "%b2"));
+    assertOptionalBytes("ba", inMemFileReadStruct(file, "%b2"));
     memFileSeek(file, 0, SEEK_SET);
-    assertOptionalBytes("bac", inMemFileReadAll(file, "%b2%c1"));
+    assertOptionalBytes("bac", inMemFileReadStruct(file, "%b2%c1"));
     memFileSeek(file, 0, SEEK_SET);
-    assertOptionalBytes("acb", inMemFileReadAll(file, "%c1%b2"));
+    assertOptionalBytes("acb", inMemFileReadStruct(file, "%c1%b2"));
 
     setToBigEndian();
 
     memFileSeek(file, 0, SEEK_SET);
-    assertOptionalBytes("abc", inMemFileReadAll(file, "%c1%b2"));
+    assertOptionalBytes("abc", inMemFileReadStruct(file, "%c1%b2"));
     memFileSeek(file, 0, SEEK_SET);
-    assertOptionalBytes("cba", inMemFileReadAll(file, "%l3"));
+    assertOptionalBytes("cba", inMemFileReadStruct(file, "%l3"));
 
     setToLittleEndian();
 
     memFileSeek(file, 0, SEEK_SET);
-    assertOptionalBytes("abcde", inMemFileReadAll(file, "%c1%l4"));
+    assertOptionalBytes("abcde", inMemFileReadStruct(file, "%c1%l4"));
 
     inMemFileDelete(file);
 }

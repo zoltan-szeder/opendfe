@@ -20,5 +20,6 @@ bool isLittleEndian();
 bool isBigEndian();
 
 void reverseEndianness(void* bytes, int lenght);
+void* modifyEndiannessOfStruct(void* object, char* format);
 
 #endif

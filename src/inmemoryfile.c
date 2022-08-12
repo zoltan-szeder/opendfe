@@ -6,9 +6,8 @@
 #include "stdlib.h"
 #include "system/optional.h"
 #include "system/memory.h"
+#include "system/strings.h"
 
-
-long findFirstFrom(char* str, char ch, size_t offset);
 
 OptionalPtr* memFileCreate(char* content, uint32 length) {
     OptionalPtr* optional = memoryAllocate(sizeof(InMemoryFile));
@@ -57,43 +56,18 @@ size_t getBlockLenghtFromFormat(char* format) {
     return size;
 }
 
-OptionalPtr* inMemFileReadAll(InMemoryFile* file, char* format) {
+OptionalPtr* inMemFileReadStruct(InMemoryFile* file, char* format) {
     size_t size = getBlockLenghtFromFormat(format);
 
     OptionalPtr* optional = inMemFileRead(file, size);
     if(optionalIsEmpty(optional)) return optional;
-    void* object = optionalGet(optional);
 
-    int cursor = 0;
-    for(size_t start = 0; start < strlen(format); ){
-        size_t end = findFirstFrom(format, '%', start+1);
-        char modifier = format[start+1];
-
-        int length = atoi(format + start + 2);
-        if(modifier == 'b' && !isBigEndian()) {
-            reverseEndianness(object + cursor, length);
-        }
-        if(modifier == 'l' && !isLittleEndian()) {
-            reverseEndianness(object + cursor, length);
-        }
-
-        cursor += length;
-        start = end;
-    }
-
-    return optionalOf(object);
-}
-
-long findFirstFrom(char* str, char ch, size_t offset) {
-    size_t size = strlen(str);
-
-    for(size_t i = offset; i < size; i++) {
-        if(str[i] == ch) {
-            return offset;
-        }
-    }
-
-    return size;
+    return optionalOf(
+        modifyEndiannessOfStruct(
+            optionalGet(optional),
+            format
+        )
+    );
 }
 
 OptionalPtr* inMemFileRead(InMemoryFile* file, uint32 length) {

@@ -1,4 +1,7 @@
 #include "types.h"
+#include "string.h"
+#include "stdlib.h"
+#include "system/strings.h"
 
 
 bool inverseEndianness = false;
@@ -76,5 +79,28 @@ void reverseEndianness(void* bytes, int lenght){
         array[i] = (uint8) array[j];
         array[j] = temp;
     }
+}
+
+
+void* modifyEndiannessOfStruct(void* object, char* format) {
+    int cursor = 0;
+    for(size_t start = 0; start < strlen(format); ){
+        size_t end = findFirstFrom(format, '%', start+1);
+        char modifier = format[start+1];
+
+        int length = atoi(format + start + 2);
+
+        if(modifier == 'b' && !isBigEndian()) {
+            reverseEndianness(object + cursor, length);
+        }
+        if(modifier == 'l' && !isLittleEndian()) {
+            reverseEndianness(object + cursor, length);
+        }
+
+        cursor += length;
+        start = end;
+    }
+
+    return object;
 }
 

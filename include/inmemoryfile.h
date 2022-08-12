@@ -16,8 +16,7 @@ int32 memFileSeek(InMemoryFile* file, int64 offset, int32 origin);
 void inMemFileDelete(InMemoryFile* file);
 
 OptionalPtr* inMemFileRead(InMemoryFile* file, uint32 length);
-OptionalPtr* inMemFileReadAll(InMemoryFile* file, char* format);
-
+OptionalPtr* inMemFileReadStruct(InMemoryFile* file, char* format);
 
 OptionalUInt8* inMemFileReadLittleEndianUInt8(InMemoryFile* file);
 OptionalUInt16* inMemFileReadLittleEndianUInt16(InMemoryFile* file);
