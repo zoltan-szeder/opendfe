@@ -44,19 +44,7 @@ bool inMemFileOverEOF(InMemoryFile* file, uint64 length) {
     return file->pos + length > file->length;
 }
 
-size_t getBlockLenghtFromFormat(char* format) {
-    size_t size = 0;
-
-    for(size_t start = 0; start < strlen(format); ){
-        size += atoi(format + start + 2);
-        size_t end = findFirstFrom(format, '%', start+1);
-        start = end;
-    }
-
-    return size;
-}
-
-OptionalPtr* inMemFileReadStruct(InMemoryFile* file, char* format) {
+OptionalPtr* inMemFileReadStruct(InMemoryFile* file, const char* format) {
     size_t size = getBlockLenghtFromFormat(format);
 
     OptionalPtr* optional = inMemFileRead(file, size);

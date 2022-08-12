@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "file.h"
 #include "system/optional.h"
 #include "system/memory.h"
+#include "system/strings.h"
 
 OptionalPtr* fileOpen(char* filePath, char* modifiers) {
     FILE* stream = fopen(filePath, modifiers);
@@ -38,7 +40,22 @@ OptionalPtr* fileReadAll(char* filePath) {
 }
 
 
-OptionalPtr* fileReadBytes(FILE* stream, uint32 length) {
+OptionalPtr* fileReadStruct(FILE* stream, const char* format) {
+    size_t size = getBlockLenghtFromFormat(format);
+
+    OptionalPtr* optional = fileReadBytes(stream, size);
+    if(optionalIsEmpty(optional)) return optional;
+
+    return optionalOf(
+        modifyEndiannessOfStruct(
+            optionalGet(optional),
+            format
+        )
+    );
+}
+
+
+OptionalPtr* fileReadBytes(FILE* stream, size_t length) {
     OptionalPtr* optionalBytes = memoryAllocate(length);
     if(optionalIsEmpty(optionalBytes)) return optionalBytes;
 

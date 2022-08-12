@@ -82,7 +82,7 @@ void reverseEndianness(void* bytes, int lenght){
 }
 
 
-void* modifyEndiannessOfStruct(void* object, char* format) {
+void* modifyEndiannessOfStruct(void* object, const char* format) {
     int cursor = 0;
     for(size_t start = 0; start < strlen(format); ){
         size_t end = findFirstFrom(format, '%', start+1);

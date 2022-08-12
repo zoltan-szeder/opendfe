@@ -9,6 +9,7 @@ OptionalPtr* fileOpen(char* filePath, char* modifiers);
 OptionalPtr* fileReadAll(char* filePath);
 
 OptionalPtr* fileReadBytes(FILE* stream, size_t length);
+OptionalPtr* fileReadStruct(FILE* stream, const char* format);
 OptionalUInt8* fileReadLittleEndianUInt8(FILE* stream);
 OptionalUInt16* fileReadLittleEndianUInt16(FILE* stream);
 OptionalUInt32* fileReadLittleEndianUInt32(FILE* stream);

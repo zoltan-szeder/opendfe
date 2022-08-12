@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
-long findFirstFrom(char* str, char ch, size_t offset);
+long findFirstFrom(const char* str, char ch, size_t offset);
+size_t getBlockLenghtFromFormat(const char* format);
 
 #endif

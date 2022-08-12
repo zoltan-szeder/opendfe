@@ -15,78 +15,17 @@ Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* pale
 int bmGetNormalizedPixelIndex(int w, int h, int i);
 void ucvec3Copy(ucvec3* dest, ucvec3* src);
 
-OptionalPtr* bmReadHeader(FILE* stream) {
-    OptionalPtr* magic = fileReadBytes(stream, 4);
-    if(optionalIsEmpty(magic)) return NULL;
-    OptionalUInt16* sizeX = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(sizeX)) return NULL;
-    OptionalUInt16* sizeY = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(sizeY)) return NULL;
-    OptionalUInt16* idemX = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(idemX)) return NULL;
-    OptionalUInt16* idemY = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(idemY)) return NULL;
-    OptionalUInt8* transparent = fileReadLittleEndianUInt8(stream);
-    if(optionalIsEmpty(transparent)) return NULL;
-    OptionalUInt8* logSizeY = fileReadLittleEndianUInt8(stream);
-    if(optionalIsEmpty(logSizeY)) return NULL;
-    OptionalUInt16* compressed = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(compressed)) return NULL;
-    OptionalUInt32* dataSize = fileReadLittleEndianUInt32(stream);
-    if(optionalIsEmpty(dataSize)) return NULL;
-    OptionalPtr* pad = fileReadBytes(stream, 12);
-    if(optionalIsEmpty(pad)) return NULL;
-
-    BMHeader* bmHeader = malloc(sizeof(BMHeader));
-    bmHeader->magic = optionalGet(magic);
-    bmHeader->sizeX = optionalGetUInt16(sizeX);
-    bmHeader->sizeY = optionalGetUInt16(sizeY);
-    bmHeader->idemX = optionalGetUInt16(idemX);
-    bmHeader->idemY = optionalGetUInt16(idemY);
-    bmHeader->transparent = optionalGetUInt8(transparent);
-    bmHeader->logSizeY = optionalGetUInt8(logSizeY);
-    bmHeader->compressed = optionalGetUInt16(compressed);
-    bmHeader->dataSize = optionalGetUInt32(dataSize);
-    bmHeader->pad = optionalGet(pad);
-
-}
+const char* BM_HEADER_FORMAT =
+//  magic | sizeX | sizeY | |idemX | idemY | trans | logSizeY | compressed | dataSize | padding
+    "%c4     %l2     %l2      %l2     %l2     %c1       %c1         %l2        %l4       %c12";
 
 BMFile* bmOpenFile(char* file) {
-
     FILE* stream = fopen(file, "rb");
 
-    OptionalPtr* magic = fileReadBytes(stream, 4);
-    if(optionalIsEmpty(magic)) return NULL;
-    OptionalUInt16* sizeX = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(sizeX)) return NULL;
-    OptionalUInt16* sizeY = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(sizeY)) return NULL;
-    OptionalUInt16* idemX = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(idemX)) return NULL;
-    OptionalUInt16* idemY = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(idemY)) return NULL;
-    OptionalUInt8* transparent = fileReadLittleEndianUInt8(stream);
-    if(optionalIsEmpty(transparent)) return NULL;
-    OptionalUInt8* logSizeY = fileReadLittleEndianUInt8(stream);
-    if(optionalIsEmpty(logSizeY)) return NULL;
-    OptionalUInt16* compressed = fileReadLittleEndianUInt16(stream);
-    if(optionalIsEmpty(compressed)) return NULL;
-    OptionalUInt32* dataSize = fileReadLittleEndianUInt32(stream);
-    if(optionalIsEmpty(dataSize)) return NULL;
-    OptionalPtr* pad = fileReadBytes(stream, 12);
-    if(optionalIsEmpty(pad)) return NULL;
+    OptionalPtr* optionalBmHeader = fileReadStruct(stream, BM_HEADER_FORMAT);
+    if(optionalIsEmpty(optionalBmHeader)) return NULL;
 
-    BMHeader* bmHeader = malloc(sizeof(BMHeader));
-    bmHeader->magic = optionalGet(magic);
-    bmHeader->sizeX = optionalGetUInt16(sizeX);
-    bmHeader->sizeY = optionalGetUInt16(sizeY);
-    bmHeader->idemX = optionalGetUInt16(idemX);
-    bmHeader->idemY = optionalGetUInt16(idemY);
-    bmHeader->transparent = optionalGetUInt8(transparent);
-    bmHeader->logSizeY = optionalGetUInt8(logSizeY);
-    bmHeader->compressed = optionalGetUInt16(compressed);
-    bmHeader->dataSize = optionalGetUInt32(dataSize);
-    bmHeader->pad = optionalGet(pad);
+    BMHeader* bmHeader = optionalGet(optionalBmHeader);
 
     OptionalPtr* data = fileReadBytes(stream, bmHeader->dataSize);
     if(optionalIsEmpty(data)) return NULL;
@@ -101,41 +40,10 @@ BMFile* bmOpenFile(char* file) {
 }
 
 BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
-    OptionalPtr* magic = inMemFileRead(file, 4);
-    if(optionalIsEmpty(magic)) return NULL;
-    OptionalUInt16* sizeX = inMemFileReadLittleEndianUInt16(file);
-    if(optionalIsEmpty(sizeX)) return NULL;
-    OptionalUInt16* sizeY = inMemFileReadLittleEndianUInt16(file);
-    if(optionalIsEmpty(sizeY)) return NULL;
-    OptionalUInt16* idemX = inMemFileReadLittleEndianUInt16(file);
-    if(optionalIsEmpty(idemX)) return NULL;
-    OptionalUInt16* idemY = inMemFileReadLittleEndianUInt16(file);
-    if(optionalIsEmpty(idemY)) return NULL;
-    OptionalUInt8* transparent = inMemFileReadLittleEndianUInt8(file);
-    if(optionalIsEmpty(transparent)) return NULL;
-    OptionalUInt8* logSizeY = inMemFileReadLittleEndianUInt8(file);
-    if(optionalIsEmpty(logSizeY)) return NULL;
-    OptionalUInt16* compressed = inMemFileReadLittleEndianUInt16(file);
-    if(optionalIsEmpty(compressed)) return NULL;
-    OptionalUInt32* dataSize = inMemFileReadLittleEndianUInt32(file);
-    if(optionalIsEmpty(dataSize)) return NULL;
-    OptionalPtr* pad = inMemFileRead(file, 12);
-    if(optionalIsEmpty(pad)) return NULL;
-
-    OptionalPtr* optionalBmHeader = memoryAllocate(sizeof(BMHeader));
+    OptionalPtr* optionalBmHeader = inMemFileReadStruct(file, BM_HEADER_FORMAT);
     if(optionalIsEmpty(optionalBmHeader)) return NULL;
 
     BMHeader* bmHeader = optionalGet(optionalBmHeader);
-    bmHeader->magic = optionalGet(magic);
-    bmHeader->sizeX = optionalGetUInt16(sizeX);
-    bmHeader->sizeY = optionalGetUInt16(sizeY);
-    bmHeader->idemX = optionalGetUInt16(idemX);
-    bmHeader->idemY = optionalGetUInt16(idemY);
-    bmHeader->transparent = optionalGetUInt8(transparent);
-    bmHeader->logSizeY = optionalGetUInt8(logSizeY);
-    bmHeader->compressed = optionalGetUInt16(compressed);
-    bmHeader->dataSize = optionalGetUInt32(dataSize);
-    bmHeader->pad = optionalGet(pad);
 
     OptionalPtr* optionalData = inMemFileRead(file, bmHeader->dataSize);
     if(optionalIsEmpty(optionalData)) return NULL;
@@ -151,8 +59,6 @@ BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
 }
 
 void bmClose(BMFile* bmFile) {
-    free(bmFile->header->magic);
-    free(bmFile->header->pad);
     free(bmFile->header);
     free(bmFile->data);
     free(bmFile);
