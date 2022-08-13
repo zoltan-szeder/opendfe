@@ -8,12 +8,10 @@
 #include "file.h"
 
 void testOpenMissingFile();
-void testReadFile();
 
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
         &testOpenMissingFile,
-        &testReadFile,
     };
 
     TestFixture fixture = createFixture();
@@ -31,6 +29,4 @@ void testOpenMissingFile(){
     char* msg = optionalGetMessage(optional);
     assertTrue(msg != NULL);
     free(msg);
-}
-void testReadFile() {
 }
