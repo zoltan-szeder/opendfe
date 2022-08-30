@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include "system/optional.h"
 
-OptionalPtr* memoryAllocate(size_t size);
+void* memoryAllocate(size_t size);
 void memoryRelease(void*);
 
 #endif

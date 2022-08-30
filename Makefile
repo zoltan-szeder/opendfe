@@ -42,10 +42,11 @@ compile-tools: $(TOOL_OBJECTS)
 
 tests/test_%.out: tests/test_%.o $(LIB_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS)
 	$(LD) -o $@ $(filter-out tests/mocks/mock_$(subst src/,,$<),$^) $(LDFLAGS) $(LIBS)
-	$(MC) $(MCFLAGS) ./$@
+	# $(MC) $(MCFLAGS) ./$@
+	./$@
 
 clean:
 	rm -f $(TEST_OUTPUTS) $(TEST_OBJECTS) $(OBJECTS) $(TOOL_OUTPUTS) $(TOOL_OBJECTS)
 
 .PHONY: test clean compile
-.PRECIOUS: $(OBJECTS) $(TEST_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS)
+.PRECIOUS: $(OBJECTS) $(TEST_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS) $(TEST_OUTPUTS)

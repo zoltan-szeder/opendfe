@@ -29,10 +29,7 @@ int main(int argc, char** argv){
 
 OptionalPtr* createTestInMemFile(char* content) {
     size_t length = strlen(content)+1;
-    OptionalPtr* optional = memoryAllocate(length*sizeof(char));
-    if(optionalIsEmpty(optional)) return optional;
-
-    char* contentBytes = optionalGet(optional);
+    char* contentBytes = memoryAllocate(length*sizeof(char));
     memcpy(contentBytes, content, length);
 
     return  memFileCreate(contentBytes, length);

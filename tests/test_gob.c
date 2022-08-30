@@ -27,11 +27,12 @@ int main(int argc, char** argv){
 
 void testOpenMissingFile(){
     GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
-    GobFile* files = gobListFiles(archive);
+    List* files = gobListFiles(archive);
+    GobFile* file = optionalGet(listGet(files, 0));
 
     assert(archive != NULL);
     assert(gobCountFiles(archive) == 1);
-    assert(strcmp("HELLO.TXT", gobGetFileName(files)) == 0);
+    assert(strcmp("HELLO.TXT", gobGetFileName(file)) == 0);
     
     gobCloseArchive(archive);
 }

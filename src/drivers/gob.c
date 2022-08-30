@@ -6,29 +6,34 @@
 #include "types.h"
 #include "file.h"
 #include "system/memory.h"
+#include "system/list.h"
 
-int gobReadArchive(GobArchive*, FILE*);
-GobFile* gobReadArchiveFile(GobArchive*, GobFile*);
-GobFile* gobReadArchiveFiles(GobArchive*);
-uint32 gobReadArchiveFileCount(GobArchive*);
+OptionalPtr* gobReadArchive(FILE*);
+OptionalPtr* gobReadArchiveFile(GobArchive*);
+OptionalPtr* gobReadArchiveFiles(GobArchive*, uint32 fileCount);
+OptionalUInt32* gobReadArchiveFileCount(GobArchive* archive);
 
-int fread_uint32(uint32* number, FILE* stream);
-
-struct GobArchive {
+const char* GOB_ARCHIVE_HEADER_FORMAT = "%c4 %l4";
+typedef struct GobArchiveHeaders {
     char magic[4];
     uint32 directoryOffset;
-    uint32 fileCount;
+} GobArchiveHeaders;
 
-    GobFile* files;
-
+struct GobArchive {
     FILE* stream;
+    GobArchiveHeaders* headers;
+    List* files;
 };
 
-struct GobFile {
+const char* GOB_FILE_HEADER_FORMAT = "%l4 %l4 %c13";
+typedef struct GobFileHeader {
     uint32 offset;
     uint32 length;
     char name[13];
+} GobFileHeader;
 
+struct GobFile {
+    GobFileHeader* header;
     GobArchive* parent;
 };
 
@@ -36,35 +41,31 @@ OptionalPtr* gobOpenArchive(char* filename) {
     OptionalPtr* optionalFile = fileOpen(filename, "rb");
     if(optionalIsEmpty(optionalFile)) return optionalFile;
 
-    OptionalPtr* optionalGob = memoryAllocate(sizeof(GobArchive));
-    if(optionalIsEmpty(optionalGob)) return optionalGob;
-
-    GobArchive* archive = optionalGet(optionalGob);
-    gobReadArchive(archive, optionalGet(optionalFile));
-    return optionalOf(archive);
+    return gobReadArchive(optionalGet(optionalFile));
 }
 
 int gobCloseArchive(GobArchive* archive) {
     FILE* stream = archive->stream;
 
-    free(archive->files);
+    listDelete(archive->files);
     free(archive);
     
     return fclose(stream);
 }
 
 uint32 gobCountFiles(GobArchive* archive){
-    return archive->fileCount;
+    return listSize(archive->files);
 }
 
-GobFile* gobListFiles(GobArchive* archive){
+List* gobListFiles(GobArchive* archive){
     return archive->files;
 }
 
 GobFile* gobGetFile(GobArchive* archive, char* file_name){
-    for(int i = 0; i < archive->fileCount; i++) {
-        GobFile* gob_file = &(archive->files[i]);
-        if(strcmp(file_name, gob_file->name) == 0) return gob_file;
+    for(int i = 0; i < listSize(archive->files); i++) {
+        OptionalPtr* optionalGobFile = listGet(archive->files, i);
+        GobFile* gob_file = optionalGet(optionalGobFile);
+        if(strcmp(file_name, gob_file->header->name) == 0) return gob_file;
     }
 
     errno = ENOENT;
@@ -72,24 +73,24 @@ GobFile* gobGetFile(GobArchive* archive, char* file_name){
 }
 
 char* gobGetFileName(GobFile* gob_file) {
-    return gob_file->name;
+    return gob_file->header->name;
 }
 
 InMemoryFile* gobReadFile(GobFile* gob_file){
     GobArchive* archive = gob_file->parent;
     FILE* stream = archive->stream;
 
-    int failure = fseek(stream, gob_file->offset, SEEK_SET);
+    int failure = fseek(stream, gob_file->header->offset, SEEK_SET);
     if(failure) return NULL;
 
-    char* content = malloc(gob_file->length);
+    char* content = malloc(gob_file->header->length);
     if(!content) return NULL;
 
-    int objects = fread(content, gob_file->length, 1, stream);
+    int objects = fread(content, gob_file->header->length, 1, stream);
     if(objects == 0) return NULL;
-    content[gob_file->length-1] = (char) 0;
+    content[gob_file->header->length-1] = (char) 0;
 
-    OptionalPtr* optionalFile = memFileCreate(content, gob_file->length);
+    OptionalPtr* optionalFile = memFileCreate(content, gob_file->header->length);
     if(optionalIsEmpty(optionalFile)) return NULL;
 
     return optionalGet(optionalFile);
@@ -102,79 +103,88 @@ void gobCloseFile(InMemoryFile* file) {
 
 
 int gobPrintArchive(GobArchive* archive){
-    uint32* magic = (uint32*) &(archive->magic);
+    GobArchiveHeaders* headers = archive->headers;
+    List* files = archive->files;
+    uint32* magic = (uint32*) &(headers->magic);
 
     printf("Magic: 0x%x\n", *magic);
-    printf("Directory offset: %d\n", archive->directoryOffset);
-    printf("Number of Files: %d\n", archive->fileCount);
+    printf("Directory offset: %d\n", headers->directoryOffset);
+    printf("Number of Files: %d\n", listSize(files));
     printf("Files:\n");
-    for(int i = 0; i < archive->fileCount; i++) {
-        GobFile* gob_file = &(archive->files[i]);
-        printf("\t%s (%d-%d)\n", gob_file->name, gob_file->offset, gob_file->offset + gob_file->length);
+    for(int i = 0; i < listSize(files); i++) {
+        OptionalPtr* optionalGobFile = listGet(files, i);
+        GobFile* gob_file = optionalGet(optionalGobFile);
+        GobFileHeader* headers = gob_file->header;
+        printf("\t%s (%d-%d)\n", headers->name, headers->offset, headers->offset + headers->length);
     }
 
     return 0;
 }
 
-int gobReadArchive(GobArchive* archive, FILE* stream) {
+OptionalPtr* gobReadArchive(FILE* stream) {
+    GobArchive* archive = memoryAllocate(sizeof(GobArchive));
+
     archive->stream = stream;
 
-    int objects = 0;
-    objects = fread(archive, sizeof(uint32), 2, stream);
-    if(!objects) return 0;
+    OptionalPtr* optionalHeaders = fileReadStruct(stream, GOB_ARCHIVE_HEADER_FORMAT);
+    if(optionalIsEmpty(optionalHeaders)) return optionalHeaders;
+    archive->headers = optionalGet(optionalHeaders);
 
-    archive->fileCount = gobReadArchiveFileCount(archive);
-    if(archive->fileCount < 0) return 0;
+    OptionalUInt32* optionalFileCount = gobReadArchiveFileCount(archive);
+    if(optionalIsEmpty(optionalFileCount)) return (void*) optionalFileCount;
+    uint32 fileCount = optionalGetUInt32(optionalFileCount);
 
-    archive->files = gobReadArchiveFiles(archive);
-    if(!archive->files) return 0;
+    OptionalPtr* optionalFiles = gobReadArchiveFiles(archive, fileCount);
+    if(optionalIsEmpty(optionalFiles)) return (void*) optionalFiles;
+    archive->files = optionalGet(optionalFiles);
 
-    return 1;
+    return optionalOf(archive);
 }
 
-uint32 gobReadArchiveFileCount(GobArchive* archive) {
+OptionalUInt32* gobReadArchiveFileCount(GobArchive* archive) {
     FILE* stream = archive->stream;
 
-    int failure = fseek(stream, (long) archive->directoryOffset, SEEK_SET);
-    if(failure) return -1;
+    int failure = fseek(stream, (long) archive->headers->directoryOffset, SEEK_SET);
+    if(failure) return optionalEmpty("gob.c:gobReadArchiveFileCount - Directory offset is over EOF");
 
-    uint32 count;
-    int objects = fread_uint32(&(count), stream);
-    if(!objects) return -1;
+    OptionalPtr* optionalCount = fileReadStruct(stream, "%l4");
+    if(optionalIsEmpty(optionalCount)) return (void*) optionalCount;
 
-    return count;
+    uint32* countPtr = optionalGet(optionalCount);
+    uint32 count = *countPtr;
+    memoryRelease(countPtr);
+    return optionalUInt32(count);
 }
 
-GobFile* gobReadArchiveFiles(GobArchive* archive) {
-    uint32 count = archive->fileCount;
+OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32 fileCount) {
+    List* list = listCreate(fileCount);
 
-    GobFile* files = malloc(count*sizeof(GobFile));
-    if(!files) return NULL;
+    for(int i = 0; i < fileCount; i++) {
 
-    for(int i = 0; i < count; i++) {
-        GobFile* file = &(files[i]);
+        OptionalPtr* optFile = gobReadArchiveFile(archive);
 
-        gobReadArchiveFile(archive, file);
-        if(file == NULL) {
-            free(files);
-            return NULL;
+        if(optionalIsEmpty(optFile)) {
+            for(int j = 0; j < i; j++) {
+                OptionalPtr* item = listGet(list, j);
+                memoryRelease(optionalGet(item));
+            }
+
+            listDelete(list);
+            return optFile;
         }
+
+        GobFile* file = memoryAllocate(sizeof(GobFile));
+        file->header = optionalGet(optFile);
+        file->parent = archive;
+
+        listPut(list, i, file);
     }
 
-    return files;
+    return optionalOf(list);
 }
 
 
-GobFile* gobReadArchiveFile(GobArchive* archive, GobFile* gob_file) {
+OptionalPtr* gobReadArchiveFile(GobArchive* archive) {
     FILE* stream = archive->stream;
-
-    gob_file->parent = archive;
-    int objects = fread(gob_file, 2*sizeof(uint32) + 13*sizeof(char), 1, stream);
-    if(!objects) return NULL;
-
-    return gob_file;
-}
-
-int fread_uint32(uint32* number, FILE* stream) {
-    return fread(number, 4, 1, stream);
+    return fileReadStruct(stream, GOB_FILE_HEADER_FORMAT);
 }

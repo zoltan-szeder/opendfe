@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include "types.h"
 #include "system/optional.h"
+#include "system/list.h"
 #include "inmemoryfile.h"
 
 typedef struct GobArchive GobArchive;
@@ -15,7 +16,7 @@ int gobCloseArchive(GobArchive*);
 int gobPrintArchive(GobArchive*);
 
 uint32 gobCountFiles(GobArchive*);
-GobFile* gobListFiles(GobArchive*);
+List* gobListFiles(GobArchive*);
 GobFile* gobGetFile(GobArchive*, char*);
 char* gobGetFileName(GobFile*);
 

@@ -47,6 +47,7 @@ bool runTests(TestFixture* fixture){
     scenario->length = fixture->length;
 
     printf("%s ", fixture->name);
+    fflush(stdout);
 
     if (fixture->before != NULL) fixture->before();
 
@@ -80,8 +81,10 @@ void runTest(TestFixture* fixture, int testNumber) {
 
     if(CURRENT_TEST_RESULT->passed) {
         printf(".");
+        fflush(stdout);
     } else {
         printf("F");
+        fflush(stdout);
     }
 }
 

@@ -48,9 +48,7 @@ BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
     OptionalPtr* optionalData = inMemFileRead(file, bmHeader->dataSize);
     if(optionalIsEmpty(optionalData)) return NULL;
 
-    OptionalPtr* optionalBmFile = memoryAllocate(sizeof(BMFile));
-    if(optionalIsEmpty(optionalBmFile)) return NULL;
-    BMFile* bmFile = optionalGet(optionalBmFile);
+    BMFile* bmFile = memoryAllocate(sizeof(BMFile));
 
     bmFile->header = bmHeader;
     bmFile->data = optionalGet(optionalData);

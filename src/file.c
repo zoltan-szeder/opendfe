@@ -28,9 +28,7 @@ OptionalPtr* fileReadAll(char* filePath) {
 
     if(length == -1L) return optionalEmpty("file.c:fileReadAll - File lenght is invalid");
 
-    void* optionalContent = memoryAllocate(length);
-    if(optionalIsEmpty(optionalContent)) return optionalContent;
-    char* content = optionalGet(optionalContent);
+    char* content = memoryAllocate(length);
 
     fread(content, length, 1, stream);
     content[length-1] = (char) 0;
@@ -56,10 +54,7 @@ OptionalPtr* fileReadStruct(FILE* stream, const char* format) {
 
 
 OptionalPtr* fileReadBytes(FILE* stream, size_t length) {
-    OptionalPtr* optionalBytes = memoryAllocate(length);
-    if(optionalIsEmpty(optionalBytes)) return optionalBytes;
-
-    char* bytes = optionalGet(optionalBytes);
+    char* bytes = memoryAllocate(length);
 
     uint32 objects = fread(bytes, length, 1, stream);
     if(objects != 1) {

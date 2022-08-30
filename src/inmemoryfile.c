@@ -10,9 +10,7 @@
 
 
 OptionalPtr* memFileCreate(char* content, uint32 length) {
-    OptionalPtr* optional = memoryAllocate(sizeof(InMemoryFile));
-    if(optionalIsEmpty(optional)) return optional;
-    InMemoryFile* file = optionalGet(optional);
+    InMemoryFile* file = memoryAllocate(sizeof(InMemoryFile));
 
     file->content = content;
     file->length = length;
@@ -65,10 +63,7 @@ OptionalPtr* inMemFileRead(InMemoryFile* file, uint32 length) {
             length, file->pos, file->length
         );
 
-    OptionalPtr* optional = memoryAllocate(length);
-    if(optionalIsEmpty(optional)) return optional;
-
-    uint8* bytes = optionalGet(optional);
+    uint8* bytes = memoryAllocate(length);
     memcpy(bytes, file->content + file->pos, length);
     file->pos += length;
 
