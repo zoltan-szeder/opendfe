@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -120,6 +121,12 @@ char* optionalGetMessage(void* ptr) {
     char* message = optional->message;
     optionalDelete(optional);
     return message;
+}
+
+void optionalPrint(FILE* stream, Optional* optional) {
+    char* message = optionalGetMessage(optional);
+    fprintf(stream, "%s\n", message);
+    free(message);
 }
 
 void* optionalCreate(size_t size) {

@@ -1,6 +1,7 @@
 #ifndef SYSTEM_OPTIONAL_H
 #define SYSTEM_OPTIONAL_H
 
+#include <stdio.h>
 #include "stdbool.h"
 #include "types.h"
 
@@ -24,6 +25,7 @@ bool optionalIsEmpty(void*);
 Optional* optionalFirstEmpty(int length, ...);
 void optionalDelete(void*);
 char* optionalGetMessage(void*);
+void optionalPrint(FILE* stream, Optional* optional);
 
 OptionalPtr* optionalOf(void* ptr);
 OptionalUInt8* optionalUInt8(uint8);
