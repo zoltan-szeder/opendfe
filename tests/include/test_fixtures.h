@@ -25,6 +25,7 @@ void testCase(const char* testName);
 
 void assertEquali(long, long);
 void assertEquals(char*, char*, int);
+void assertNotNull(void*);
 void assertTrue(bool);
 void assertTrueMsg(bool, char*);
 void assertFalse(bool);

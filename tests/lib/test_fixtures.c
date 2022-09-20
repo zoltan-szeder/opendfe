@@ -124,6 +124,9 @@ void assertTrueMsg(bool flag, char* error) {
     CURRENT_TEST_RESULT->size++;
 }
 
+void assertNotNull(void* object) {
+    assertFalseMsg(object == NULL, error("Object is NULL"));
+}
 void assertFalse(bool flag) {
     assertTrue(!flag);
 }
@@ -152,8 +155,10 @@ char* error(const char* formatString, ...) {
 void printScenarioResults(TestScenario* scenario) {
     if(scenario->passed) {
         printf(" [PASS]\n");
+        fflush(stdout);
     } else {
         printf(" [FAIL]\n");
+        fflush(stdout);
     }
 
     for(int i = 0; i < scenario->length; i++) {
@@ -161,6 +166,8 @@ void printScenarioResults(TestScenario* scenario) {
         if(!result->passed){
             printTestResult(scenario->results + i);
         }
+
+        fflush(stdout);
     }
 }
 

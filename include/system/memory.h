@@ -6,4 +6,10 @@
 void* memoryAllocate(size_t size);
 void memoryRelease(void*);
 
+bool memoryIsValid(void*);
+
+void memoryScan(void*);
+
+void memoryReleaseAll();
+
 #endif
