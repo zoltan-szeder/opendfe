@@ -1,6 +1,7 @@
 #include "system/memory.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void (*cleanup)() = NULL;
 
@@ -8,8 +9,11 @@ size_t MEMORY_ALLOCATED = 0;
 size_t MEMORY_ALLOCATION_SIZE = 0;
 size_t MEMORY_ALLOCATION_MAX_SIZE = 100;
 
+#define MEMORY_NAME_MAX_SIZE 16
+
 typedef struct MemoryAllocation MemoryAllocation;
 struct MemoryAllocation {
+    char name[MEMORY_NAME_MAX_SIZE];
     void* ptr;
     size_t size;
     bool valid;
@@ -66,6 +70,7 @@ MemoryAllocation* memoryFindFirstInvalidAllocation() {
 
 void memoryRegister(void* ptr, size_t size){
     MemoryAllocation* alloc = memoryFindFirstInvalidAllocation();
+    memset(alloc->name, 0, MEMORY_NAME_MAX_SIZE);
     alloc->ptr = ptr;
     alloc->size = size;
     alloc->valid = true;
@@ -165,6 +170,12 @@ bool memoryIsValid(void* ptr) {
     return alloc->valid;
 }
 
+
+void memoryTag(void* ptr, const char* name) {
+    MemoryAllocation* alloc = memoryFindAllocation(ptr);
+    strncpy(alloc->name, name, MEMORY_NAME_MAX_SIZE - 1);
+}
+
 MemoryAllocation* memoryFindAllocation(void* ptr) {
     for(size_t i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
@@ -220,35 +231,42 @@ bool memoryIsReferencedBy(void* referencedPtr, void* refereePtr) {
     return false;
 }
 
+void memoryFileDump(FILE* stream);
 
 void memoryDump(){
+    memoryFileDump(stderr);
+}
+
+void memoryFileDump(FILE* stream){
     uint32 sum = 0;
     for(int i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
 
-        fprintf(stderr, "- ptr: %p\n", alloc->ptr);
-        fprintf(stderr, "  size: %zu\n", alloc->size);
-        fprintf(stderr, "  valid: %s\n", alloc->valid ? "true" : "false");
+        fprintf(stream, "- name: %15s\n", alloc->name);
+        fprintf(stream, "  ptr: %p\n", alloc->ptr);
+        fprintf(stream, "  size: %zu\n", alloc->size);
+        fprintf(stream, "  valid: %s\n", alloc->valid ? "true" : "false");
         if(alloc->referenceSize > 0) {
-            fprintf(stderr, "  ref_to:\n");
+            fprintf(stream, "  ref_to:\n");
             for(int j = 0; j < alloc->referenceSize; j++) {
                 MemoryAllocation* refAlloc = alloc->references[j];
-                fprintf(stderr, "  - %p\n", refAlloc->ptr);
+                fprintf(stream, "  - %p\n", refAlloc->ptr);
             }
         }
 
         if(alloc->refereeSize > 0) {
-            fprintf(stderr, "  ref_by:\n");
+            fprintf(stream, "  ref_by:\n");
             for(int j = 0; j < alloc->refereeSize; j++) {
                 MemoryAllocation* refAlloc = alloc->referees[j];
-                fprintf(stderr, "  - %p\n", refAlloc->ptr);
+                fprintf(stream, "  - %p\n", refAlloc->ptr);
             }
         }
 
-        sum += alloc->size;
+        if(alloc->valid)
+            sum += alloc->size;
     }
-    fprintf(stderr, "blocks: %zu\n", MEMORY_ALLOCATED);
-    fprintf(stderr, "total_size: %d\n", sum);
+    fprintf(stream, "blocks: %zu\n", MEMORY_ALLOCATED);
+    fprintf(stream, "total_size: %d\n", sum);
 }
 
 

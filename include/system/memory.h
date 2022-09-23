@@ -7,6 +7,7 @@ void* memoryAllocate(size_t size);
 void memoryRelease(void*);
 
 bool memoryIsValid(void*);
+void memoryTag(void* ptr, const char* name);
 
 void memoryScan(void*);
 

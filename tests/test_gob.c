@@ -4,25 +4,11 @@
 #include <string.h>
 
 #include "test_fixtures.h"
+#include "assertions/memory.h"
 
 #include "drivers/gob.h"
 
-void testOpenMissingFile();
-void testReadFile();
-
-int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testOpenMissingFile,
-        &testReadFile,
-    };
-
-    TestFixture fixture = createFixture();
-
-    fixture.name = "gob.c";
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+void tearDown(){
 }
 
 void testOpenMissingFile(){
@@ -36,6 +22,7 @@ void testOpenMissingFile(){
     
     gobCloseArchive(archive);
 }
+
 void testReadFile() {
     GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
     GobFile* helloFile = gobGetFile(archive, "HELLO.TXT");
@@ -46,4 +33,20 @@ void testReadFile() {
 
     inMemFileDelete(hello);
     gobCloseArchive(archive);
+}
+
+int main(int argc, char** argv){
+    void (*testFunctions[])() = {
+        &testOpenMissingFile,
+        &testReadFile,
+    };
+
+    TestFixture fixture = createFixture();
+
+    fixture.name = "gob.c";
+    fixture.afterEach = &tearDown;
+    fixture.tests = testFunctions;
+    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
+
+    runTests(&fixture);
 }

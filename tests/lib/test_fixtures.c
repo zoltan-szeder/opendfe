@@ -96,7 +96,7 @@ void assertEquali(long c1, long c2) {
     assertTrueMsg(c1 == c2, error("%ld != %ld", c1, c2));
 }
 
-void assertEquals(char* c1, char* c2, int length) {
+void assertEquals(const char* c1, const char* c2, int length) {
     char* ntc1 = malloc((length+1)*sizeof(char));
     char* ntc2 = malloc((length+1)*sizeof(char));
     memcpy(ntc1, c1, length);
