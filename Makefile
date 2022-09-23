@@ -5,7 +5,7 @@ LD = gcc
 LDFLAGS = 
 
 MC = valgrind
-MCFLAGS = --leak-check=full --error-exitcode=1 -q
+MCFLAGS = --leak-check=full --suppressions=./valgrind.supp --error-exitcode=1 -q
 
 SOURCES = $(wildcard src/*/*/*.c) $(wildcard src/*/*.c) $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)
@@ -42,8 +42,7 @@ compile-tools: $(TOOL_OBJECTS)
 
 tests/test_%.out: tests/test_%.o $(LIB_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS)
 	$(LD) -o $@ $(filter-out tests/mocks/mock_$(subst src/,,$<),$^) $(LDFLAGS) $(LIBS)
-	# $(MC) $(MCFLAGS) ./$@
-	./$@
+	$(MC) $(MCFLAGS) ./$@
 
 clean:
 	rm -f $(TEST_OUTPUTS) $(TEST_OBJECTS) $(OBJECTS) $(TOOL_OUTPUTS) $(TOOL_OBJECTS)

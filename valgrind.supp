@@ -1,0 +1,7 @@
+{
+    <UninitializedMemoryScan>
+    Memcheck:Cond
+    ...
+    fun:memoryScan
+    ...
+}

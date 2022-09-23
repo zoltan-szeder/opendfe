@@ -47,6 +47,12 @@ OptionalPtr* listPut(List* list, uint32 index, void* value) {
     return optionalOf(value);
 }
 
+void listForEach(List* list, void (*func)(void*)) {
+    for(int i = 0;  i < list->size; i++) {
+        func(list->values[i]);
+    }
+}
+
 List* listOfVaList(int n, va_list* args) {
     List* list = listCreate(n);
 

@@ -12,6 +12,7 @@ uint32 listSize(List* list);
 
 OptionalPtr* listPut(List* list, uint32 index, void* value);
 OptionalPtr* listGet(List* list, uint32 item);
+void listForEach(List* list, void (*func)(void*));
 
 
 List* listOf(int n, ...);

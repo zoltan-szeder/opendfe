@@ -44,9 +44,16 @@ OptionalPtr* gobOpenArchive(char* filename) {
     return gobReadArchive(optionalGet(optionalFile));
 }
 
+void gobCloseArchiveFile(void* file) {
+    GobFile* gobFile = file;
+    memoryRelease(gobFile->header);
+    memoryRelease(gobFile);
+}
+
 int gobCloseArchive(GobArchive* archive) {
     FILE* stream = archive->stream;
 
+    listForEach(archive->files, &gobCloseArchiveFile);
     listDelete(archive->files);
     free(archive);
     
@@ -83,7 +90,7 @@ InMemoryFile* gobReadFile(GobFile* gob_file){
     int failure = fseek(stream, gob_file->header->offset, SEEK_SET);
     if(failure) return NULL;
 
-    char* content = malloc(gob_file->header->length);
+    char* content = memoryAllocate(gob_file->header->length);
     if(!content) return NULL;
 
     int objects = fread(content, gob_file->header->length, 1, stream);
@@ -135,7 +142,11 @@ OptionalPtr* gobReadArchive(FILE* stream) {
     uint32 fileCount = optionalGetUInt32(optionalFileCount);
 
     OptionalPtr* optionalFiles = gobReadArchiveFiles(archive, fileCount);
-    if(optionalIsEmpty(optionalFiles)) return (void*) optionalFiles;
+    if(optionalIsEmpty(optionalFiles)) {
+        memoryRelease(archive->headers);
+        memoryRelease(archive);
+        return (void*) optionalFiles;
+    };
     archive->files = optionalGet(optionalFiles);
 
     return optionalOf(archive);
@@ -177,7 +188,9 @@ OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32 fileCount) {
         file->header = optionalGet(optFile);
         file->parent = archive;
 
-        listPut(list, i, file);
+        OptionalPtr* opt = listPut(list, i, file);
+        if(optionalIsEmpty(opt)) return opt;
+        memoryRelease(opt);
     }
 
     return optionalOf(list);

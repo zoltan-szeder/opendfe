@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "system/optional.h"
+#include "system/memory.h"
 #include "stddef.h"
 
 struct Optional {
@@ -71,10 +72,10 @@ Optional MEMORY_ALLOCATION_ISSUE = {
 };
 
 void* optionalEmpty(const char* formatString, ...) {
-    Optional* optional = malloc(sizeof(Optional));
+    Optional* optional = memoryAllocate(sizeof(Optional));
     optional->isPresent = false;
 
-    optional->message = malloc(1024*sizeof(char));
+    optional->message = memoryAllocate(1024*sizeof(char));
     va_list args;
     va_start(args, formatString);
     vsnprintf(optional->message, 1024, formatString, args);
@@ -113,7 +114,7 @@ void optionalDelete(void* ptr) {
 
     if(optional == &MEMORY_ALLOCATION_ISSUE) return;
 
-    free(optional);
+    memoryRelease(optional);
 }
 
 char* optionalGetMessage(void* ptr) {
@@ -126,11 +127,11 @@ char* optionalGetMessage(void* ptr) {
 void optionalPrint(FILE* stream, Optional* optional) {
     char* message = optionalGetMessage(optional);
     fprintf(stream, "%s\n", message);
-    free(message);
+    memoryRelease(message);
 }
 
 void* optionalCreate(size_t size) {
-    Optional* optional = malloc(size);
+    Optional* optional = memoryAllocate(size);
     if(optional == NULL)
         return &MEMORY_ALLOCATION_ISSUE;
 
