@@ -4,10 +4,22 @@
 #include <string.h>
 
 #include "test_fixtures.h"
+#include "assertions/memory.h"
 
 #include "file.h"
 
-void testOpenMissingFile();
+
+void tearDown(){
+    assertAllMemoryReleased();
+}
+
+void testOpenMissingFile(){
+    OptionalPtr* optional = fileOpen("missing/nonExistent.file", "rb");
+    assertTrueMsg(optionalIsEmpty(optional), error("File should be missing, but is present"));
+    char* msg = optionalGetMessage(optional);
+    assertTrue(msg != NULL);
+    memoryRelease(msg);
+}
 
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
@@ -17,16 +29,9 @@ int main(int argc, char** argv){
     TestFixture fixture = createFixture();
 
     fixture.name = "file.c";
+    fixture.afterEach = &tearDown;
     fixture.tests = testFunctions;
     fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
 
     runTests(&fixture);
-}
-
-void testOpenMissingFile(){
-    OptionalPtr* optional = fileOpen("missing/nonExistent.file", "rb");
-    assertTrueMsg(optionalIsEmpty(optional), error("File should be missing, but is present"));
-    char* msg = optionalGetMessage(optional);
-    assertTrue(msg != NULL);
-    free(msg);
 }

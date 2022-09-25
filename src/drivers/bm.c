@@ -32,7 +32,7 @@ BMFile* bmOpenFile(char* file) {
 
     fclose(stream);
 
-    BMFile* bmFile = malloc(sizeof(BMFile));
+    BMFile* bmFile = memoryAllocate(sizeof(BMFile));
     bmFile->header = bmHeader;
     bmFile->data = optionalGet(data);
 
@@ -57,9 +57,9 @@ BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
 }
 
 void bmClose(BMFile* bmFile) {
-    free(bmFile->header);
-    free(bmFile->data);
-    free(bmFile);
+    memoryRelease(bmFile->header);
+    memoryRelease(bmFile->data);
+    memoryRelease(bmFile);
 }
 
 
@@ -72,7 +72,7 @@ Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
 
     uint8* data = bmDecompress(bmFile);
     Image8Bit* image = bmCreateImageDecompressed(bmFile, data, palette);
-    free(data);
+    memoryRelease(data);
 
     return image;
 }

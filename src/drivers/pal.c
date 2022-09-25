@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "drivers/pal.h"
 #include "inmemoryfile.h"
+#include "system/memory.h"
 
 Palette* palOpenInMemoryFile(InMemoryFile* file){
     if(file->length != sizeof(Palette)){
@@ -10,7 +11,7 @@ Palette* palOpenInMemoryFile(InMemoryFile* file){
         return NULL;
     }
 
-    Palette* palette = malloc(sizeof(Palette));
+    Palette* palette = memoryAllocate(sizeof(Palette));
     if(palette == NULL) {
         printf("Out of memory");
         return NULL;
@@ -20,5 +21,5 @@ Palette* palOpenInMemoryFile(InMemoryFile* file){
     return palette;
 }
 void palClose(Palette* pal) {
-    free(pal);
+    memoryRelease(pal);
 }

@@ -9,9 +9,11 @@
 #include "drivers/gob.h"
 
 void tearDown(){
+    assertAllMemoryReleased();
 }
 
 void testOpenMissingFile(){
+    testCase("testOpenMissingFile");
     GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
     List* files = gobListFiles(archive);
     GobFile* file = optionalGet(listGet(files, 0));
@@ -24,6 +26,7 @@ void testOpenMissingFile(){
 }
 
 void testReadFile() {
+    testCase("testReadFile");
     GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
     GobFile* helloFile = gobGetFile(archive, "HELLO.TXT");
     InMemoryFile* hello = gobReadFile(helloFile);

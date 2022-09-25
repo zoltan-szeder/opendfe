@@ -55,7 +55,8 @@ int gobCloseArchive(GobArchive* archive) {
 
     listForEach(archive->files, &gobCloseArchiveFile);
     listDelete(archive->files);
-    free(archive);
+    memoryRelease(archive->headers);
+    memoryRelease(archive);
     
     return fclose(stream);
 }
@@ -91,7 +92,7 @@ InMemoryFile* gobReadFile(GobFile* gob_file){
     if(failure) return NULL;
 
     char* content = memoryAllocate(gob_file->header->length);
-    if(!content) return NULL;
+    memoryTag(content, "GobFileContent");
 
     int objects = fread(content, gob_file->header->length, 1, stream);
     if(objects == 0) return NULL;
@@ -104,8 +105,8 @@ InMemoryFile* gobReadFile(GobFile* gob_file){
 }
 
 void gobCloseFile(InMemoryFile* file) {
-    free(file->content);
-    free(file);
+    memoryRelease(file->content);
+    memoryRelease(file);
 }
 
 
@@ -130,6 +131,7 @@ int gobPrintArchive(GobArchive* archive){
 
 OptionalPtr* gobReadArchive(FILE* stream) {
     GobArchive* archive = memoryAllocate(sizeof(GobArchive));
+    memoryTag(archive, "GobArchive");
 
     archive->stream = stream;
 
@@ -185,6 +187,7 @@ OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32 fileCount) {
         }
 
         GobFile* file = memoryAllocate(sizeof(GobFile));
+        memoryTag(file, "GobFile");
         file->header = optionalGet(optFile);
         file->parent = archive;
 

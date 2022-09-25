@@ -8,6 +8,7 @@
 
 #include "drivers/bm.h"
 #include "drivers/pal.h"
+#include "assertions/memory.h"
 
 #define PX_A 0
 #define PX_R 15
@@ -19,33 +20,11 @@
 #define COL_G   0, 255,   0, 255
 #define COL_B   0,   0, 255, 255
 
-void testBmReadFile();
-void testBmCreateImage_1();
-void testBmCreateImage_2();
-void testBmCreateImage_3();
-void testBmCreateImage_4();
-void testRLE0EncodedBmCreateImage();
-void testRLE1EncodedBmCreateImage();
 
-int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testBmReadFile,
-        &testBmCreateImage_1,
-        &testBmCreateImage_2,
-        &testBmCreateImage_3,
-        &testBmCreateImage_4,
-        &testRLE0EncodedBmCreateImage,
-        &testRLE1EncodedBmCreateImage,
-    };
-
-    TestFixture fixture = createFixture();
-
-    fixture.name = "bm.c";
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    return runTests(&fixture);
+void tearDown(){
+    assertAllMemoryReleased();
 }
+
 
 Palette getSimplePalette() {
     Palette palette;
@@ -267,4 +246,26 @@ void testRLE1EncodedBmCreateImage() {
     assertPixel(img, 3, COL_A); // TR
 
     img8bDelete(img);
+}
+
+
+int main(int argc, char** argv){
+    void (*testFunctions[])() = {
+        &testBmReadFile,
+        &testBmCreateImage_1,
+        &testBmCreateImage_2,
+        &testBmCreateImage_3,
+        &testBmCreateImage_4,
+        &testRLE0EncodedBmCreateImage,
+        &testRLE1EncodedBmCreateImage,
+    };
+
+    TestFixture fixture = createFixture();
+
+    fixture.name = "bm.c";
+    fixture.afterEach = &tearDown;
+    fixture.tests = testFunctions;
+    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
+
+    return runTests(&fixture);
 }

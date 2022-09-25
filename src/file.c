@@ -55,6 +55,7 @@ OptionalPtr* fileReadStruct(FILE* stream, const char* format) {
 
 OptionalPtr* fileReadBytes(FILE* stream, size_t length) {
     char* bytes = memoryAllocate(length);
+    memoryTag(bytes, "FileContent");
 
     uint32 objects = fread(bytes, length, 1, stream);
     if(objects != 1) {

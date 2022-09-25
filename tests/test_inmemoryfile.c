@@ -8,23 +8,10 @@
 #include "types.h"
 #include "system/memory.h"
 #include "inmemoryfile.h"
+#include "assertions/memory.h"
 
-void testInMemFileReadAll();
-
-int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testInMemFileReadAll,
-    };
-
-    TestFixture fixture = createFixture();
-
-    fixture.name = "inmemoryfile.c";
-    fixture.before = &setToLittleEndian;
-    fixture.tests = testFunctions;
-    fixture.after = &setToOriginalEndianness;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+void tearDown(){
+    assertAllMemoryReleased();
 }
 
 OptionalPtr* createTestInMemFile(char* content) {
@@ -100,4 +87,21 @@ void testInMemFileReadAll(){
     assertOptionalBytes("abcde", inMemFileReadStruct(file, "%c1%l4"));
 
     inMemFileDelete(file);
+}
+
+int main(int argc, char** argv){
+    void (*testFunctions[])() = {
+        &testInMemFileReadAll,
+    };
+
+    TestFixture fixture = createFixture();
+
+    fixture.name = "inmemoryfile.c";
+    fixture.before = &setToLittleEndian;
+    fixture.tests = testFunctions;
+    fixture.after = &setToOriginalEndianness;
+    fixture.afterEach = &tearDown;
+    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
+
+    runTests(&fixture);
 }

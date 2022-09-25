@@ -2,12 +2,13 @@
 #include <string.h>
 
 #include "drivers/rle.h"
+#include "system/memory.h"
 
 void rleCopyBlock(uint8* dest, uint8 destOffset, uint8* src, uint8 srcOffset, uint8 length);
 void rleSkipBlock(uint8* dest, uint8 destOffset, uint8 length, uint8 color);
 
 uint8* rle0Decompress(uint8* src, int length, int width, int height) {
-    uint8* dest = malloc(width*height*sizeof(uint8));
+    uint8* dest = memoryAllocate(width*height*sizeof(uint8));
 
     int di = 0;
     int si = 0;
@@ -32,7 +33,7 @@ uint8* rle0Decompress(uint8* src, int length, int width, int height) {
 }
 
 uint8* rle1Decompress(uint8* src, int length, int width, int height) {
-    uint8* dest = malloc(width*height*sizeof(uint8));
+    uint8* dest = memoryAllocate(width*height*sizeof(uint8));
 
     int di = 0;
     int si = 0;
