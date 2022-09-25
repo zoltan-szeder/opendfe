@@ -13,6 +13,4 @@ size_t stringBufferSize(StringBuffer* sb);
 
 void stringBufferDelete(StringBuffer* sb);
 
-
-
 #endif

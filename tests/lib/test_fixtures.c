@@ -127,6 +127,7 @@ void assertTrueMsg(bool flag, char* error) {
 void assertNotNull(void* object) {
     assertFalseMsg(object == NULL, error("Object is NULL"));
 }
+
 void assertFalse(bool flag) {
     assertTrue(!flag);
 }

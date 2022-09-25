@@ -13,13 +13,12 @@ struct StringBuffer {
 
 
 StringBuffer* stringBufferCreate(size_t size) {
+    size_t sizeWithTerminator = size + 1;
     StringBuffer* sb = memoryAllocate(sizeof(StringBuffer));
-    sb->buffer = memoryAllocate(size);
+    sb->buffer = memoryAllocate(sizeWithTerminator);
     sb->cursor = sb->buffer;
-    sb->length = size;
+    sb->length = sizeWithTerminator;
 
-    memoryTag(sb, "StringBuffer");
-    memoryTag(sb->buffer, "StringBufferArray");
     return sb;
 }
 
@@ -32,7 +31,6 @@ char* stringBufferToString(StringBuffer* sb) {
     size_t size = stringBufferSize(sb);
 
     char* str = memoryAllocate((size + 1)*sizeof(char));
-    memoryTag(str, "StringFromBuffer");
 
     memcpy(str, sb->buffer, size);
     str[size] = 0;
@@ -43,13 +41,13 @@ char* stringBufferToString(StringBuffer* sb) {
 
 void stringBufferAppend(StringBuffer* sb, const char* format, ...) {
     va_list args;
+    size_t remainingSize = sb->length - stringBufferSize(sb);
 
     va_start(args, format);
-    vsnprintf(sb->buffer, sb->length, format, args);
+    int size = vsnprintf(sb->cursor, remainingSize, format, args);
 
     va_end(args);
-    sb->cursor += 1;
-
+    sb->cursor += size < remainingSize ? size : remainingSize - 1;
 }
 
 size_t stringBufferSize(StringBuffer* sb) {
