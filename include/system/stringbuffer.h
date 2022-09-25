@@ -5,7 +5,7 @@
 
 typedef struct StringBuffer StringBuffer;
 
-StringBuffer* stringBufferCreate(size_t size);
+StringBuffer* stringBufferCreate();
 
 void stringBufferAppend(StringBuffer* sb, const char* format, ...);
 char* stringBufferToString(StringBuffer* sb);

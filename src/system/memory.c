@@ -58,7 +58,7 @@ void* memoryAllocate(size_t size) {
 }
 
 MemoryAllocation* memoryFindFirstInvalidAllocation() {
-    for(size_t i =0; i < MEMORY_ALLOCATION_SIZE; i++) {
+    for(size_t i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
         if(!alloc->valid) return alloc;
     }

@@ -7,7 +7,7 @@ StringBuffer* sb;
 char* str;
 
 void setUp(){
-    sb = stringBufferCreate(10);
+    sb = stringBufferCreate();
 }
 
 void tearDown() {
@@ -72,9 +72,9 @@ void testStringBufferIsWillNotOverflow(){
 
     stringBufferAppend(sb, "abcdefghijklmnopqrstuvwxyz");
 
-    assertEquali(10, stringBufferSize(sb));
+    assertEquali(26, stringBufferSize(sb));
     str = stringBufferToString(sb);
-    assertEquals("abcdefghij", str, 10);
+    assertEquals("abcdefghijklmnopqrstuvwxyz", str, 26);
 }
 
 void testStringBufferIsWillNotOverflowWritingMultipleTimes(){
@@ -83,10 +83,10 @@ void testStringBufferIsWillNotOverflowWritingMultipleTimes(){
     stringBufferAppend(sb, "abcdefghij");
     stringBufferAppend(sb, "klmnopqrstuvwxyz");
 
-    assertEquali(10, stringBufferSize(sb));
+    assertEquali(26, stringBufferSize(sb));
     str = stringBufferToString(sb);
-    assertEquals("abcdefghij", str, 10);
-    assertNullTerminatedString(str, 10);
+    assertEquals("abcdefghijklmnopqrstuvwxyz", str, 26);
+    assertNullTerminatedString(str, 26);
 }
 void testStringBufferWriteFull(){
     testCase("testStringBufferWriteFull");
