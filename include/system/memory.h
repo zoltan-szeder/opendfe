@@ -4,6 +4,7 @@
 #include "system/optional.h"
 
 void* memoryAllocate(size_t size);
+void* memoryAllocateWithTag(size_t size, const char* tag);
 void memoryRelease(void*);
 
 bool memoryIsValid(void*);

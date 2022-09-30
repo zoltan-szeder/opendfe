@@ -11,6 +11,7 @@
 
 OptionalPtr* memFileCreate(char* content, uint32 length) {
     InMemoryFile* file = memoryAllocate(sizeof(InMemoryFile));
+    memoryTag(file, "InMemoryFile");
 
     file->content = content;
     file->length = length;

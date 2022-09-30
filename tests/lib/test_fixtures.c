@@ -103,7 +103,7 @@ void assertEquals(const char* c1, const char* c2, int length) {
     ntc1[length] = 0;
     memcpy(ntc2, c2, length);
     ntc2[length] = 0;
-    assertTrueMsg(strncmp(ntc1, ntc2, length+1) == 0, error("\"%s\" != \"%s\"", ntc1, ntc2));
+    assertTrueMsg(memcmp(ntc1, ntc2, length+1) == 0, error("\"%s\" != \"%s\"", ntc1, ntc2));
     free(ntc1);
     free(ntc2);
 }

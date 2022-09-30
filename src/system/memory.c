@@ -57,6 +57,12 @@ void* memoryAllocate(size_t size) {
     return ptr;
 }
 
+void* memoryAllocateWithTag(size_t size, const char* tag) {
+    void* block = memoryAllocate(size);
+    memoryTag(block, tag);
+    return block;
+}
+
 MemoryAllocation* memoryFindFirstInvalidAllocation() {
     for(size_t i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
@@ -242,7 +248,7 @@ void memoryFileDump(FILE* stream){
     for(int i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
 
-        fprintf(stream, "- name: %15s\n", alloc->name);
+        fprintf(stream, "- name: %-15s\n", alloc->name);
         fprintf(stream, "  ptr: %p\n", alloc->ptr);
         fprintf(stream, "  size: %zu\n", alloc->size);
         fprintf(stream, "  valid: %s\n", alloc->valid ? "true" : "false");

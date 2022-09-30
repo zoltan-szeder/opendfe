@@ -13,6 +13,7 @@ typedef struct {
     uint8* data;
 } Image8Bit;
 
+
 Image8Bit* img8bCreate2D(uint32 width, uint32 height, uint32 channels);
 
 void img8bDelete(Image8Bit*);

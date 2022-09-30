@@ -8,6 +8,8 @@ typedef struct StringBuffer StringBuffer;
 StringBuffer* stringBufferCreate();
 
 void stringBufferAppend(StringBuffer* sb, const char* format, ...);
+void stringBufferAppendBytes(StringBuffer* sb, const void* bytes, size_t size);
+
 char* stringBufferToString(StringBuffer* sb);
 size_t stringBufferSize(StringBuffer* sb);
 

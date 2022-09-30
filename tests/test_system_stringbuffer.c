@@ -35,6 +35,17 @@ void testStringBufferWithOneChar(){
     assertEquals("a", str, 1);
 }
 
+void testStringBufferWithSpecialChars(){
+    testCase("testStringBufferWithSpecialChars");
+
+    stringBufferAppendBytes(sb, "\x00\x01\x02\x03\x04", 5);
+    stringBufferAppendBytes(sb, "\x05\x06\x07\x08\x09", 5);
+
+    assertEquali(10, stringBufferSize(sb));
+    str = stringBufferToString(sb);
+    assertEquals("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09", str, 10);
+}
+
 void testStringBufferWithDifferentChar(){
     testCase("testStringBufferWithDifferentChar");
 
@@ -105,6 +116,7 @@ int main(int argc, char** argv){
         &testStringBuffer,
         &testStringBufferWithOneChar,
         &testStringBufferWithDifferentChar,
+        &testStringBufferWithSpecialChars,
         &testStringBufferWithString,
         &testStringBufferMultipleAppend,
         &testStringBufferIsWillNotOverflow,

@@ -62,6 +62,15 @@ void stringBufferAppend(StringBuffer* sb, const char* format, ...) {
     sb->cursor += size;
 }
 
+void stringBufferAppendBytes(StringBuffer* sb, const void* bytes, size_t size){
+    if(size >= stringBufferRemainingSize(sb)) {
+        stringBufferIncreaseSize(sb, size);
+    }
+
+    memcpy(sb->cursor, bytes, size);
+    sb->cursor += size;
+}
+
 size_t stringBufferSize(StringBuffer* sb) {
     return sb->cursor - sb->buffer;
 }
