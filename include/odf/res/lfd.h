@@ -1,17 +1,10 @@
-#ifndef DRIVERS_LFD_H
-#define DRIVERS_LFD_H
+#ifndef ODF_RES_LFD_H
+#define ODF_RES_LFD_H
+
+#include "odf/res/types/lfd.h"
 #include "system/optional.h"
 #include "system/list.h"
 #include "inmemoryfile.h"
-
-typedef struct LfdArchive LfdArchive;
-typedef struct LfdFile LfdFile;
-
-typedef struct {
-    char type[4];
-    char name[8];
-    uint32 length;
-} LfdChunk;
 
 OptionalPtr* lfdOpenArchive(char* file_name);
 void lfdCloseArchive(LfdArchive*);

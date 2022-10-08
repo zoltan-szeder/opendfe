@@ -6,8 +6,8 @@
 
 #include "test_fixtures.h"
 
-#include "drivers/bm.h"
-#include "drivers/pal.h"
+#include "odf/res/bm.h"
+#include "odf/res/pal.h"
 #include "assertions/memory.h"
 
 #define PX_A 0

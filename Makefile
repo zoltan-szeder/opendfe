@@ -7,9 +7,14 @@ LDFLAGS =
 MC = valgrind
 MCFLAGS = --leak-check=full --suppressions=./valgrind.supp --error-exitcode=1 -q
 
-SOURCES = $(wildcard src/*/*/*.c) $(wildcard src/*/*.c) $(wildcard src/*.c)
+ODF_RES_SOURCES = $(wildcard src/odf/res/*.c)
+ODF_OGL_SOURCES = $(wildcard src/odf/ogl/*.c)
+ODF_SYS_SOURCES = $(wildcard src/odf/sys/*.c)
+ODF_SOURCES = $(wildcard src/odf/*.c)
+
+SOURCES = $(ODF_SOURCES) $(ODF_SYS_SOURCES) $(ODF_OGL_SOURCES) $(ODF_RES_SOURCES)
 OBJECTS = $(SOURCES:.c=.o)
-MAIN_OBJECT = src/dark.o
+MAIN_OBJECT = src/odf/dark.o
 LIB_OBJECTS = $(filter-out $(MAIN_OBJECT),$(OBJECTS))
 
 TESTS = $(wildcard tests/test_*.c)
@@ -24,6 +29,14 @@ MOCKS = $(wildcard tests/mocks/*.c)
 MOCK_OBJECTS = $(MOCKS:.c=.o)
 TEST_TOOLS = $(wildcard tests/lib/*.c)
 TEST_TOOL_OBJECTS = $(TEST_TOOLS:.c=.o)
+
+depend: .depend
+
+.depend: $(SOURCES)
+	rm -f "$@"
+	$(CC) $(CFLAGS) -MM $^ >> "$@"
+
+include .depend
 
 test: $(TEST_OUTPUTS)
 
@@ -45,7 +58,7 @@ tests/test_%.out: tests/test_%.o $(LIB_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJE
 	$(MC) $(MCFLAGS) ./$@
 
 clean:
-	rm -f $(TEST_OUTPUTS) $(TEST_OBJECTS) $(OBJECTS) $(TOOL_OUTPUTS) $(TOOL_OBJECTS)
+	rm -f $(TEST_OUTPUTS) $(TEST_OBJECTS) $(OBJECTS) $(TOOL_OUTPUTS) $(TOOL_OBJECTS) .depend
 
 .PHONY: test clean compile
 .PRECIOUS: $(OBJECTS) $(TEST_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS) $(TEST_OUTPUTS)

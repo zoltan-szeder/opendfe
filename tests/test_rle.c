@@ -4,7 +4,7 @@
 #include "test_fixtures.h"
 
 #include "types.h"
-#include "drivers/rle.h"
+#include "odf/res/rle.h"
 #include "assertions/memory.h"
 
 void tearDown(){

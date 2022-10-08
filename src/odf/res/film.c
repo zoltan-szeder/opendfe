@@ -1,6 +1,8 @@
 #include <string.h>
 #include "system/memory.h"
-#include "drivers/lfd/film.h"
+#include "odf/res/film.h"
+#include "odf/res/lfd.h"
+#include "inmemoryfile.h"
 
 struct Film {
     LfdChunk* header;

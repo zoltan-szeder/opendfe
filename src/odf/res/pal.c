@@ -1,7 +1,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "drivers/pal.h"
+
+#include "odf/res/pal.h"
+
 #include "inmemoryfile.h"
 #include "system/memory.h"
 

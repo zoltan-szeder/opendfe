@@ -7,3 +7,5 @@ vgcore.*
 *.kdev4
 *.png
 *.kate-swp
+.depend
+*.bak

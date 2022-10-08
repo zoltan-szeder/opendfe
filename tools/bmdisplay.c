@@ -4,9 +4,9 @@
 #include "dgl/main.h"
 #include "dgl/model.h"
 #include "dgl/texture.h"
-#include "drivers/pal.h"
-#include "drivers/bm.h"
-#include "drivers/gob.h"
+#include "odf/res/pal.h"
+#include "odf/res/bm.h"
+#include "odf/res/gob.h"
 
 OptionalPtr* palExtract(char* gobFile, char* palFile) {
     OptionalPtr* optionalPalArchive = gobOpenArchive(gobFile);

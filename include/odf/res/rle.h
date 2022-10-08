@@ -1,5 +1,5 @@
-#ifndef DRIVERS_RLE_H
-#define DRIVERS_RLE_H
+#ifndef ODF_RES_RLE_H
+#define ODF_RES_RLE_H
 
 #include "types.h"
 

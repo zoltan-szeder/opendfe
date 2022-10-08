@@ -6,7 +6,7 @@
 #include "test_fixtures.h"
 #include "assertions/memory.h"
 
-#include "drivers/gob.h"
+#include "odf/res/gob.h"
 
 void tearDown(){
     assertAllMemoryReleased();

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "drivers/gob.h"
+#include "odf/res/gob.h"
 #include "types.h"
 #include "file.h"
 #include "system/memory.h"

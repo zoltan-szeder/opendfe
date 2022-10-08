@@ -1,9 +1,7 @@
-#ifndef DRIVERS_FME_H
-#define DRIVERS_FME_H
+#ifndef ODF_RES_TYPES_FME_H
+#define ODF_RES_TYPES_FME_H
 
 #include "types.h"
-#include "system/optional.h"
-#include "inmemoryfile.h"
 
 #define FME_FLIP_NONE 0
 #define FME_FLIP_HORIZONTALLY 1
@@ -36,8 +34,5 @@ typedef struct {
     FMESubHeader* subHeader;
     uint8* data;
 } FMEFile;
-
-OptionalPtr* fmeOpenInMemoryFile(InMemoryFile*);
-void fmeClose(FMEFile*);
 
 #endif

@@ -2,7 +2,7 @@
 #include "assertions/memory.h"
 #include "assertions/optional.h"
 
-#include "drivers/fme.h"
+#include "odf/res/fme.h"
 #include "system/stringbuffer.h"
 #include "system/optional.h"
 #include "inmemoryfile.h"

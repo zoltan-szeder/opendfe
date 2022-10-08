@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "drivers/rle.h"
+#include "odf/res/rle.h"
 #include "system/memory.h"
 
 void rleCopyBlock(uint8* dest, uint8 destOffset, uint8* src, uint8 srcOffset, uint8 length);

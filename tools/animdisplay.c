@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "drivers/lfd.h"
+#include "odf/res/lfd.h"
 #include "drivers/lfd/film.h"
 
 

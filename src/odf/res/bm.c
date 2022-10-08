@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include "file.h"
-#include "drivers/bm.h"
-#include "drivers/rle.h"
+#include "odf/res/bm.h"
+#include "odf/res/rle.h"
 #include "system/memory.h"
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex);

@@ -1,8 +1,7 @@
-#ifndef DRIVERS_BM_H
-#define DRIVERS_BM_H
-#include "drivers/pal.h"
-#include "inmemoryfile.h"
-#include "img.h"
+#ifndef ODF_RES_TYPES_BM_H
+#define ODF_RES_TYPES_BM_H
+
+#include "types.h"
 
 #define BM_NORMAL 0x36
 #define BM_TRANSPARENT 0x3e
@@ -31,14 +30,4 @@ typedef struct {
                         // transparent == '\x3e': '\x00' is transparent
                         // transparent == '\x08': '\x08' is transparent
 } BMFile;
-
-
-BMFile* bmOpenFile(char*);
-BMFile* bmOpenInMemoryFile(InMemoryFile*);
-void bmClose(BMFile*);
-
-void bmPrintFile(BMFile*);
-
-Image8Bit* bmCreateImage(BMFile*, Palette*);
-
 #endif
