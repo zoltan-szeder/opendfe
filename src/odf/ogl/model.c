@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <GL/glew.h>
-#include "dgl/model.h"
+#include "odf/ogl/model.h"
 
 struct Model {
     uint32 vertexArray;

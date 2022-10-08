@@ -6,7 +6,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
 
-#include "file.h"
+#include "odf/sys/file.h"
 #include "odf/res/gob.h"
 #include "odf/res/bm.h"
 #include "odf/res/pal.h"

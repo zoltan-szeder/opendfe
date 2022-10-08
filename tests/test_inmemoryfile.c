@@ -7,7 +7,7 @@
 
 #include "types.h"
 #include "system/memory.h"
-#include "inmemoryfile.h"
+#include "odf/sys/inmemoryfile.h"
 #include "assertions/memory.h"
 
 void tearDown(){

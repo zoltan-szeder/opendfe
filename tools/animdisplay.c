@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "odf/res/lfd.h"
-#include "drivers/lfd/film.h"
+#include "odf/res/film.h"
 
 
 int main(int argc, char** argv) {

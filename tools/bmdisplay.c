@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "dgl/main.h"
-#include "dgl/model.h"
-#include "dgl/texture.h"
+#include "odf/ogl/main.h"
+#include "odf/ogl/model.h"
+#include "odf/ogl/texture.h"
 #include "odf/res/pal.h"
 #include "odf/res/bm.h"
 #include "odf/res/gob.h"

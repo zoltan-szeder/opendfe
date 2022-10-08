@@ -5,7 +5,7 @@
 #include "odf/res/fme.h"
 #include "system/stringbuffer.h"
 #include "system/optional.h"
-#include "inmemoryfile.h"
+#include "odf/sys/inmemoryfile.h"
 
 StringBuffer* sb;
 char* fileContent;

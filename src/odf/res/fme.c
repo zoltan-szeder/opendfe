@@ -1,6 +1,6 @@
 
 #include "odf/res/fme.h"
-#include "inmemoryfile.h"
+#include "odf/sys/inmemoryfile.h"
 #include "system/memory.h"
 
                         // insX insY flip head2 w   h   pad

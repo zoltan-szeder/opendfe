@@ -1,5 +1,5 @@
-#ifndef GL_WINDOW
-#define GL_WINDOW
+#ifndef ODF_OGL_WINDOW
+#define ODF_OGL_WINDOW
 
 #include <GLFW/glfw3.h>
 #include <stdbool.h>

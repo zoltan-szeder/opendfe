@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 
-#include "dgl/opengl/init.h"
-#include "file.h"
+#include "odf/ogl/init.h"
+#include "odf/sys/file.h"
 
 OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFile);
 

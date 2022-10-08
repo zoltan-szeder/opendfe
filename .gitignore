@@ -9,3 +9,5 @@ vgcore.*
 *.kate-swp
 .depend
 *.bak
+lib/
+bin/

@@ -1,5 +1,6 @@
-#ifndef DISPLAY_MAIN_H
-#define DISPLAY_MAIN_H
+#ifndef ODF_OGL_MAIN_H
+#define ODF_OGL_MAIN_H
+
 #include "core/gamestate.h"
 #include "core/control.h"
 

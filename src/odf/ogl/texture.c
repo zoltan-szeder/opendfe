@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <stdlib.h>
-#include "dgl/texture.h"
+#include "odf/ogl/texture.h"
 
 struct DglTexture {
     unsigned int id;

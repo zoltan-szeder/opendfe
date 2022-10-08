@@ -4,7 +4,7 @@
 
 #include "odf/res/gob.h"
 #include "types.h"
-#include "file.h"
+#include "odf/sys/file.h"
 #include "system/memory.h"
 #include "system/list.h"
 

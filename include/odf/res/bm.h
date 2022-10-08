@@ -4,7 +4,7 @@
 #include "odf/res/types/bm.h"
 #include "odf/res/types/pal.h"
 
-#include "inmemoryfile.h"
+#include "odf/sys/inmemoryfile.h"
 #include "img.h"
 
 BMFile* bmOpenFile(char*);

@@ -4,7 +4,7 @@
 #include "odf/res/types/fme.h"
 
 #include "system/optional.h"
-#include "inmemoryfile.h"
+#include "odf/sys/inmemoryfile.h"
 
 
 OptionalPtr* fmeOpenInMemoryFile(InMemoryFile*);

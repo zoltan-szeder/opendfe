@@ -4,7 +4,7 @@
 
 #include "odf/res/pal.h"
 
-#include "inmemoryfile.h"
+#include "odf/sys/inmemoryfile.h"
 #include "system/memory.h"
 
 Palette* palOpenInMemoryFile(InMemoryFile* file){

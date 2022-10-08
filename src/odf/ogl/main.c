@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 
-#include "dgl/main.h"
-#include "dgl/model.h"
-#include "dgl/opengl/init.h"
-#include "dgl/opengl/window.h"
+#include "odf/ogl/main.h"
+#include "odf/ogl/model.h"
+#include "odf/ogl/init.h"
+#include "odf/ogl/window.h"
 
 struct Display {
     GLFWwindow* window;

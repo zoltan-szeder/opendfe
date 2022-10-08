@@ -1,5 +1,5 @@
-#ifndef DISPLAY_TEXTURE_H
-#define DISPLAY_TEXTURE_H
+#ifndef ODF_OGL_TEXTURE_H
+#define ODF_OGL_TEXTURE_H
 
 #include "img.h"
 

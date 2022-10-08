@@ -5,10 +5,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-#include "dgl/main.h"
-#include "dgl/model.h"
-#include "dgl/texture.h"
-#include "file.h"
+#include "odf/ogl/main.h"
+#include "odf/ogl/model.h"
+#include "odf/ogl/texture.h"
+#include "odf/sys/file.h"
 #include "odf/res/gob.h"
 #include "odf/res/bm.h"
 #include "odf/res/pal.h"

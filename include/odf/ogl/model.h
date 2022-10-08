@@ -1,7 +1,7 @@
-#ifndef DISPLAY_MODLEL_H
-#define DISPLAY_MODLEL_H
+#ifndef ODF_OGL_MODEL_H
+#define ODF_OGL_MODEL_H
 #include "types.h"
-#include "dgl/texture.h"
+#include "odf/ogl/texture.h"
 
 typedef struct Model Model;
 

@@ -1,7 +1,7 @@
-#ifndef FILE_H
-#define FILE_H
-#include <stdio.h>
+#ifndef ODF_SYS_FILE_H
+#define ODF_SYS_FILE_H
 
+#include <stdio.h>
 #include "system/optional.h"
 
 

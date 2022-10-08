@@ -1,5 +1,5 @@
 #include "odf/res/lfd.h"
-#include "file.h"
+#include "odf/sys/file.h"
 #include "system/memory.h"
 
 const char* LFD_CHUNK_FORMAT = "%c4 %c8 %l4";

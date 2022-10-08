@@ -1,5 +1,5 @@
-#ifndef DGL_OPENGL_INIT_H
-#define DGL_OPENGL_INIT_H
+#ifndef ODF_OGL_INIT_H
+#define ODF_OGL_INIT_H
 
 #include <GL/gl.h>
 

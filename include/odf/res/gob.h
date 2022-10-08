@@ -8,7 +8,7 @@
 #include "types.h"
 #include "system/optional.h"
 #include "system/list.h"
-#include "inmemoryfile.h"
+#include "odf/sys/inmemoryfile.h"
 
 OptionalPtr* gobOpenArchive(char* file_name);
 int gobCloseArchive(GobArchive*);
