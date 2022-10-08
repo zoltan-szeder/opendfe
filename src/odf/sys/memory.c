@@ -7,7 +7,7 @@ void (*cleanup)() = NULL;
 
 size_t MEMORY_ALLOCATED = 0;
 size_t MEMORY_ALLOCATION_SIZE = 0;
-size_t MEMORY_ALLOCATION_MAX_SIZE = 1024;
+size_t MEMORY_ALLOCATION_MAX_SIZE = 256;
 
 #define MEMORY_NAME_MAX_SIZE 16
 
@@ -26,10 +26,10 @@ struct MemoryAllocation {
 MemoryAllocation* MEMORY_ALLOCATIONS = NULL;
 
 
-MemoryAllocation* memoryFindAllocation(void*);
-void memoryReleaseAllocation(MemoryAllocation*);
-void memoryRegister(void* ptr, size_t size);
-bool memoryAllocationContainsValidPointer(MemoryAllocation* alloc, void* ptr);
+static MemoryAllocation* memoryFindAllocation(void*);
+static void memoryReleaseAllocation(MemoryAllocation*);
+static void memoryRegister(void* ptr, size_t size);
+static bool memoryAllocationContainsValidPointer(MemoryAllocation* alloc, void* ptr);
 
 size_t memoryGetAllocations() {
     return MEMORY_ALLOCATED;
@@ -74,7 +74,7 @@ MemoryAllocation* memoryFindFirstInvalidAllocation() {
     return alloc;
 }
 
-void memoryRegister(void* ptr, size_t size){
+static void memoryRegister(void* ptr, size_t size){
     MemoryAllocation* alloc = memoryFindFirstInvalidAllocation();
     memset(alloc->name, 0, MEMORY_NAME_MAX_SIZE);
     alloc->ptr = ptr;
@@ -153,7 +153,7 @@ void memoryRemoveAllReferee(MemoryAllocation* alloc) {
     alloc->refereeSize = 0;
 }
 
-void memoryReleaseAllocation(MemoryAllocation* alloc) {
+static void memoryReleaseAllocation(MemoryAllocation* alloc) {
     if(alloc == NULL || !alloc->valid) return;
 
     memoryRemoveAllReference(alloc);
@@ -182,7 +182,7 @@ void memoryTag(void* ptr, const char* name) {
     strncpy(alloc->name, name, MEMORY_NAME_MAX_SIZE - 1);
 }
 
-MemoryAllocation* memoryFindAllocation(void* ptr) {
+static MemoryAllocation* memoryFindAllocation(void* ptr) {
     for(size_t i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
         if(memoryAllocationContainsValidPointer(alloc, ptr)) {

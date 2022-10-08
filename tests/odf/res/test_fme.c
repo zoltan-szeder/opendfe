@@ -112,7 +112,7 @@ int main(int argc, char** argv){
 
     TestFixture fixture = createFixture();
 
-    fixture.name = "drivers/fme.c";
+    fixture.name = "odf/res/fme.c";
     fixture.beforeEach = &setUp;
     fixture.afterEach = &tearDown;
     fixture.tests = testFunctions;

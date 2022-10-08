@@ -31,7 +31,7 @@ uint32 listSize(List* list) {
 
 OptionalPtr* listGet(List* list, uint32 index) {
     if(index >= list->size) {
-        return optionalEmpty("system/list.c:listGet: Array index (%s) is out of bounds (>=%s)", index, list->size);
+        return optionalEmpty("odf/sys/list.c:listGet: Array index (%s) is out of bounds (>=%s)", index, list->size);
     }
 
     return optionalOf(list->values[index]);
@@ -39,7 +39,7 @@ OptionalPtr* listGet(List* list, uint32 index) {
 
 OptionalPtr* listPut(List* list, uint32 index, void* value) {
     if(index >= list->size) {
-        return optionalEmpty("system/list.c:listPut: Array index (%s) is out of bounds (>=%s)", index, list->size);
+        return optionalEmpty("odf/sys/list.c:listPut: Array index (%s) is out of bounds (>=%s)", index, list->size);
     }
 
     list->values[index] = value;

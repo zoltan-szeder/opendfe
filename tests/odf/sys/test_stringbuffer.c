@@ -126,7 +126,7 @@ int main(int argc, char** argv){
 
     TestFixture fixture = createFixture();
 
-    fixture.name = "system/stringbuffer.c";
+    fixture.name = "odf/sys/stringbuffer.c";
     fixture.beforeEach = &setUp;
     fixture.afterEach = &tearDown;
     fixture.tests = testFunctions;

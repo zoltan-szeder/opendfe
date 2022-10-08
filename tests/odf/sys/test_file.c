@@ -28,7 +28,7 @@ int main(int argc, char** argv){
 
     TestFixture fixture = createFixture();
 
-    fixture.name = "file.c";
+    fixture.name = "odf/sys/file.c";
     fixture.afterEach = &tearDown;
     fixture.tests = testFunctions;
     fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);

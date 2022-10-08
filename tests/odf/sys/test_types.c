@@ -35,7 +35,7 @@ int main(int argc, char** argv){
 
     TestFixture fixture = createFixture();
 
-    fixture.name = "types.c";
+    fixture.name = "odf/sys/types.c";
     fixture.tests = testFunctions;
     fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
 

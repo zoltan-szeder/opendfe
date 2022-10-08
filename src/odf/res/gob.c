@@ -158,7 +158,7 @@ OptionalUInt32* gobReadArchiveFileCount(GobArchive* archive) {
     FILE* stream = archive->stream;
 
     int failure = fseek(stream, (long) archive->headers->directoryOffset, SEEK_SET);
-    if(failure) return optionalEmpty("gob.c:gobReadArchiveFileCount - Directory offset is over EOF");
+    if(failure) return optionalEmpty("odf/res/gob.c:gobReadArchiveFileCount - Directory offset is over EOF");
 
     OptionalPtr* optionalCount = fileReadStruct(stream, "%l4");
     if(optionalIsEmpty(optionalCount)) return (void*) optionalCount;

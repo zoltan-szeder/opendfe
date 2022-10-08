@@ -96,7 +96,7 @@ int main(int argc, char** argv){
 
     TestFixture fixture = createFixture();
 
-    fixture.name = "inmemoryfile.c";
+    fixture.name = "odf/sys/inmemoryfile.c";
     fixture.before = &setToLittleEndian;
     fixture.tests = testFunctions;
     fixture.after = &setToOriginalEndianness;

@@ -68,7 +68,7 @@ struct OptionalInt64 {
 
 Optional MEMORY_ALLOCATION_ISSUE = {
     .isPresent = false,
-    .message = "optional.c:optionalCreate - Could not allocate memory for Optional type"
+    .message = "odf/sys/optional.c:optionalCreate - Could not allocate memory for Optional type"
 };
 
 void* optionalEmpty(const char* formatString, ...) {

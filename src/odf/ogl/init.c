@@ -57,7 +57,7 @@ OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFil
 
 	*shaderId = glCreateShader(shaderType);
     if(*shaderId == 0)
-		return optionalEmpty("dgl/opengl/init.c:loadShader - Could not allocate shader memory");
+		return optionalEmpty("odf/ogl/init.c:loadShader - Could not allocate shader memory");
 
 	glShaderSource(*shaderId, 1, (const char**) &glsl, NULL);
 	glCompileShader(*shaderId);
@@ -72,7 +72,7 @@ OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFil
 	{
 		glGetShaderInfoLog(*shaderId, 512, NULL, infoLog);
 		fprintf(stderr, "ERROR::SHADER::%d::COMPILATION_FAILED\n%s",shaderType, infoLog);
-        return optionalEmpty("dgl/opengl/init.c:loadShader - Could not compile shader");
+        return optionalEmpty("odf/ogl/init.c:loadShader - Could not compile shader");
 	}
 
 	return optionalOf(shaderId);

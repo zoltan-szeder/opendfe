@@ -253,7 +253,7 @@ int main(int argc, char** argv){
 
     TestFixture fixture = createFixture();
 
-    fixture.name = "lre.c";
+    fixture.name = "odf/res/lre.c";
     fixture.tests = testFunctions;
     fixture.afterEach = &tearDown;
     fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
