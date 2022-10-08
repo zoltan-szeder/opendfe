@@ -1,8 +1,8 @@
-#ifndef IMG_H
-#define IMG_H
+#ifndef ODF_SYS_IMG_H
+#define ODF_SYS_IMG_H
 
 #include "math/vec.h"
-#include "types.h"
+#include "odf/sys/types.h"
 
 typedef struct {
     uint32 width;

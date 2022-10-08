@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "odf/res/rle.h"
-#include "system/memory.h"
+#include "odf/sys/memory.h"
 
 void rleCopyBlock(uint8* dest, uint8 destOffset, uint8* src, uint8 srcOffset, uint8 length);
 void rleSkipBlock(uint8* dest, uint8 destOffset, uint8 length, uint8 color);

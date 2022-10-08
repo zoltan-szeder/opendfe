@@ -1,5 +1,5 @@
-#ifndef SYSTEM_STRINGS_H
-#define SYSTEM_STRINGS_H
+#ifndef ODF_SYS_STRINGS_H
+#define ODF_SYS_STRINGS_H
 
 #include <stdio.h>
 

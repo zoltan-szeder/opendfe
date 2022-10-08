@@ -5,7 +5,7 @@
 #include "odf/res/types/pal.h"
 
 #include "odf/sys/inmemoryfile.h"
-#include "img.h"
+#include "odf/sys/img.h"
 
 BMFile* bmOpenFile(char*);
 BMFile* bmOpenInMemoryFile(InMemoryFile*);

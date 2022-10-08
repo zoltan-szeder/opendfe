@@ -1,5 +1,5 @@
-#ifndef SYSTEM_STRING_BUFFER_H
-#define SYSTEM_STRING_BUFFER_H
+#ifndef ODF_SYS_STRING_BUFFER_H
+#define ODF_SYS_STRING_BUFFER_H
 
 #include <stdlib.h>
 

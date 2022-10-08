@@ -2,8 +2,8 @@
 #define ODF_RES_LFD_H
 
 #include "odf/res/types/lfd.h"
-#include "system/optional.h"
-#include "system/list.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/list.h"
 #include "odf/sys/inmemoryfile.h"
 
 OptionalPtr* lfdOpenArchive(char* file_name);

@@ -1,9 +1,9 @@
-#ifndef IN_MEMORY_FILE_H
-#define IN_MEMORY_FILE_H
+#ifndef ODF_SYS_IN_MEMORY_FILE_H
+#define ODF_SYS_IN_MEMORY_FILE_H
 
 #include <stdio.h>
-#include "types.h"
-#include "system/optional.h"
+#include "odf/sys/types.h"
+#include "odf/sys/optional.h"
 
 typedef struct {
     uint32 length;

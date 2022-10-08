@@ -2,7 +2,7 @@
 #define SYSTEM_MEMORY_TEST
 
 #include <stdio.h>
-#include "system/memory.h"
+#include "odf/sys/memory.h"
 #include "test_fixtures.h"
 
 size_t memoryGetAllocations();

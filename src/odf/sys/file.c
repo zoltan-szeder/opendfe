@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 #include "odf/sys/file.h"
-#include "system/optional.h"
-#include "system/memory.h"
-#include "system/strings.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/memory.h"
+#include "odf/sys/strings.h"
 
 OptionalPtr* fileOpen(char* filePath, char* modifiers) {
     FILE* stream = fopen(filePath, modifiers);

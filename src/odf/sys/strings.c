@@ -1,4 +1,4 @@
-#include <system/strings.h>
+#include "odf/sys/strings.h"
 #include <string.h>
 #include "stdlib.h"
 

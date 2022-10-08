@@ -3,8 +3,8 @@
 #include "assertions/optional.h"
 
 #include "odf/res/fme.h"
-#include "system/stringbuffer.h"
-#include "system/optional.h"
+#include "odf/sys/stringbuffer.h"
+#include "odf/sys/optional.h"
 #include "odf/sys/inmemoryfile.h"
 
 StringBuffer* sb;

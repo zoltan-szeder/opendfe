@@ -1,7 +1,7 @@
 #ifndef ODF_RES_TYPES_FME_H
 #define ODF_RES_TYPES_FME_H
 
-#include "types.h"
+#include "odf/sys/types.h"
 
 #define FME_FLIP_NONE 0
 #define FME_FLIP_HORIZONTALLY 1

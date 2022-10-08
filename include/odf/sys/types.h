@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef ODF_SYS_TYPES_H
+#define ODF_SYS_TYPES_H
 
 #include "stdbool.h"
 

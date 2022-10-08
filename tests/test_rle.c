@@ -3,7 +3,7 @@
 
 #include "test_fixtures.h"
 
-#include "types.h"
+#include "odf/sys/types.h"
 #include "odf/res/rle.h"
 #include "assertions/memory.h"
 

@@ -1,5 +1,5 @@
 #include <string.h>
-#include "system/memory.h"
+#include "odf/sys/memory.h"
 #include "odf/res/film.h"
 #include "odf/res/lfd.h"
 #include "odf/sys/inmemoryfile.h"

@@ -5,9 +5,9 @@
 #include <stddef.h>
 #include "odf/res/types/gob.h"
 
-#include "types.h"
-#include "system/optional.h"
-#include "system/list.h"
+#include "odf/sys/types.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/list.h"
 #include "odf/sys/inmemoryfile.h"
 
 OptionalPtr* gobOpenArchive(char* file_name);

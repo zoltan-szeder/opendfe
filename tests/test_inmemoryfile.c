@@ -5,8 +5,8 @@
 
 #include "test_fixtures.h"
 
-#include "types.h"
-#include "system/memory.h"
+#include "odf/sys/types.h"
+#include "odf/sys/memory.h"
 #include "odf/sys/inmemoryfile.h"
 #include "assertions/memory.h"
 

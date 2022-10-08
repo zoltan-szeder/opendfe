@@ -3,8 +3,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "system/optional.h"
-#include "system/memory.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/memory.h"
 #include "stddef.h"
 
 struct Optional {

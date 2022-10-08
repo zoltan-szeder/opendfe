@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#include "img.h"
-#include "system/memory.h"
+#include "odf/sys/img.h"
+#include "odf/sys/memory.h"
 
 Image8Bit* img8bCreate2D(uint32 width, uint32 height, uint32 channels) {
     uint32 depth = 1;

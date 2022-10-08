@@ -1,9 +1,9 @@
-#ifndef SYSTEM_OPTIONAL_H
-#define SYSTEM_OPTIONAL_H
+#ifndef ODF_SYS_OPTIONAL_H
+#define ODF_SYS_OPTIONAL_H
 
 #include <stdio.h>
 #include "stdbool.h"
-#include "types.h"
+#include "odf/sys/types.h"
 
 typedef struct Optional Optional;
 

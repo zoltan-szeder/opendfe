@@ -1,6 +1,6 @@
 #include "test_fixtures.h"
 #include "assertions/memory.h"
-#include "system/stringbuffer.h"
+#include "odf/sys/stringbuffer.h"
 #include "assertions/string.h"
 
 StringBuffer* sb;

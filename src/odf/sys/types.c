@@ -1,7 +1,7 @@
-#include "types.h"
+#include "odf/sys/types.h"
 #include "string.h"
 #include "stdlib.h"
-#include "system/strings.h"
+#include "odf/sys/strings.h"
 
 
 bool inverseEndianness = false;

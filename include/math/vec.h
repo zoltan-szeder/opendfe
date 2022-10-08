@@ -1,7 +1,7 @@
 #ifndef MATH_VEC_H
 #define MATH_VEC_H
 
-#include "types.h"
+#include "odf/sys/types.h"
 
 typedef union {
     uint8 data[4];

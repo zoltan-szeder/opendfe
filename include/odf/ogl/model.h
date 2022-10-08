@@ -1,6 +1,6 @@
 #ifndef ODF_OGL_MODEL_H
 #define ODF_OGL_MODEL_H
-#include "types.h"
+#include "odf/sys/types.h"
 #include "odf/ogl/texture.h"
 
 typedef struct Model Model;

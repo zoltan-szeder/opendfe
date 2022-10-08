@@ -3,10 +3,10 @@
 #include <errno.h>
 
 #include "odf/res/gob.h"
-#include "types.h"
+#include "odf/sys/types.h"
 #include "odf/sys/file.h"
-#include "system/memory.h"
-#include "system/list.h"
+#include "odf/sys/memory.h"
+#include "odf/sys/list.h"
 
 OptionalPtr* gobReadArchive(FILE*);
 OptionalPtr* gobReadArchiveFile(GobArchive*);

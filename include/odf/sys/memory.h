@@ -1,7 +1,8 @@
-#ifndef SYSTEM_MEMORY_H
-#define SYSTEM_MEMORY_H
+#ifndef ODF_SYS_MEMORY_H
+#define ODF_SYS_MEMORY_H
+
 #include <stddef.h>
-#include "system/optional.h"
+#include "odf/sys/optional.h"
 
 void* memoryAllocate(size_t size);
 void* memoryAllocateWithTag(size_t size, const char* tag);

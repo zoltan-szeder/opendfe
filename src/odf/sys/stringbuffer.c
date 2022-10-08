@@ -2,8 +2,8 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "system/stringbuffer.h"
-#include "system/memory.h"
+#include "odf/sys/stringbuffer.h"
+#include "odf/sys/memory.h"
 
 #define STRING_BUFFER_INCREMENT 256
 

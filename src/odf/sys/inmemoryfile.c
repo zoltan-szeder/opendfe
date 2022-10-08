@@ -2,11 +2,11 @@
 #include <stdarg.h>
 
 #include "odf/sys/inmemoryfile.h"
-#include "types.h"
+#include "odf/sys/types.h"
 #include "stdlib.h"
-#include "system/optional.h"
-#include "system/memory.h"
-#include "system/strings.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/memory.h"
+#include "odf/sys/strings.h"
 
 
 OptionalPtr* memFileCreate(char* content, uint32 length) {

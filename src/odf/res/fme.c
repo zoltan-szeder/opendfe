@@ -1,7 +1,7 @@
 
 #include "odf/res/fme.h"
 #include "odf/sys/inmemoryfile.h"
-#include "system/memory.h"
+#include "odf/sys/memory.h"
 
                         // insX insY flip head2 w   h   pad
 #define FME_HEADER_FORMAT "%l4  %l4  %l4  %l4   %l4 %l4 %c8"

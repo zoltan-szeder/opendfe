@@ -1,7 +1,7 @@
 #ifndef ODF_OGL_TEXTURE_H
 #define ODF_OGL_TEXTURE_H
 
-#include "img.h"
+#include "odf/sys/img.h"
 
 typedef struct DglTexture DglTexture;
 
