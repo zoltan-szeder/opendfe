@@ -2,8 +2,7 @@
 #define ODF_SYS_STRING_BUFFER_H
 
 #include <stdlib.h>
-
-typedef struct StringBuffer StringBuffer;
+#include "odf/sys/types/stringbuffer.h"
 
 StringBuffer* stringBufferCreate();
 

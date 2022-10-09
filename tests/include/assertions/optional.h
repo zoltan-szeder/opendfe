@@ -3,6 +3,7 @@
 
 #include "test_fixtures.h"
 #include "system/test_memory.h"
+#include "odf/sys/optional.h"
 
 void assertOptionalIsEmpty(void* opt){
     if(!optionalIsEmpty(opt)) {

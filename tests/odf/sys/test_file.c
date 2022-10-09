@@ -7,6 +7,7 @@
 #include "assertions/memory.h"
 
 #include "odf/sys/file.h"
+#include "odf/sys/optional.h"
 
 
 void tearDown(){

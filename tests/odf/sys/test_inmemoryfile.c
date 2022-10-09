@@ -8,6 +8,7 @@
 #include "odf/sys/types.h"
 #include "odf/sys/memory.h"
 #include "odf/sys/inmemoryfile.h"
+#include "odf/sys/optional.h"
 #include "assertions/memory.h"
 
 void tearDown(){

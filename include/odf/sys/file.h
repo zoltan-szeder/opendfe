@@ -2,7 +2,7 @@
 #define ODF_SYS_FILE_H
 
 #include <stdio.h>
-#include "odf/sys/optional.h"
+#include "odf/sys/types/optional.h"
 
 
 OptionalPtr* fileOpen(char* filePath, char* modifiers);

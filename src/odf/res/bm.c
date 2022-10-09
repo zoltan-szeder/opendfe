@@ -7,6 +7,7 @@
 #include "odf/res/bm.h"
 #include "odf/res/rle.h"
 #include "odf/sys/memory.h"
+#include "odf/sys/optional.h"
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex);
 
