@@ -3,8 +3,8 @@
 
 #include "odf/res/types/fme.h"
 
-#include "odf/sys/optional.h"
-#include "odf/sys/inmemoryfile.h"
+#include "odf/sys/types/optional.h"
+#include "odf/sys/types/inmemoryfile.h"
 
 
 OptionalPtr* fmeOpenInMemoryFile(InMemoryFile*);

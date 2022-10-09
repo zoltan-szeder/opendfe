@@ -2,7 +2,7 @@
 #define ODF_RES_PAL_H
 
 #include "odf/res/types/pal.h"
-#include "odf/sys/inmemoryfile.h"
+#include "odf/sys/types/inmemoryfile.h"
 
 
 Palette* palOpenInMemoryFile(InMemoryFile* file);

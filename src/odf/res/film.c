@@ -3,6 +3,7 @@
 #include "odf/res/film.h"
 #include "odf/res/lfd.h"
 #include "odf/sys/inmemoryfile.h"
+#include "odf/sys/list.h"
 
 struct Film {
     LfdChunk* header;

@@ -1,6 +1,9 @@
 #include "odf/res/lfd.h"
 #include "odf/sys/file.h"
 #include "odf/sys/memory.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/list.h"
+#include "odf/sys/inmemoryfile.h"
 
 const char* LFD_CHUNK_FORMAT = "%c4 %c8 %l4";
 typedef LfdChunk LfdHeader;

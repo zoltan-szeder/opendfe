@@ -1,6 +1,8 @@
 #include <stdarg.h>
+#include <stddef.h>
 #include "odf/sys/list.h"
 #include "odf/sys/memory.h"
+#include "odf/sys/optional.h"
 
 struct List {
     uint32 size;
