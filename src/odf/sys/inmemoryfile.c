@@ -8,6 +8,11 @@
 #include "odf/sys/memory.h"
 #include "odf/sys/strings.h"
 
+struct InMemoryFile {
+    uint32 length;
+    uint64 pos;
+    char* content;
+};
 
 OptionalPtr* memFileCreate(char* content, uint32 length) {
     InMemoryFile* file = memoryAllocate(sizeof(InMemoryFile));
@@ -37,6 +42,10 @@ int32 memFileSeek(InMemoryFile* file, int64 offset, int32 origin) {
 void inMemFileDelete(InMemoryFile* file) {
     memoryRelease(file->content);
     memoryRelease(file);
+}
+
+uint64 inMemFileSize(InMemoryFile* file) {
+    return file->length;
 }
 
 bool inMemFileOverEOF(InMemoryFile* file, uint64 length) {

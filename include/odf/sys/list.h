@@ -1,10 +1,10 @@
 #ifndef ODF_SYS_LIST_H
 #define ODF_SYS_LIST_H
 
+#include "odf/sys/types/list.h"
+
 #include "odf/sys/types.h"
 #include "odf/sys/optional.h"
-
-typedef struct List List;
 
 List* listCreate(uint32 size);
 void listDelete(List* list);

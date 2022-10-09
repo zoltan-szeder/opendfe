@@ -7,6 +7,8 @@
 #include "odf/sys/file.h"
 #include "odf/sys/memory.h"
 #include "odf/sys/list.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/inmemoryfile.h"
 
 OptionalPtr* gobReadArchive(FILE*);
 OptionalPtr* gobReadArchiveFile(GobArchive*);
@@ -105,8 +107,7 @@ InMemoryFile* gobReadFile(GobFile* gob_file){
 }
 
 void gobCloseFile(InMemoryFile* file) {
-    memoryRelease(file->content);
-    memoryRelease(file);
+    inMemFileDelete(file);
 }
 
 

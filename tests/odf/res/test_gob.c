@@ -7,6 +7,9 @@
 #include "assertions/memory.h"
 
 #include "odf/res/gob.h"
+#include "odf/sys/list.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/inmemoryfile.h"
 
 void tearDown(){
     assertAllMemoryReleased();
@@ -31,9 +34,18 @@ void testReadFile() {
     GobFile* helloFile = gobGetFile(archive, "HELLO.TXT");
     InMemoryFile* hello = gobReadFile(helloFile);
 
-    assert(gobCountFiles(archive) == 1);
-    assertEquals("Hello World", hello->content, 12);
+    OptionalPtr* optContent = inMemFileRead(hello, inMemFileSize(hello));
+    if(optionalIsEmpty(optContent)) {
+        fail(error("Could not find of test.gob/HELLO.TXT"));
+        return;
+    }
 
+    char* content = optionalGet(optContent);
+
+    assert(gobCountFiles(archive) == 1);
+    assertEquals("Hello World", content, 12);
+
+    memoryRelease(content);
     inMemFileDelete(hello);
     gobCloseArchive(archive);
 }

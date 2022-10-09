@@ -6,9 +6,9 @@
 #include "odf/res/types/gob.h"
 
 #include "odf/sys/types.h"
-#include "odf/sys/optional.h"
-#include "odf/sys/list.h"
-#include "odf/sys/inmemoryfile.h"
+#include "odf/sys/types/optional.h"
+#include "odf/sys/types/list.h"
+#include "odf/sys/types/inmemoryfile.h"
 
 OptionalPtr* gobOpenArchive(char* file_name);
 int gobCloseArchive(GobArchive*);

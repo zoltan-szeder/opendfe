@@ -8,19 +8,16 @@
 #include "odf/sys/memory.h"
 
 Palette* palOpenInMemoryFile(InMemoryFile* file){
-    if(file->length != sizeof(Palette)){
-        printf("Size of file (%d) does not match Palette specifications (%lu)\n", file->length, sizeof(Palette));
+    uint64 fileSize = inMemFileSize(file);
+    if(fileSize != sizeof(Palette)){
+        printf("Size of file (%lu) does not match Palette specifications (%lu)\n", fileSize, sizeof(Palette));
         return NULL;
     }
 
-    Palette* palette = memoryAllocate(sizeof(Palette));
-    if(palette == NULL) {
-        printf("Out of memory");
-        return NULL;
-    }
-    memcpy(palette, file->content, sizeof(Palette));
+    OptionalPtr* optContent = inMemFileRead(file, fileSize);
+    if(optionalIsEmpty(optContent)) return NULL;
 
-    return palette;
+    return optionalGet(optContent);
 }
 void palClose(Palette* pal) {
     memoryRelease(pal);
