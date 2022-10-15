@@ -3,8 +3,12 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "odf/sys/file.h"
 #include "odf/res/bm.h"
+#include "odf/res/types/bm_def.h"
+#include "odf/res/pal.h"
+#include "odf/res/types/pal_def.h"
+
+#include "odf/sys/file.h"
 #include "odf/res/rle.h"
 #include "odf/sys/memory.h"
 #include "odf/sys/optional.h"
@@ -16,9 +20,6 @@ Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* pale
 int bmGetNormalizedPixelIndex(int w, int h, int i);
 void ucvec3Copy(ucvec3* dest, ucvec3* src);
 
-const char* BM_HEADER_FORMAT =
-//  magic | sizeX | sizeY | |idemX | idemY | trans | logSizeY | compressed | dataSize | padding
-    "%c4     %l2     %l2      %l2     %l2     %c1       %c1         %l2        %l4       %c12";
 
 BMFile* bmOpenFile(char* file) {
     FILE* stream = fopen(file, "rb");

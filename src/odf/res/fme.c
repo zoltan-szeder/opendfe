@@ -1,13 +1,10 @@
-
 #include "odf/res/fme.h"
+#include "odf/res/types/fme_def.h"
+
 #include "odf/sys/inmemoryfile.h"
 #include "odf/sys/optional.h"
 #include "odf/sys/memory.h"
 
-                        // insX insY flip head2 w   h   pad
-#define FME_HEADER_FORMAT "%l4  %l4  %l4  %l4   %l4 %l4 %c8"
-                          // sizX  sizY comp dSize cOffset pad
-#define FME_SUBHEADER_FORMAT "%l4  %l4  %l4  %l4   %l4     %c4"
 
 OptionalPtr* fmeOpenInMemoryFile(InMemoryFile* file) {
     OptionalPtr* optHeader = inMemFileReadStruct(file, FME_HEADER_FORMAT);

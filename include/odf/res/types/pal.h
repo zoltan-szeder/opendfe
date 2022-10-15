@@ -3,8 +3,6 @@
 
 #include "math/vec.h"
 
-typedef struct {
-    ucvec3 colors[256];
-} Palette;
+typedef struct Palette Palette;
 
 #endif

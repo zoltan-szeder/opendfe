@@ -1,8 +1,10 @@
+#include "odf/res/gob.h"
+#include "odf/res/types/gob_def.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
-#include "odf/res/gob.h"
 #include "odf/sys/types.h"
 #include "odf/sys/file.h"
 #include "odf/sys/memory.h"
@@ -15,24 +17,11 @@ OptionalPtr* gobReadArchiveFile(GobArchive*);
 OptionalPtr* gobReadArchiveFiles(GobArchive*, uint32 fileCount);
 OptionalUInt32* gobReadArchiveFileCount(GobArchive* archive);
 
-const char* GOB_ARCHIVE_HEADER_FORMAT = "%c4 %l4";
-typedef struct GobArchiveHeaders {
-    char magic[4];
-    uint32 directoryOffset;
-} GobArchiveHeaders;
-
 struct GobArchive {
     FILE* stream;
     GobArchiveHeaders* headers;
     List* files;
 };
-
-const char* GOB_FILE_HEADER_FORMAT = "%l4 %l4 %c13";
-typedef struct GobFileHeader {
-    uint32 offset;
-    uint32 length;
-    char name[13];
-} GobFileHeader;
 
 struct GobFile {
     GobFileHeader* header;

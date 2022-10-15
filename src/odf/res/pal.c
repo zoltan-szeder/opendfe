@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "odf/res/pal.h"
+#include "odf/res/types/pal_def.h"
 
 #include "odf/sys/inmemoryfile.h"
 #include "odf/sys/optional.h"

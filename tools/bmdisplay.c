@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "odf/ogl/main.h"
-#include "odf/ogl/model.h"
-#include "odf/ogl/texture.h"
 #include "odf/res/pal.h"
 #include "odf/res/bm.h"
 #include "odf/res/gob.h"
+
+#include "odf/sys/optional.h"
+
+#include "odf/ogl/main.h"
+#include "odf/ogl/model.h"
+#include "odf/ogl/texture.h"
 
 OptionalPtr* palExtract(char* gobFile, char* palFile) {
     OptionalPtr* optionalPalArchive = gobOpenArchive(gobFile);

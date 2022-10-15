@@ -1,3 +1,9 @@
+#include "odf/res/gob.h"
+#include "odf/res/bm.h"
+#include "odf/res/pal.h"
+
+#include "odf/sys/optional.h"
+
 #include <GL/glew.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -7,9 +13,6 @@
 #include <stb/stb_image_write.h>
 
 #include "odf/sys/file.h"
-#include "odf/res/gob.h"
-#include "odf/res/bm.h"
-#include "odf/res/pal.h"
 
 
 OptionalPtr* palExtract(char* gobFile, char* palFile) {

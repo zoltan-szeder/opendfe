@@ -7,7 +7,9 @@
 #include "test_fixtures.h"
 
 #include "odf/res/bm.h"
+#include "odf/res/types/bm_def.h"
 #include "odf/res/pal.h"
+#include "odf/res/types/pal_def.h"
 #include "assertions/memory.h"
 
 #define PX_A 0
@@ -57,6 +59,7 @@ void assertPixel(Image8Bit* img, uint32 i, uint8 r, uint8 g, uint8 b, uint8 a) {
         pixel->r, pixel->g, pixel->b, pixel->a,
         r, g, b, a));
 }
+
 BMHeader getTransparentHeader(int width, int height) {
     BMHeader header;
     header.sizeX = width;

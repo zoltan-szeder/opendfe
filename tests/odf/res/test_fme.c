@@ -3,6 +3,7 @@
 #include "assertions/optional.h"
 
 #include "odf/res/fme.h"
+#include "odf/res/types/fme_def.h"
 #include "odf/sys/stringbuffer.h"
 #include "odf/sys/optional.h"
 #include "odf/sys/inmemoryfile.h"
