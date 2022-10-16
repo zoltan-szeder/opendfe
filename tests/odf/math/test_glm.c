@@ -84,6 +84,20 @@ void testRotateZ180(){
     );
 }
 
+void testPerspective(){
+    testCase("testPerspective");
+
+    mat4 perspective = mat4Perspective(45.f, 800.f/600.f, 0.1f, 100.f);
+
+    assertEqualMat(
+        perspective,
+          1,   0,  0,  0,
+          0,   2,  0,  0,
+          0,   0, -1,  0,
+          0,   0, -1,  0
+    );
+}
+
 
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
@@ -91,6 +105,7 @@ int main(int argc, char** argv){
         &testTranslate,
         &testScale,
         &testRotateZ180,
+        &testPerspective,
     };
 
     TestFixture fixture = createFixture();
