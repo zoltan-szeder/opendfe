@@ -135,6 +135,7 @@ int main(int argc, char** argv) {
 
     if(!memoryIsEmpty()) {
         memoryDump(false);
+        memoryReleaseAll();
     }
 
     return 0;

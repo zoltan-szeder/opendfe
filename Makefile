@@ -1,7 +1,9 @@
-CC := gcc
 CFLAGS := -std=c11 -fPIC -rdynamic -g -O2 -Wall -I include -I tests/include/
+CPPFLAGS :=
+
+CXXFLAGS := -std=c++11 -fPIC -rdynamic -g -O2 -Wall -I include -I tests/include/
+
 SOFLAGS := -shared
-LIBS := -lglfw -lGLEW -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lm
 LD := gcc
 LDFLAGS := -L .
 LINK_ARGS = -o $@ $(LDFLAGS) $(addprefix -l:,$|) $^
@@ -23,8 +25,10 @@ TEST_TOOLS := $(wildcard tests/lib/*.c)
 TEST_TOOL_OBJECTS := $(TEST_TOOLS:.c=.o)
 
 TESTS =
+REQUIREMENTS =
 
 include src/odf/sys/module.mk
+include src/odf/math/module.mk
 include src/odf/res/module.mk
 include src/odf/ogl/module.mk
 
@@ -56,14 +60,14 @@ assemble: $(ODF_MAIN)
 
 
 $(ODF_MAIN): $(ODF_OBJECTS) | $(ODF_SO_ALL)
-	$(LD) $(LINK_ARGS) -lm
+	$(LD) $(LINK_ARGS) $(REQUIREMENTS)
 
 compile: $(OBJECTS)
 
 assemble-tools: $(TOOL_OUTPUTS)
 
 tools/%.out: tools/%.o | $(ODF_SO_ALL)
-	$(LD) $(LINK_ARGS)
+	$(LD) $(LINK_ARGS) $(REQUIREMENTS)
 
 compile-tools: $(TOOL_OBJECTS)
 

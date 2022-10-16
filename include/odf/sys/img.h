@@ -1,7 +1,7 @@
 #ifndef ODF_SYS_IMG_H
 #define ODF_SYS_IMG_H
 
-#include "math/vec.h"
+#include "odf/math/vec.h"
 #include "odf/sys/types.h"
 
 typedef struct {
