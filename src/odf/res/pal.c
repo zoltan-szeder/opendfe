@@ -9,20 +9,23 @@
 #include "odf/sys/optional.h"
 #include "odf/sys/memory.h"
 
-Palette* palOpenInMemoryFile(InMemoryFile* file){
+OptionalPtr* palOpenInMemoryFile(InMemoryFile* file){
     uint64 fileSize = inMemFileSize(file);
     if(fileSize != sizeof(Palette)){
-        printf("Size of file (%lu) does not match Palette specifications (%lu)\n", fileSize, sizeof(Palette));
-        return NULL;
+        return optionalEmpty(
+            "Size of file (%lu) does not match Palette specifications (%lu)\n", fileSize, sizeof(Palette));
     }
 
     OptionalPtr* optContent = inMemFileRead(file, fileSize);
-    if(optionalIsEmpty(optContent)) return NULL;
+    if(optionalIsEmpty(optContent))
+        return optionalEmpty("odf/res/pal.c:palOpenInMemoryFile - Could not read Palette");
     Palette* content = optionalGet(optContent);
     memoryTag(content, "odf/res/pal/Palette");
 
-    return content;
+    return optionalOf(content);
 }
+
+
 void palClose(Palette* pal) {
     memoryRelease(pal);
 }

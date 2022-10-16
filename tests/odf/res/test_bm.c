@@ -32,9 +32,9 @@ Palette getSimplePalette() {
     Palette palette;
 
     ucvec3 alpha;  alpha.r  =   0; alpha.g  =   0; alpha.b  =   0;
-    ucvec3 red;    red.r    = 255; red.g    =   0; red.b    =   0;
-    ucvec3 green;  green.r  =   0; green.g  = 255; green.b  =   0;
-    ucvec3 blue;   blue.r   =   0; blue.g   =   0; blue.b   = 255;
+    ucvec3 red;    red.r    =  63; red.g    =   0; red.b    =   0;
+    ucvec3 green;  green.r  =   0; green.g  =  63; green.b  =   0;
+    ucvec3 blue;   blue.r   =   0; blue.g   =   0; blue.b   =  63;
 
     palette.colors[PX_A] = alpha;
     palette.colors[PX_R] = red;
