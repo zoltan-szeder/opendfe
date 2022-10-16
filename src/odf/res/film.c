@@ -20,7 +20,7 @@ OptionalPtr* filmRead(LfdArchive* archive) {
     OptionalPtr* optHeader =  inMemFileReadStruct(inMemFilm, "%c4 %c8 %l4");
     if(optionalIsEmpty(optHeader)) return optHeader;
 
-    Film* film = memoryAllocate(sizeof(Film));
+    Film* film = memoryAllocateWithTag(sizeof(Film), "odf/res/film/Film");
     film->header = optionalGet(optHeader);
 
     return optionalOf(film);

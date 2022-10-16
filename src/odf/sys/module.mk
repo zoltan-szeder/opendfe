@@ -3,6 +3,7 @@ ODF_SYS_OBJECTS := $(ODF_SYS_SOURCES:.c=.o)
 
 ODF_SYS_SO := lib/libodf-sys.so
 
+ODF_OBJECTS_ALL += $(ODF_SYS_OBJECTS)
 ODF_SO_ALL += $(ODF_SYS_SO)
 
 $(ODF_SYS_SO): $(ODF_SYS_OBJECTS)

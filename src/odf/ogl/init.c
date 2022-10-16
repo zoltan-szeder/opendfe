@@ -4,6 +4,8 @@
 
 #include "odf/ogl/init.h"
 #include "odf/sys/file.h"
+#include "odf/sys/optional.h"
+#include "odf/sys/memory.h"
 
 OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFile);
 
@@ -62,7 +64,7 @@ OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFil
 	glShaderSource(*shaderId, 1, (const char**) &glsl, NULL);
 	glCompileShader(*shaderId);
 
-	free(glsl);
+	memoryRelease(glsl);
 
 	// check for shader compile errors
 	int success;

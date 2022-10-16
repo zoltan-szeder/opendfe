@@ -10,9 +10,9 @@ struct List {
 };
 
 List* listCreate(uint32 size) {
-    List* list = memoryAllocate(sizeof(List));
+    List* list = memoryAllocateWithTag(sizeof(List), "odf/sys/list/List");
 
-    list->values = memoryAllocate(size*sizeof(void**));
+    list->values = memoryAllocateWithTag(size*sizeof(void**), "odf/sys/list/List/values");
     list->size = size;
 
     for(int i = 0; i < list->size; i++) {

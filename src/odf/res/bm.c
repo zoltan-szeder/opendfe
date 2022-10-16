@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 #include "odf/res/bm.h"
 #include "odf/res/types/bm_def.h"
@@ -15,10 +16,11 @@
 
 bool bmIsTransparent(BMFile* bmFile, int colorIndex);
 
-uint8* bmDecompress(BMFile* bmFile);
-Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette);
-int bmGetNormalizedPixelIndex(int w, int h, int i);
-void ucvec3Copy(ucvec3* dest, ucvec3* src);
+static uint8* bmDecompress(BMFile* bmFile);
+static Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette);
+static int bmGetNormalizedPixelIndex(int w, int h, int i);
+static void ucvec3Copy(ucvec3* dest, ucvec3* src);
+static ucvec3 normalizedPaletteColor(ucvec3* color);
 
 
 BMFile* bmOpenFile(char* file) {
@@ -28,15 +30,18 @@ BMFile* bmOpenFile(char* file) {
     if(optionalIsEmpty(optionalBmHeader)) return NULL;
 
     BMHeader* bmHeader = optionalGet(optionalBmHeader);
+    memoryTag(bmHeader, "odf/res/bm/BmHeader");
 
-    OptionalPtr* data = fileReadBytes(stream, bmHeader->dataSize);
-    if(optionalIsEmpty(data)) return NULL;
+    OptionalPtr* optData = fileReadBytes(stream, bmHeader->dataSize);
+    if(optionalIsEmpty(optData)) return NULL;
+    uint8* data = optionalGet(optData);
+    memoryTag(data, "odf/res/bm/BMFile/data");
 
     fclose(stream);
 
-    BMFile* bmFile = memoryAllocate(sizeof(BMFile));
+    BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
     bmFile->header = bmHeader;
-    bmFile->data = optionalGet(data);
+    bmFile->data = data;
 
     return bmFile;
 }
@@ -50,7 +55,7 @@ BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
     OptionalPtr* optionalData = inMemFileRead(file, bmHeader->dataSize);
     if(optionalIsEmpty(optionalData)) return NULL;
 
-    BMFile* bmFile = memoryAllocate(sizeof(BMFile));
+    BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
 
     bmFile->header = bmHeader;
     bmFile->data = optionalGet(optionalData);
@@ -105,7 +110,8 @@ Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* pale
         ucvec3* paletteColor = palette->colors + colorIndex;
         ucvec4* pixel = texture + pxi;
 
-        ucvec3Copy((ucvec3*) pixel, paletteColor);
+        ucvec3 normalizedColor = normalizedPaletteColor(paletteColor);
+        ucvec3Copy((ucvec3*) pixel, &normalizedColor);
         if(bmIsTransparent(bmFile, colorIndex)){
             pixel->a = 0;
         } else {
@@ -114,6 +120,17 @@ Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* pale
     }
 
     return img;
+}
+
+static ucvec3 normalizedPaletteColor(ucvec3* color) {
+    float scale =  (255.0 / 63.0);
+    ucvec3 vec = {
+        .r = round(scale * color->r),
+        .g = round(scale * color->g),
+        .b = round(scale * color->b),
+    };
+
+    return vec;
 }
 
 int bmGetNormalizedPixelIndex(int w, int h, int i) {

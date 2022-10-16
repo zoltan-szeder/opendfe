@@ -3,6 +3,7 @@
 #include "odf/res/pal.h"
 
 #include "odf/sys/optional.h"
+#include "odf/sys/memory.h"
 
 #include <GL/glew.h>
 #include <stdio.h>
@@ -21,8 +22,10 @@ OptionalPtr* palExtract(char* gobFile, char* palFile) {
 
     GobArchive* palArchive = optionalGet(optionalPalArchive);
     InMemoryFile* palInMem = gobReadFile(gobGetFile(palArchive, palFile));
+    memoryTag(palInMem, "PaletteInMemory");
 
     Palette* pal = palOpenInMemoryFile(palInMem);
+    memoryTag(pal, "Palette");
 
     gobCloseFile(palInMem);
     gobCloseArchive(palArchive);
@@ -36,8 +39,10 @@ OptionalPtr* bmExtract(char* gobFile, char* bmFile) {
 
     GobArchive* bmArchive = optionalGet(optionalBmArchive);
     InMemoryFile* bmInMem = gobReadFile(gobGetFile(bmArchive, bmFile));
+    memoryTag(bmInMem, "BmInMemory");
 
     BMFile* bm = bmOpenInMemoryFile(bmInMem);
+    memoryTag(bm, "Bm");
 
     gobCloseFile(bmInMem);
     gobCloseArchive(bmArchive);

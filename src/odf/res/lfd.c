@@ -29,7 +29,7 @@ OptionalPtr* lfdOpenArchive(char* file_name) {
     if(optionalIsEmpty(optFile)) return optFile;
     FILE* file = optionalGet(optFile);
 
-    LfdArchive* archive = memoryAllocate(sizeof(LfdArchive));
+    LfdArchive* archive = memoryAllocateWithTag(sizeof(LfdArchive), "odf/res/ldf/LfdArchive");
 
     OptionalPtr* optHeader =  fileReadStruct(file, LFD_CHUNK_FORMAT);
     if(optionalIsEmpty(optHeader)) return optHeader;
@@ -43,7 +43,7 @@ OptionalPtr* lfdOpenArchive(char* file_name) {
         if(optionalIsEmpty(optFileHeader)) return optFileHeader;
 
         LfdHeader* fileHeader = optionalGet(optFileHeader);
-        LfdFile* lfdFile = memoryAllocate(sizeof(LfdFile));
+        LfdFile* lfdFile = memoryAllocateWithTag(sizeof(LfdFile), "odf/res/ldf/LdfFile");
         lfdFile->header = fileHeader;
         lfdFile->file = file;
         lfdFile->offset = currentOffset;

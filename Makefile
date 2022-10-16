@@ -15,6 +15,7 @@ ODF_OBJECTS := $(ODF_SOURCES:.c=.o)
 ODF_MAIN := "bin/dark"
 
 ODF_SO_ALL =
+ODF_OBJECTS_ALL =
 
 MOCKS := $(wildcard tests/mocks/*.c)
 MOCK_OBJECTS := $(MOCKS:.c=.o)
@@ -72,7 +73,7 @@ tests/test_%.out: tests/test_%.o $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS) | $(ODF_SO
 	$(MC) $(MCFLAGS) ./$@
 
 clean:
-	rm -f $(ODF_SO_ALL) $(TEST_OUTPUTS) $(TEST_OBJECTS) $(OBJECTS) $(TOOL_OUTPUTS) $(TOOL_OBJECTS) .depend
+	rm -f $(ODF_SO_ALL) $(TEST_OUTPUTS) $(TEST_OBJECTS) $(ODF_OBJECTS_ALL) $(TOOL_OUTPUTS) $(TOOL_OBJECTS) .depend
 
 .PHONY: test clean compile
 .PRECIOUS: $(OBJECTS) $(TEST_OBJECTS) $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS) $(TEST_OUTPUTS)

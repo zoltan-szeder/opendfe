@@ -3,15 +3,17 @@
 #include <string.h>
 
 #include "odf/sys/memory.h"
+#include "odf/sys/gc.h"
 #include "odf/sys/types.h"
 
 void (*cleanup)() = NULL;
 
-size_t MEMORY_ALLOCATED = 0;
-size_t MEMORY_ALLOCATION_SIZE = 0;
-size_t MEMORY_ALLOCATION_MAX_SIZE = 256;
+static size_t MEMORY_ALLOCATED = 0;
+static size_t MEMORY_ALLOCATION_SIZE = 0;
+static size_t MEMORY_ALLOCATION_SIZE_INC = 256;
+static size_t MEMORY_ALLOCATION_MAX_SIZE = 256;
 
-#define MEMORY_NAME_MAX_SIZE 16
+#define MEMORY_NAME_MAX_SIZE 32
 
 typedef struct MemoryAllocation MemoryAllocation;
 struct MemoryAllocation {
@@ -32,6 +34,8 @@ static MemoryAllocation* memoryFindAllocation(void*);
 static void memoryReleaseAllocation(MemoryAllocation*);
 static void memoryRegister(void* ptr, size_t size);
 static bool memoryAllocationContainsValidPointer(MemoryAllocation* alloc, void* ptr);
+static void memoryAdjustAllocationRegistry();
+static void memoryFileDump(FILE* stream, bool includeInvalid);
 
 size_t memoryGetAllocations() {
     return MEMORY_ALLOCATED;
@@ -42,9 +46,7 @@ void memorySetCleanUp(void (*fun)()) {
 }
 
 void* memoryAllocate(size_t size) {
-    if(MEMORY_ALLOCATIONS == NULL) {
-        MEMORY_ALLOCATIONS = malloc(MEMORY_ALLOCATION_MAX_SIZE*sizeof(MemoryAllocation));
-    }
+    memoryAdjustAllocationRegistry();
 
     void* ptr = malloc(size);
     if(ptr == NULL) {
@@ -239,34 +241,35 @@ bool memoryIsReferencedBy(void* referencedPtr, void* refereePtr) {
     return false;
 }
 
-void memoryFileDump(FILE* stream);
 
-void memoryDump(){
-    memoryFileDump(stderr);
+void memoryDump(bool includeInvalid){
+    memoryFileDump(stderr, includeInvalid);
 }
 
-void memoryFileDump(FILE* stream){
+void memoryFileDump(FILE* stream, bool includeInvalid){
     uint32 sum = 0;
     for(int i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
 
-        fprintf(stream, "- name: %-15s\n", alloc->name);
-        fprintf(stream, "  ptr: %p\n", alloc->ptr);
-        fprintf(stream, "  size: %zu\n", alloc->size);
-        fprintf(stream, "  valid: %s\n", alloc->valid ? "true" : "false");
-        if(alloc->referenceSize > 0) {
-            fprintf(stream, "  ref_to:\n");
-            for(int j = 0; j < alloc->referenceSize; j++) {
-                MemoryAllocation* refAlloc = alloc->references[j];
-                fprintf(stream, "  - %p\n", refAlloc->ptr);
+        if(alloc->valid || includeInvalid) {
+            fprintf(stream, "- name: %-15s\n", alloc->name);
+            fprintf(stream, "  ptr: %p\n", alloc->ptr);
+            fprintf(stream, "  size: %zu\n", alloc->size);
+            fprintf(stream, "  valid: %s\n", alloc->valid ? "true" : "false");
+            if(alloc->referenceSize > 0) {
+                fprintf(stream, "  ref_to:\n");
+                for(int j = 0; j < alloc->referenceSize; j++) {
+                    MemoryAllocation* refAlloc = alloc->references[j];
+                    fprintf(stream, "  - %p (%s)\n", refAlloc->ptr, refAlloc->name);
+                }
             }
-        }
 
-        if(alloc->refereeSize > 0) {
-            fprintf(stream, "  ref_by:\n");
-            for(int j = 0; j < alloc->refereeSize; j++) {
-                MemoryAllocation* refAlloc = alloc->referees[j];
-                fprintf(stream, "  - %p\n", refAlloc->ptr);
+            if(alloc->refereeSize > 0) {
+                fprintf(stream, "  ref_by:\n");
+                for(int j = 0; j < alloc->refereeSize; j++) {
+                    MemoryAllocation* refAlloc = alloc->referees[j];
+                    fprintf(stream, "  - %p (%s)\n", refAlloc->ptr, refAlloc->name);
+                }
             }
         }
 
@@ -282,7 +285,22 @@ int memoryGetRefereeCount(void* obj) {
     MemoryAllocation* alloc = memoryFindAllocation(obj);
     return alloc->refereeSize;
 }
+
 int memoryGetReferenceCount(void* obj) {
     MemoryAllocation* alloc = memoryFindAllocation(obj);
     return alloc->referenceSize;
+}
+
+static void memoryAdjustAllocationRegistry() {
+    if(MEMORY_ALLOCATIONS == NULL) {
+        MEMORY_ALLOCATIONS = malloc(MEMORY_ALLOCATION_MAX_SIZE*sizeof(MemoryAllocation));
+    }
+    if(MEMORY_ALLOCATION_SIZE == MEMORY_ALLOCATION_MAX_SIZE) {
+        MEMORY_ALLOCATION_MAX_SIZE += MEMORY_ALLOCATION_SIZE_INC;
+        MEMORY_ALLOCATIONS = realloc(MEMORY_ALLOCATIONS, MEMORY_ALLOCATION_MAX_SIZE*sizeof(MemoryAllocation));
+    }
+}
+
+bool memoryIsEmpty(){
+    return MEMORY_ALLOCATED == 0;
 }

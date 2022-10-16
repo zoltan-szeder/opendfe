@@ -7,6 +7,8 @@
 #include "odf/ogl/init.h"
 #include "odf/ogl/window.h"
 
+#include "odf/sys/memory.h"
+
 struct Display {
     GLFWwindow* window;
     unsigned int hudShader;
@@ -20,7 +22,7 @@ Display* dglCreateDisplay() {
     if (shaderProgram == 0) return NULL;
 
 
-    Display* display = malloc(sizeof(Display));
+    Display* display = memoryAllocateWithTag(sizeof(Display), "odf/ogl/main/Display");
     display->window = window;
     display->hudShader = shaderProgram;
     return display;
@@ -52,5 +54,5 @@ void dglDraw(Display* display, GameState* state) {
 void dglDestroyDisplay(Display* display){
     glDeleteProgram(display->hudShader);
     terminateWindow();
-    free(display);
+    memoryRelease(display);
 }

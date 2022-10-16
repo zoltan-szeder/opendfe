@@ -13,9 +13,7 @@
 #define BM_COMPRESSION_RLE1 1
 
 
-const char* BM_HEADER_FORMAT =
-    "%c4     %l2     %l2      %l2     %l2     %c1       %c1         %l2        %l4       %c12";
-//  magic | sizeX | sizeY | |idemX | idemY | trans | logSizeY | compressed | dataSize | padding
+#define BM_HEADER_FORMAT "%c4 %l2 %l2 %l2 %l2 %c1 %c1 %l2 %l4 %c12"
 
 struct BMHeader {
     char magic[4];      // "BM \x01e"

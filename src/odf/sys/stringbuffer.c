@@ -17,8 +17,8 @@ size_t stringBufferRemainingSize(StringBuffer* sb);
 void stringBufferIncreaseSize(StringBuffer* sb, size_t size);
 
 StringBuffer* stringBufferCreate() {
-    StringBuffer* sb = memoryAllocate(sizeof(StringBuffer));
-    sb->buffer = memoryAllocate(STRING_BUFFER_INCREMENT);
+    StringBuffer* sb = memoryAllocateWithTag(sizeof(StringBuffer), "odf/sys/stringbuffer/StringBuffer");
+    sb->buffer = memoryAllocateWithTag(STRING_BUFFER_INCREMENT, "odf/sys/stringbuffer/StringBuffer/buffer");
     sb->cursor = sb->buffer;
     sb->length = STRING_BUFFER_INCREMENT;
 
@@ -33,7 +33,7 @@ void stringBufferDelete(StringBuffer* sb){
 char* stringBufferToString(StringBuffer* sb) {
     size_t size = stringBufferSize(sb);
 
-    char* str = memoryAllocate((size + 1)*sizeof(char));
+    char* str = memoryAllocateWithTag((size + 1)*sizeof(char), "odf/sys/stringbuffer/toString");
 
     memcpy(str, sb->buffer, size);
     str[size] = 0;
@@ -85,7 +85,7 @@ void stringBufferIncreaseSize(StringBuffer* sb, size_t size) {
     size_t numberOfIncrements = (expectedSize / STRING_BUFFER_INCREMENT) + 1;
     size_t newSize = numberOfIncrements*STRING_BUFFER_INCREMENT;
 
-    char* newBuffer = memoryAllocate(newSize*(sizeof(char)));
+    char* newBuffer = memoryAllocateWithTag(newSize*(sizeof(char)), "odf/sys/stringbuffer/StringBuffer/buffer");
     memcpy(newBuffer, sb->buffer, currentSize);
 
     memoryRelease(sb->buffer);

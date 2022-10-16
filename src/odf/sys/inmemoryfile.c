@@ -15,8 +15,7 @@ struct InMemoryFile {
 };
 
 OptionalPtr* memFileCreate(char* content, uint32 length) {
-    InMemoryFile* file = memoryAllocate(sizeof(InMemoryFile));
-    memoryTag(file, "InMemoryFile");
+    InMemoryFile* file = memoryAllocateWithTag(sizeof(InMemoryFile), "odf/sys/inmemoryfile/InMemoryFile");
 
     file->content = content;
     file->length = length;
@@ -73,7 +72,7 @@ OptionalPtr* inMemFileRead(InMemoryFile* file, uint32 length) {
             length, file->pos, file->length
         );
 
-    uint8* bytes = memoryAllocate(length);
+    uint8* bytes = memoryAllocateWithTag(length, "odf/sys/inmemoryfile/InMemoryFile/content");
     memcpy(bytes, file->content + file->pos, length);
     file->pos += length;
 

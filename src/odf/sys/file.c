@@ -28,7 +28,7 @@ OptionalPtr* fileReadAll(char* filePath) {
 
     if(length == -1L) return optionalEmpty("odf/sys/file.c:fileReadAll - File lenght is invalid");
 
-    char* content = memoryAllocate(length);
+    char* content = memoryAllocateWithTag(length, "odf/sys/file/fileReadAll");
 
     fread(content, length, 1, stream);
     content[length-1] = (char) 0;
@@ -54,8 +54,8 @@ OptionalPtr* fileReadStruct(FILE* stream, const char* format) {
 
 
 OptionalPtr* fileReadBytes(FILE* stream, size_t length) {
-    char* bytes = memoryAllocate(length);
-    memoryTag(bytes, "FileContent");
+    char* bytes = memoryAllocateWithTag(length, "odf/sys/file/fileReadBytes");
+    memoryTag(bytes, "odf/sys/file/FileContent");
 
     uint32 objects = fread(bytes, length, 1, stream);
     if(objects != 1) {

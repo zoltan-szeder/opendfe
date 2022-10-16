@@ -12,11 +12,7 @@
 #define FME_COMPRESS_RLE0 1
 
 
-                        // insX insY flip head2 w   h   pad
-#define FME_HEADER_FORMAT "%l4  %l4  %l4  %l4   %l4 %l4 %c8"
-                          // sizX  sizY comp dSize cOffset pad
-#define FME_SUBHEADER_FORMAT "%l4  %l4  %l4  %l4   %l4     %c4"
-
+#define FME_HEADER_FORMAT "%l4 %l4 %l4 %l4 %l4 %l4 %c8"
 struct FMEHeader {
     uint32 insertX;       // negative insertion on X axis
     uint32 insertY;       // negative insertion on Y axis
@@ -27,6 +23,7 @@ struct FMEHeader {
     uint8 pad[8];         // 8 x '\x00'
 };
 
+#define FME_SUBHEADER_FORMAT "%l4 %l4 %l4 %l4 %l4 %c4"
 struct FMESubHeader {
     uint32 sizeX;         // image width
     uint32 sizeY;         // image height

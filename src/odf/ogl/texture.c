@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <stdlib.h>
 #include "odf/ogl/texture.h"
+#include "odf/sys/memory.h"
 
 struct DglTexture {
     unsigned int id;
@@ -16,7 +17,7 @@ GLint dglGetImageFormat(Image8Bit* img) {
 }
 
 DglTexture* dglTextureCreate(Image8Bit* img){
-    DglTexture* tx = malloc(sizeof(DglTexture));
+    DglTexture* tx = memoryAllocateWithTag(sizeof(DglTexture), "odf/ogl/texture/DglTexture");
     if(tx == NULL) {
         return NULL;
     }
@@ -40,7 +41,7 @@ DglTexture* dglTextureCreate(Image8Bit* img){
 void dglTextureDelete(DglTexture* texture) {
     unsigned int id = texture->id;
     glDeleteTextures(1, &id);
-    free(texture);
+    memoryRelease(texture);
 }
 
 

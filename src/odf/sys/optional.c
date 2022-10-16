@@ -72,12 +72,10 @@ Optional MEMORY_ALLOCATION_ISSUE = {
 };
 
 void* optionalEmpty(const char* formatString, ...) {
-    Optional* optional = memoryAllocate(sizeof(Optional));
-    memoryTag(optional, "EmptyOptional");
+    Optional* optional = memoryAllocateWithTag(sizeof(Optional), "odf/sys/optional/EmptyOptional");
     optional->isPresent = false;
 
-    optional->message = memoryAllocate(1024*sizeof(char));
-    memoryTag(optional->message, "EmptyOptionalMsg");
+    optional->message = memoryAllocateWithTag(1024*sizeof(char), "odf/sys/optional/EmptyOptional/message");
     va_list args;
     va_start(args, formatString);
     vsnprintf(optional->message, 1024, formatString, args);
@@ -133,8 +131,7 @@ void optionalPrint(FILE* stream, Optional* optional) {
 }
 
 void* optionalCreate(size_t size) {
-    Optional* optional = memoryAllocate(size);
-    memoryTag(optional, "Optional");
+    Optional* optional = memoryAllocateWithTag(size, "odf/sys/optional/Optional");
     optional->isPresent = true;
     optional->message = NULL;
 

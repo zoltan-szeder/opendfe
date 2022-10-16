@@ -18,8 +18,10 @@ Palette* palOpenInMemoryFile(InMemoryFile* file){
 
     OptionalPtr* optContent = inMemFileRead(file, fileSize);
     if(optionalIsEmpty(optContent)) return NULL;
+    Palette* content = optionalGet(optContent);
+    memoryTag(content, "odf/res/pal/Palette");
 
-    return optionalGet(optContent);
+    return content;
 }
 void palClose(Palette* pal) {
     memoryRelease(pal);

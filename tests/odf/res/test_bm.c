@@ -75,8 +75,6 @@ void testBmReadFile(){
     testCase("Test .BM file parsing");
     BMFile* bmFile = bmOpenFile("tests/resources/test.bm");
 
-    Palette palette = getSimplePalette();
-
     bmClose(bmFile);
 }
 

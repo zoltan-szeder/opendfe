@@ -3,6 +3,7 @@ ODF_RES_OBJECTS := $(ODF_RES_SOURCES:.c=.o)
 
 ODF_RES_SO := lib/libodf-res.so
 
+ODF_OBJECTS_ALL += $(ODF_RES_OBJECTS)
 ODF_SO_ALL += $(ODF_RES_SO)
 
 $(ODF_RES_SO): $(ODF_RES_OBJECTS) | $(ODF_SYS_SO)

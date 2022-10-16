@@ -10,7 +10,7 @@ OptionalPtr* fmeOpenInMemoryFile(InMemoryFile* file) {
     OptionalPtr* optHeader = inMemFileReadStruct(file, FME_HEADER_FORMAT);
     if(optionalIsEmpty(optHeader)) return optHeader;
     FMEHeader* header = optionalGet(optHeader);
-    memoryTag(header, "FMEFileHeader");
+    memoryTag(header, "odf/res/fme/FMEFileHeader");
 
 
     OptionalPtr* optSubHeader = inMemFileReadStruct(file, FME_SUBHEADER_FORMAT);
@@ -19,9 +19,9 @@ OptionalPtr* fmeOpenInMemoryFile(InMemoryFile* file) {
         return optSubHeader;
     }
     FMESubHeader* subHeader = optionalGet(optSubHeader);
-    memoryTag(subHeader, "FMEFileHeader");
+    memoryTag(subHeader, "odf/res/fme/FMESubHeader");
 
-    FMEFile* fmeFile = memoryAllocateWithTag(sizeof(FMEFile), "FMEFile");
+    FMEFile* fmeFile = memoryAllocateWithTag(sizeof(FMEFile), "odf/res/fme/FMEFile");
     fmeFile->header = header;
     fmeFile->subHeader = subHeader;
 

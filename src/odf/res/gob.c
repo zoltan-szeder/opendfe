@@ -82,8 +82,7 @@ InMemoryFile* gobReadFile(GobFile* gob_file){
     int failure = fseek(stream, gob_file->header->offset, SEEK_SET);
     if(failure) return NULL;
 
-    char* content = memoryAllocate(gob_file->header->length);
-    memoryTag(content, "GobFileContent");
+    char* content = memoryAllocateWithTag(gob_file->header->length, "odf/res/gob/GobFileContent");
 
     int objects = fread(content, gob_file->header->length, 1, stream);
     if(objects == 0) return NULL;
@@ -120,8 +119,7 @@ int gobPrintArchive(GobArchive* archive){
 }
 
 OptionalPtr* gobReadArchive(FILE* stream) {
-    GobArchive* archive = memoryAllocate(sizeof(GobArchive));
-    memoryTag(archive, "GobArchive");
+    GobArchive* archive = memoryAllocateWithTag(sizeof(GobArchive), "odf/res/gob/GobArchive");
 
     archive->stream = stream;
 
@@ -176,8 +174,7 @@ OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32 fileCount) {
             return optFile;
         }
 
-        GobFile* file = memoryAllocate(sizeof(GobFile));
-        memoryTag(file, "GobFile");
+        GobFile* file = memoryAllocateWithTag(sizeof(GobFile), "odf/res/gob/GobFile");
         file->header = optionalGet(optFile);
         file->parent = archive;
 

@@ -5,6 +5,8 @@
 #include "odf/res/bm.h"
 #include "odf/res/gob.h"
 
+#include "odf/sys/gc.h"
+#include "odf/sys/memory.h"
 #include "odf/sys/optional.h"
 
 #include "odf/ogl/main.h"
@@ -17,8 +19,10 @@ OptionalPtr* palExtract(char* gobFile, char* palFile) {
 
     GobArchive* palArchive = optionalGet(optionalPalArchive);
     InMemoryFile* palInMem = gobReadFile(gobGetFile(palArchive, palFile));
+    memoryTag(palInMem, "PaletteInMemory");
 
     Palette* pal = palOpenInMemoryFile(palInMem);
+    memoryTag(pal, "Palette");
 
     gobCloseFile(palInMem);
     gobCloseArchive(palArchive);
@@ -32,8 +36,10 @@ OptionalPtr* bmExtract(char* gobFile, char* bmFile) {
 
     GobArchive* bmArchive = optionalGet(optionalGobArchive);
     InMemoryFile* bmInMem = gobReadFile(gobGetFile(bmArchive, bmFile));
+    memoryTag(bmInMem, "BmInMemory");
 
     BMFile* bm = bmOpenInMemoryFile(bmInMem);
+    memoryTag(bm, "Bm");
     bmPrintFile(bm);
 
     gobCloseFile(bmInMem);
@@ -62,6 +68,8 @@ int main(int argc, char** argv) {
     BMFile* bm = optionalGet(optionalBm);
     Palette* pal = optionalGet(optionalPal);
     Image8Bit* image = bmCreateImage(bm, pal);
+    bmClose(bm);
+    palClose(pal);
 
     DglTexture* texture = dglTextureCreate(image);
 
@@ -122,6 +130,10 @@ int main(int argc, char** argv) {
     dglDestroyDisplay(display);
     dglModelDelete(gamestate.model);
     dglTextureDelete(texture);
+
+    if(!memoryIsEmpty()) {
+        memoryDump(false);
+    }
 
     return 0;
 }

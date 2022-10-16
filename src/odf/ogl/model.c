@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 #include "odf/ogl/model.h"
+#include "odf/sys/memory.h"
 
 struct Model {
     uint32 vertexArray;
@@ -33,7 +34,7 @@ Model* dglModelCreate(float* vertices, uint32 vsize,  uint32* indices, uint32 is
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*) (6*sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    Model* model = malloc(sizeof(Model));
+    Model* model = memoryAllocateWithTag(sizeof(Model), "odf/ogl/model/Model");
     model->vertexArray = VAO;
     model->arrayBuffer = VBO;
     model->elementArrayBuffer = EBO;
@@ -55,6 +56,6 @@ void dglModelDelete(Model* model){
     glDeleteVertexArrays(1, &(model->vertexArray));
     glDeleteBuffers(1, &(model->arrayBuffer));
     glDeleteBuffers(1, &(model->elementArrayBuffer));
-    free(model);
+    memoryRelease(model);
 }
 
