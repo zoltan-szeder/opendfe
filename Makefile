@@ -8,8 +8,8 @@ LD := gcc
 LDFLAGS := -L .
 LINK_ARGS = -o $@ $(LDFLAGS) $(addprefix -l:,$|) $^
 
-MC := valgrind
-MCFLAGS := --leak-check=full --suppressions=./valgrind.supp --error-exitcode=1 -q
+#MC := valgrind
+#MCFLAGS := --leak-check=full --suppressions=./valgrind.supp --error-exitcode=1 -q
 
 
 ODF_SOURCES := $(wildcard src/odf/*.c)

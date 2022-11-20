@@ -6,7 +6,11 @@
 #include "odf/sys/types/inmemoryfile.h"
 
 
-OptionalPtr* palOpenInMemoryFile(InMemoryFile* file);
+// Return type: Optional(Palette)
+OptionalPtr* palOpen(InMemoryFile* file);
+
+ucvec3 palGetColor(Palette* palette, uint8 index);
+
 void palClose(Palette* pal);
 
 #endif

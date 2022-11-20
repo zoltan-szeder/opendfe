@@ -7,7 +7,6 @@
 #include "odf/res/bm.h"
 #include "odf/res/types/bm_def.h"
 #include "odf/res/pal.h"
-#include "odf/res/types/pal_def.h"
 
 #include "odf/sys/file.h"
 #include "odf/res/rle.h"
@@ -107,11 +106,10 @@ Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* pale
         int pxi = bmGetNormalizedPixelIndex(w, h, i);
 
         unsigned char colorIndex = data[i];
-        ucvec3* paletteColor = palette->colors + colorIndex;
         ucvec4* pixel = texture + pxi;
 
-        ucvec3 normalizedColor = normalizedPaletteColor(paletteColor);
-        ucvec3Copy((ucvec3*) pixel, &normalizedColor);
+        ucvec3 color = palGetColor(palette, colorIndex);
+        ucvec3Copy((ucvec3*) pixel, &color);
         if(bmIsTransparent(bmFile, colorIndex)){
             pixel->a = 0;
         } else {

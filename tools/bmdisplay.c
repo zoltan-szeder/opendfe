@@ -21,7 +21,7 @@ OptionalPtr* palExtract(char* gobFile, char* palFile) {
     InMemoryFile* palInMem = gobReadFile(gobGetFile(palArchive, palFile));
     memoryTag(palInMem, "PaletteInMemory");
 
-    OptionalPtr* optionalPal = palOpenInMemoryFile(palInMem);
+    OptionalPtr* optionalPal = palOpen(palInMem);
     if(optionalIsEmpty(optionalPal)) return optionalPal;
     Palette* pal = optionalGet(optionalPal);
     memoryTag(pal, "Palette");

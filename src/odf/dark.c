@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     GobArchive* palArchive = optionalGet(optionalPalArchive);
     GobFile* paletteFile = gobGetFile(palArchive, argv[4]);
     InMemoryFile* palInMem = gobReadFile(paletteFile);
-    Palette* pal = palOpenInMemoryFile(palInMem);
+    Palette* pal = palOpen(palInMem);
 
 
     gobCloseFile(palInMem);
