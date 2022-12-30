@@ -13,13 +13,10 @@
 #include "odf/sys/memory.h"
 #include "odf/sys/optional.h"
 
-bool bmIsTransparent(BMFile* bmFile, int colorIndex);
+bool bmIsTransparent(BMFile* bmFile);
 
 static uint8* bmDecompress(BMFile* bmFile);
 static Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette);
-static int bmGetNormalizedPixelIndex(int w, int h, int i);
-static void ucvec3Copy(ucvec3* dest, ucvec3* src);
-static ucvec3 normalizedPaletteColor(ucvec3* color);
 
 
 BMFile* bmOpenFile(char* file) {
@@ -96,58 +93,37 @@ uint8* bmDecompress(BMFile* bmFile) {
     }
 }
 
+static uint8* rotcc90(uint8* image, int w,int h);
 Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette) {
     int w = bmFile->header->sizeX;
     int h = bmFile->header->sizeY;
     Image8Bit* img = img8bCreate2D(w, h, 4);
     ucvec4* texture = (ucvec4*) img->data;
-
-    for (int i =0; i < w*h; i++) {
-        int pxi = bmGetNormalizedPixelIndex(w, h, i);
-
-        unsigned char colorIndex = data[i];
-        ucvec4* pixel = texture + pxi;
-
-        ucvec3 color = palGetColor(palette, colorIndex);
-        ucvec3Copy((ucvec3*) pixel, &color);
-        if(bmIsTransparent(bmFile, colorIndex)){
-            pixel->a = 0;
-        } else {
-            pixel->a = 255;
-        }
-    }
+    uint8* rotatedImage = rotcc90(data, w, h);
+    palUnindex(palette, texture, bmIsTransparent(bmFile), rotatedImage, w*h);
+    memoryRelease(rotatedImage);
 
     return img;
 }
 
-static ucvec3 normalizedPaletteColor(ucvec3* color) {
-    float scale =  (255.0 / 63.0);
-    ucvec3 vec = {
-        .r = round(scale * color->r),
-        .g = round(scale * color->g),
-        .b = round(scale * color->b),
-    };
+static uint8* rotcc90(uint8* image, int w,int h) {
+    uint8* rotatedImage = memoryAllocate(w*h*sizeof(uint8));
 
-    return vec;
+    for(int i1 = 0; i1 <  w*h; i1++) {
+        int x = i1/h;
+        int y = i1%h;
+        int i2 = x + w*y;
+
+        rotatedImage[i2] = image[i1];
+    }
+
+    return rotatedImage;
 }
 
-int bmGetNormalizedPixelIndex(int w, int h, int i) {
-    // BM contains pixels from bottomleft to topleft, then right
-    int x = i/h;
-    int y = i%h;
-    return x + w*y;
-}
-
-void ucvec3Copy(ucvec3* dest, ucvec3* src) {
-    dest->r = src->r;
-    dest->g = src->g;
-    dest->b = src->b;
-}
-
-bool bmIsTransparent(BMFile* bmFile, int colorIndex) {
+bool bmIsTransparent(BMFile* bmFile) {
     uint8 transparent = bmFile->header->transparent;
-    return (transparent == BM_TRANSPARENT || transparent == BM_WEAPON)
-        && colorIndex == '\x00';
+
+    return (transparent == BM_TRANSPARENT || transparent == BM_WEAPON);
 }
 
 void bmPrintFile(BMFile* bmFile) {
