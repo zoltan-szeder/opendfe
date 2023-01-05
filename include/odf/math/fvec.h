@@ -1,6 +1,8 @@
 #ifndef MATH_FVEC_H
 #define MATH_FVEC_H
 
+#include <stdint.h>
+
 typedef union {
     float data[4];
     struct {

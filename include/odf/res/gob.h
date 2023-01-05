@@ -14,7 +14,7 @@ OptionalPtr* gobOpenArchive(char* file_name);
 int gobCloseArchive(GobArchive*);
 int gobPrintArchive(GobArchive*);
 
-uint32 gobCountFiles(GobArchive*);
+uint32_t gobCountFiles(GobArchive*);
 List* gobListFiles(GobArchive*);
 GobFile* gobGetFile(GobArchive*, char*);
 char* gobGetFileName(GobFile*);

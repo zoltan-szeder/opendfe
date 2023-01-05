@@ -9,12 +9,12 @@
 #include "odf/sys/strings.h"
 
 struct InMemoryFile {
-    uint32 length;
-    uint64 pos;
+    uint32_t length;
+    uint64_t pos;
     char* content;
 };
 
-OptionalPtr* memFileCreate(char* content, uint32 length) {
+OptionalPtr* memFileCreate(char* content, uint32_t length) {
     InMemoryFile* file = memoryAllocateWithTag(sizeof(InMemoryFile), "odf/sys/inmemoryfile/InMemoryFile");
 
     file->content = content;
@@ -24,8 +24,8 @@ OptionalPtr* memFileCreate(char* content, uint32 length) {
     return optionalOf(file);
 }
 
-int32 memFileSeek(InMemoryFile* file, int64 offset, int32 origin) {
-    uint64 currentPosition;
+int32_t memFileSeek(InMemoryFile* file, int64_t offset, int32_t origin) {
+    uint64_t currentPosition;
     if (origin == SEEK_CUR) currentPosition = file->pos;
     else if (origin == SEEK_SET) currentPosition = 0;
     else currentPosition = file->length;
@@ -43,11 +43,11 @@ void inMemFileDelete(InMemoryFile* file) {
     memoryRelease(file);
 }
 
-uint64 inMemFileSize(InMemoryFile* file) {
+uint64_t inMemFileSize(InMemoryFile* file) {
     return file->length;
 }
 
-bool inMemFileOverEOF(InMemoryFile* file, uint64 length) {
+bool inMemFileOverEOF(InMemoryFile* file, uint64_t length) {
     return file->pos + length > file->length;
 }
 
@@ -65,14 +65,14 @@ OptionalPtr* inMemFileReadStruct(InMemoryFile* file, const char* format) {
     );
 }
 
-OptionalPtr* inMemFileRead(InMemoryFile* file, uint32 length) {
+OptionalPtr* inMemFileRead(InMemoryFile* file, uint32_t length) {
     if(inMemFileOverEOF(file, length))
         return optionalEmpty(
             "odf/sys/inmemoryfile.c:inMemFileRead - Could not read %d bytes from %d offset in a %d long file",
             length, file->pos, file->length
         );
 
-    uint8* bytes = memoryAllocateWithTag(length, "odf/sys/inmemoryfile/InMemoryFile/content");
+    uint8_t* bytes = memoryAllocateWithTag(length, "odf/sys/inmemoryfile/InMemoryFile/content");
     memcpy(bytes, file->content + file->pos, length);
     file->pos += length;
 

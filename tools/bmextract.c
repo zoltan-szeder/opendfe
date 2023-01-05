@@ -71,9 +71,9 @@ int main(int argc, char** argv) {
     Palette* pal = optionalGet(optionalPal);
 
     Image8Bit* image = bmCreateImage(bm, pal);
-    uint32 width = image->width;
-    uint32 height = image->height;
-    uint32 channels = image->channels;
+    uint32_t width = image->width;
+    uint32_t height = image->height;
+    uint32_t channels = image->channels;
     stbi_flip_vertically_on_write(true);
     stbi_write_png(argv[5], width, height, channels, image->data, width*channels);
 

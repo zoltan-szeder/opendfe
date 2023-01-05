@@ -57,7 +57,7 @@ OptionalPtr* fileReadBytes(FILE* stream, size_t length) {
     char* bytes = memoryAllocateWithTag(length, "odf/sys/file/fileReadBytes");
     memoryTag(bytes, "odf/sys/file/FileContent");
 
-    uint32 objects = fread(bytes, length, 1, stream);
+    uint32_t objects = fread(bytes, length, 1, stream);
     if(objects != 1) {
         memoryRelease(bytes);
         return optionalEmpty("odf/sys/file.c:fileReadBytes - Could not read %d byte(s). End of file", length);

@@ -14,8 +14,8 @@
 
 OptionalPtr* gobReadArchive(FILE*);
 OptionalPtr* gobReadArchiveFile(GobArchive*);
-OptionalPtr* gobReadArchiveFiles(GobArchive*, uint32 fileCount);
-OptionalUInt32* gobReadArchiveFileCount(GobArchive* archive);
+OptionalPtr* gobReadArchiveFiles(GobArchive*, uint32_t fileCount);
+uint32_t gobReadArchiveFileCount(GobArchive* archive);
 
 struct GobArchive {
     FILE* stream;
@@ -52,7 +52,7 @@ int gobCloseArchive(GobArchive* archive) {
     return fclose(stream);
 }
 
-uint32 gobCountFiles(GobArchive* archive){
+uint32_t gobCountFiles(GobArchive* archive){
     return listSize(archive->files);
 }
 
@@ -102,7 +102,7 @@ void gobCloseFile(InMemoryFile* file) {
 int gobPrintArchive(GobArchive* archive){
     GobArchiveHeaders* headers = archive->headers;
     List* files = archive->files;
-    uint32* magic = (uint32*) &(headers->magic);
+    uint32_t* magic = (uint32_t*) &(headers->magic);
 
     printf("Magic: 0x%x\n", *magic);
     printf("Directory offset: %d\n", headers->directoryOffset);
@@ -127,9 +127,8 @@ OptionalPtr* gobReadArchive(FILE* stream) {
     if(optionalIsEmpty(optionalHeaders)) return optionalHeaders;
     archive->headers = optionalGet(optionalHeaders);
 
-    OptionalUInt32* optionalFileCount = gobReadArchiveFileCount(archive);
-    if(optionalIsEmpty(optionalFileCount)) return (void*) optionalFileCount;
-    uint32 fileCount = optionalGetUInt32(optionalFileCount);
+    uint32_t fileCount = gobReadArchiveFileCount(archive);
+    if(fileCount == 0) return optionalEmpty("ogl/res/gob.c: Archive does not contain any files");
 
     OptionalPtr* optionalFiles = gobReadArchiveFiles(archive, fileCount);
     if(optionalIsEmpty(optionalFiles)) {
@@ -142,22 +141,22 @@ OptionalPtr* gobReadArchive(FILE* stream) {
     return optionalOf(archive);
 }
 
-OptionalUInt32* gobReadArchiveFileCount(GobArchive* archive) {
+uint32_t gobReadArchiveFileCount(GobArchive* archive) {
     FILE* stream = archive->stream;
 
     int failure = fseek(stream, (long) archive->headers->directoryOffset, SEEK_SET);
-    if(failure) return optionalEmpty("odf/res/gob.c:gobReadArchiveFileCount - Directory offset is over EOF");
+    if(failure) return 0;
 
     OptionalPtr* optionalCount = fileReadStruct(stream, "%l4");
-    if(optionalIsEmpty(optionalCount)) return (void*) optionalCount;
+    if(optionalIsEmpty(optionalCount)) return 0;
 
-    uint32* countPtr = optionalGet(optionalCount);
-    uint32 count = *countPtr;
+    uint32_t* countPtr = optionalGet(optionalCount);
+    uint32_t count = *countPtr;
     memoryRelease(countPtr);
-    return optionalUInt32(count);
+    return count;
 }
 
-OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32 fileCount) {
+OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32_t fileCount) {
     List* list = listCreate(fileCount);
 
     for(int i = 0; i < fileCount; i++) {

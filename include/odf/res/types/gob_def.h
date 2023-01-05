@@ -8,14 +8,14 @@
 
 struct GobArchiveHeaders {
     char magic[4];
-    uint32 directoryOffset;
+    uint32_t directoryOffset;
 };
 
 #define GOB_FILE_HEADER_FORMAT "%l4 %l4 %c13"
 
 struct GobFileHeader {
-    uint32 offset;
-    uint32 length;
+    uint32_t offset;
+    uint32_t length;
     char name[13];
 };
 

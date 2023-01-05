@@ -1,62 +1,62 @@
 #ifndef MATH_VEC_H
 #define MATH_VEC_H
 
-#include "odf/sys/types.h"
+#include <stdint.h>
 
 typedef union {
-    uint8 data[4];
+    uint8_t data[4];
     struct {
-        unsigned char x;
-        unsigned char y;
-        unsigned char z;
-        unsigned char w;
+        uint8_t x;
+        uint8_t y;
+        uint8_t z;
+        uint8_t w;
     };
     struct {
-        unsigned char r;
-        unsigned char g;
-        unsigned char b;
-        unsigned char a;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
     };
     struct {
-        unsigned char s;
-        unsigned char t;
-        unsigned char p;
-        unsigned char q;
+        uint8_t s;
+        uint8_t t;
+        uint8_t p;
+        uint8_t q;
     };
 } ucvec4;
 
 typedef union {
-    uint8 data[3];
+    uint8_t data[3];
     struct {
-        unsigned char x;
-        unsigned char y;
-        unsigned char z;
+        uint8_t x;
+        uint8_t y;
+        uint8_t z;
     };
     struct {
-        unsigned char r;
-        unsigned char g;
-        unsigned char b;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
     };
     struct {
-        unsigned char s;
-        unsigned char t;
-        unsigned char p;
+        uint8_t s;
+        uint8_t t;
+        uint8_t p;
     };
 } ucvec3;
 
 typedef union {
-    uint8 data[2];
+    uint8_t data[2];
     struct {
-        unsigned char x;
-        unsigned char y;
+        uint8_t x;
+        uint8_t y;
     };
     struct {
-        unsigned char r;
-        unsigned char g;
+        uint8_t r;
+        uint8_t g;
     };
     struct {
-        unsigned char s;
-        unsigned char t;
+        uint8_t s;
+        uint8_t t;
     };
 } ucvec2;
 

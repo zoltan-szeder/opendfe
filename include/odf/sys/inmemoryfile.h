@@ -6,12 +6,12 @@
 #include "odf/sys/types.h"
 #include "odf/sys/types/optional.h"
 
-OptionalPtr* memFileCreate(char* content, uint32 length);
-int32 memFileSeek(InMemoryFile* file, int64 offset, int32 origin);
+OptionalPtr* memFileCreate(char* content, uint32_t length);
+int32_t memFileSeek(InMemoryFile* file, int64_t offset, int32_t origin);
 void inMemFileDelete(InMemoryFile* file);
-uint64 inMemFileSize(InMemoryFile* file);
+uint64_t inMemFileSize(InMemoryFile* file);
 
-OptionalPtr* inMemFileRead(InMemoryFile* file, uint32 length);
+OptionalPtr* inMemFileRead(InMemoryFile* file, uint32_t length);
 OptionalPtr* inMemFileReadStruct(InMemoryFile* file, const char* format);
 
 #endif

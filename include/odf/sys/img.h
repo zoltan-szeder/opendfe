@@ -5,16 +5,16 @@
 #include "odf/sys/types.h"
 
 typedef struct {
-    uint32 width;
-    uint32 height;
-    uint32 depth;
-    uint32 channels;
-    uint32 size;
-    uint8* data;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    uint32_t channels;
+    uint32_t size;
+    uint8_t* data;
 } Image8Bit;
 
 
-Image8Bit* img8bCreate2D(uint32 width, uint32 height, uint32 channels);
+Image8Bit* img8bCreate2D(uint32_t width, uint32_t height, uint32_t channels);
 
 void img8bDelete(Image8Bit*);
 

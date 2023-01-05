@@ -34,8 +34,8 @@ bool inverseEndianness = false;
  */
 
 bool isActuallyLittleEndian(){
-    uint32 test_int = 1;
-    uint8* test_char_arr = (uint8*) &test_int;
+    uint32_t test_int = 1;
+    uint8_t* test_char_arr = (uint8_t*) &test_int;
 
     return *test_char_arr;
 }
@@ -72,11 +72,11 @@ void setToBigEndian() {
 
 
 void reverseEndianness(void* bytes, int lenght){
-    uint8* array = bytes;
+    uint8_t* array = bytes;
     for(int i = 0; i < lenght/2; i++) {
         int j = lenght - 1 - i;
-        uint8 temp = array[i];
-        array[i] = (uint8) array[j];
+        uint8_t temp = array[i];
+        array[i] = (uint8_t) array[j];
         array[j] = temp;
     }
 }

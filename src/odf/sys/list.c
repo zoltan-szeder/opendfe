@@ -5,11 +5,11 @@
 #include "odf/sys/optional.h"
 
 struct List {
-    uint32 size;
+    uint32_t size;
     void** values;
 };
 
-List* listCreate(uint32 size) {
+List* listCreate(uint32_t size) {
     List* list = memoryAllocateWithTag(sizeof(List), "odf/sys/list/List");
 
     list->values = memoryAllocateWithTag(size*sizeof(void**), "odf/sys/list/List/values");
@@ -27,11 +27,11 @@ void listDelete(List* list) {
     memoryRelease(list);
 }
 
-uint32 listSize(List* list) {
+uint32_t listSize(List* list) {
     return list->size;
 }
 
-OptionalPtr* listGet(List* list, uint32 index) {
+OptionalPtr* listGet(List* list, uint32_t index) {
     if(index >= list->size) {
         return optionalEmpty("odf/sys/list.c:listGet: Array index (%s) is out of bounds (>=%s)", index, list->size);
     }
@@ -39,7 +39,7 @@ OptionalPtr* listGet(List* list, uint32 index) {
     return optionalOf(list->values[index]);
 }
 
-OptionalPtr* listPut(List* list, uint32 index, void* value) {
+OptionalPtr* listPut(List* list, uint32_t index, void* value) {
     if(index >= list->size) {
         return optionalEmpty("odf/sys/list.c:listPut: Array index (%s) is out of bounds (>=%s)", index, list->size);
     }

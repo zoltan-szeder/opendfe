@@ -9,7 +9,7 @@ typedef struct LfdFile LfdFile;
 typedef struct {
     char type[4];
     char name[8];
-    uint32 length;
+    uint32_t length;
 } LfdChunk;
 
 #endif

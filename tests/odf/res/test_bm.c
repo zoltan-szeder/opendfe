@@ -44,14 +44,14 @@ Palette getSimplePalette() {
     return palette;
 }
 
-bool isPixel(ucvec4* pixel, uint8 r, uint8 g, uint8 b, uint8 a) {
+bool isPixel(ucvec4* pixel, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return pixel->r == r
         && pixel->g == g
         && pixel->b == b
         && pixel->a == a;
 }
 
-void assertPixel(Image8Bit* img, uint32 i, uint8 r, uint8 g, uint8 b, uint8 a) {
+void assertPixel(Image8Bit* img, uint32_t i, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     ucvec4* pixels = (ucvec4*) img->data;
     ucvec4* pixel = pixels + i;
     assertTrueMsg(isPixel(pixel, r, g, b, a), error(
@@ -151,7 +151,7 @@ void testBmCreateImage_4() {
     // | G A
     // v
     // x
-    uint8 image[] = {
+    uint8_t image[] = {
         PX_R, PX_B,
         PX_G, PX_A,
     };

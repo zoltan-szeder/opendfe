@@ -1,10 +1,12 @@
 #ifndef ODF_OGL_INIT_H
 #define ODF_OGL_INIT_H
 
+#include <stdint.h>
+
 #include <GL/gl.h>
 
-unsigned int initializeOpenGl();
+uint32_t initializeOpenGl();
 
-unsigned int loadShaderProgram(char* vsFile, char* fragFile);
+uint32_t loadShaderProgram(char* vsFile, char* fragFile);
 
 #endif

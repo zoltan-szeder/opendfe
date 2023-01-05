@@ -11,7 +11,7 @@ void lfdCloseArchive(LfdArchive*);
 void lfdPrintArchive(LfdArchive*);
 void lfdPrintChunk(const char* prefix, LfdChunk* chunk);
 
-uint32 lfdCountFiles(LfdArchive*);
+uint32_t lfdCountFiles(LfdArchive*);
 List* lfdListFiles(LfdArchive*);
 LfdFile* lfdGetFile(LfdArchive*, char*);
 char* lfdGetFileName(LfdFile*);

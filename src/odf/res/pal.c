@@ -14,7 +14,7 @@
 static ucvec3 normalizedPaletteColor(ucvec3* color);
 
 OptionalPtr* palOpen(InMemoryFile* file){
-    uint64 fileSize = inMemFileSize(file);
+    uint64_t fileSize = inMemFileSize(file);
     if(fileSize != sizeof(Palette)){
         return optionalEmpty(
             "Size of file (%lu) does not match Palette specifications (%lu)\n", fileSize, sizeof(Palette));
@@ -29,7 +29,7 @@ OptionalPtr* palOpen(InMemoryFile* file){
     return optionalOf(content);
 }
 
-ucvec3 palGetColor(Palette* palette, uint8 index){
+ucvec3 palGetColor(Palette* palette, uint8_t index){
     ucvec3* paletteColor = palette->colors + index;
     return normalizedPaletteColor(paletteColor);
 }
@@ -49,10 +49,10 @@ static ucvec3 normalizedPaletteColor(ucvec3* color) {
     return vec;
 }
 
-void palUnindex(Palette* palette, ucvec4* buffer, bool isTransparent, uint8* indexedStream, uint32 length) {
+void palUnindex(Palette* palette, ucvec4* buffer, bool isTransparent, uint8_t* indexedStream, uint32_t length) {
     for(int i = 0; i < length; i++) {
         ucvec4* pixel = buffer + i;
-        uint8 colorIndex = indexedStream[i];
+        uint8_t colorIndex = indexedStream[i];
 
         ucvec3 color = palGetColor(palette, colorIndex);
         pixel->r = color.r;

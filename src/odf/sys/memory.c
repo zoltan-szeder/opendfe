@@ -21,9 +21,9 @@ struct MemoryAllocation {
     void* ptr;
     size_t size;
     bool valid;
-    uint32 referenceSize;
+    uint32_t referenceSize;
     MemoryAllocation** references;
-    uint32 refereeSize;
+    uint32_t refereeSize;
     MemoryAllocation** referees;
 };
 
@@ -247,7 +247,7 @@ void memoryDump(bool includeInvalid){
 }
 
 void memoryFileDump(FILE* stream, bool includeInvalid){
-    uint32 sum = 0;
+    uint32_t sum = 0;
     for(int i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
 

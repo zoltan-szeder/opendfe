@@ -4,14 +4,14 @@
 #include "odf/sys/memory.h"
 
 struct Model {
-    uint32 vertexArray;
-    uint32 arrayBuffer;
-    uint32 elementArrayBuffer;
-    uint32 indices;
+    uint32_t vertexArray;
+    uint32_t arrayBuffer;
+    uint32_t elementArrayBuffer;
+    uint32_t indices;
     DglTexture* texture;
 };
 
-Model* dglModelCreate(float* vertices, uint32 vsize,  uint32* indices, uint32 isize) {
+Model* dglModelCreate(float* vertices, uint32_t vsize,  uint32_t* indices, uint32_t isize) {
 
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);

@@ -31,15 +31,7 @@ void assertOptionalIsEmpty(void* optional){
         fail(error("Optional is not empty"));
     }
 }
-void assertOptionalUInt8(uint8 value,void* optional){
-    if(optionalIsEmpty(optional)) {
-        char* msg = optionalGetMessage(optional);
-        fail(error("%s", msg));
-        memoryRelease(msg);
-    } else {
-        assertEquali(value, optionalGetUInt8(optional));
-    }
-}
+
 void assertOptionalBytes(char* expected,void* optional){
     if(optionalIsEmpty(optional)) {
         char* msg = optionalGetMessage(optional);

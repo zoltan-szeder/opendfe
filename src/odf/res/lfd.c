@@ -17,7 +17,7 @@ struct LfdArchive {
 
 struct LfdFile {
     LfdHeader* header;
-    uint32 offset;
+    uint32_t offset;
     FILE* file;
 };
 
@@ -35,10 +35,10 @@ OptionalPtr* lfdOpenArchive(char* file_name) {
     if(optionalIsEmpty(optHeader)) return optHeader;
     archive->header = optionalGet(optHeader);
 
-    uint32 fileCount = lfdCountFiles(archive);
+    uint32_t fileCount = lfdCountFiles(archive);
     archive->files = listCreate(fileCount);
-    uint32 currentOffset = sizeof(LfdHeader) + fileCount*sizeof(LfdHeader);
-    for(uint32 i = 0; i < fileCount; i++) {
+    uint32_t currentOffset = sizeof(LfdHeader) + fileCount*sizeof(LfdHeader);
+    for(uint32_t i = 0; i < fileCount; i++) {
         OptionalPtr* optFileHeader = fileReadStruct(file, LFD_CHUNK_FORMAT);
         if(optionalIsEmpty(optFileHeader)) return optFileHeader;
 
@@ -72,8 +72,8 @@ void lfdCloseArchive(LfdArchive* archive) {
 void lfdPrintArchive(LfdArchive* archive) {
     lfdPrintHeader("", archive->header);
     printf("\n");
-    uint32 fileCount = lfdCountFiles(archive);
-    for(uint32 i = 0; i < fileCount; i++) {
+    uint32_t fileCount = lfdCountFiles(archive);
+    for(uint32_t i = 0; i < fileCount; i++) {
         LfdFile* lfdFile =  optionalGet(listGet(archive->files, i));
         lfdPrintHeader("- ", lfdFile->header);
         printf("- Offset: %d\n", lfdFile->offset);
@@ -93,7 +93,7 @@ void lfdPrintChunk(const char* prefix, LfdChunk* header) {
     printf("%sLength: %d\n", prefix, header->length);
 }
 
-uint32 lfdCountFiles(LfdArchive* archive) {
+uint32_t lfdCountFiles(LfdArchive* archive) {
     return archive->header->length / 16;
 }
 List* lfdListFiles(LfdArchive* archive){
@@ -107,7 +107,7 @@ char* lfdGetFileName(LfdFile* file) {
 
 OptionalPtr* lfdReadFile(LfdFile* lfdFile) {
     FILE* file = lfdFile->file;
-    uint32 length = lfdFile->header->length;
+    uint32_t length = lfdFile->header->length;
 
     fseek(file, lfdFile->offset, SEEK_SET);
     OptionalPtr* optContent = fileReadBytes(file, length);

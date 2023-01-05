@@ -6,12 +6,12 @@
 #include "odf/sys/types.h"
 #include "odf/sys/types/optional.h"
 
-List* listCreate(uint32 size);
+List* listCreate(uint32_t size);
 void listDelete(List* list);
-uint32 listSize(List* list);
+uint32_t listSize(List* list);
 
-OptionalPtr* listPut(List* list, uint32 index, void* value);
-OptionalPtr* listGet(List* list, uint32 item);
+OptionalPtr* listPut(List* list, uint32_t index, void* value);
+OptionalPtr* listGet(List* list, uint32_t item);
 void listForEach(List* list, void (*func)(void*));
 
 

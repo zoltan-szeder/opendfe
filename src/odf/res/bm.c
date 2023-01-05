@@ -15,8 +15,8 @@
 
 bool bmIsTransparent(BMFile* bmFile);
 
-static uint8* bmDecompress(BMFile* bmFile);
-static Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette);
+static uint8_t* bmDecompress(BMFile* bmFile);
+static Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8_t* data,  Palette* palette);
 
 
 BMFile* bmOpenFile(char* file) {
@@ -30,7 +30,7 @@ BMFile* bmOpenFile(char* file) {
 
     OptionalPtr* optData = fileReadBytes(stream, bmHeader->dataSize);
     if(optionalIsEmpty(optData)) return NULL;
-    uint8* data = optionalGet(optData);
+    uint8_t* data = optionalGet(optData);
     memoryTag(data, "odf/res/bm/BMFile/data");
 
     fclose(stream);
@@ -68,24 +68,24 @@ void bmClose(BMFile* bmFile) {
 
 
 Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
-    uint32 compressed = bmFile->header->compressed;
+    uint32_t compressed = bmFile->header->compressed;
     if(compressed == BM_COMPRESSION_NONE) {
         return bmCreateImageDecompressed(bmFile, bmFile->data, palette);
     }
 
-    uint8* data = bmDecompress(bmFile);
+    uint8_t* data = bmDecompress(bmFile);
     Image8Bit* image = bmCreateImageDecompressed(bmFile, data, palette);
     memoryRelease(data);
 
     return image;
 }
 
-uint8* bmDecompress(BMFile* bmFile) {
+uint8_t* bmDecompress(BMFile* bmFile) {
     int width = bmFile->header->sizeX;
     int height = bmFile->header->sizeY;
     int length = bmFile->header->dataSize;
 
-    uint32 compressed = bmFile->header->compressed;
+    uint32_t compressed = bmFile->header->compressed;
     if(compressed == BM_COMPRESSION_RLE0) {
         return rle0Decompress(bmFile->data, length, width, height);
     } else {
@@ -93,21 +93,21 @@ uint8* bmDecompress(BMFile* bmFile) {
     }
 }
 
-static uint8* rotcc90(uint8* image, int w,int h);
-Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8* data,  Palette* palette) {
+static uint8_t* rotcc90(uint8_t* image, int w,int h);
+Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8_t* data,  Palette* palette) {
     int w = bmFile->header->sizeX;
     int h = bmFile->header->sizeY;
     Image8Bit* img = img8bCreate2D(w, h, 4);
     ucvec4* texture = (ucvec4*) img->data;
-    uint8* rotatedImage = rotcc90(data, w, h);
+    uint8_t* rotatedImage = rotcc90(data, w, h);
     palUnindex(palette, texture, bmIsTransparent(bmFile), rotatedImage, w*h);
     memoryRelease(rotatedImage);
 
     return img;
 }
 
-static uint8* rotcc90(uint8* image, int w,int h) {
-    uint8* rotatedImage = memoryAllocate(w*h*sizeof(uint8));
+static uint8_t* rotcc90(uint8_t* image, int w,int h) {
+    uint8_t* rotatedImage = memoryAllocate(w*h*sizeof(uint8_t));
 
     for(int i1 = 0; i1 <  w*h; i1++) {
         int x = i1/h;
@@ -121,14 +121,14 @@ static uint8* rotcc90(uint8* image, int w,int h) {
 }
 
 bool bmIsTransparent(BMFile* bmFile) {
-    uint8 transparent = bmFile->header->transparent;
+    uint8_t transparent = bmFile->header->transparent;
 
     return (transparent == BM_TRANSPARENT || transparent == BM_WEAPON);
 }
 
 void bmPrintFile(BMFile* bmFile) {
     BMHeader* bmHeader = bmFile->header;
-    uint32* magic = (uint32*) &(bmHeader->magic);
+    uint32_t* magic = (uint32_t*) &(bmHeader->magic);
 
     printf("magic: 0x%x\n", *magic);
     printf("sizeX: %d\n", bmHeader->sizeX);

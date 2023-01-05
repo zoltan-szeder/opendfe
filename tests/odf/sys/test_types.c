@@ -4,25 +4,25 @@
 
 void testReverseEndianness_1() {
     testCase("Reverse Endianness 1 byte");
-    uint8 i = 1;
-    reverseEndianness(&i, sizeof(uint8));
+    uint8_t i = 1;
+    reverseEndianness(&i, sizeof(uint8_t));
     assertEquali(1, i);  // \x01
 }
 
 
 void testReverseEndianness_2() {
     testCase("Reverse Endianness 2 byte");
-    uint16 i = 1;
-    uint8* pi = (uint8*) &i;
-    reverseEndianness(pi, sizeof(uint16));
+    uint16_t i = 1;
+    uint8_t* pi = (uint8_t*) &i;
+    reverseEndianness(pi, sizeof(uint16_t));
     assertEquali(256, i);  // \x01 \x00
 }
 
 void testReverseEndianness_3() {
     testCase("Reverse Endianness 3 byte");
-    uint8 i[] = {'a', 'b', 'c'};
-    uint8 exp[] = {'c', 'b', 'a'};
-    reverseEndianness(i, 3*sizeof(uint8));
+    uint8_t i[] = {'a', 'b', 'c'};
+    uint8_t exp[] = {'c', 'b', 'a'};
+    reverseEndianness(i, 3*sizeof(uint8_t));
     assertEquals((char*) exp, (char*) i, 3);
 }
 
