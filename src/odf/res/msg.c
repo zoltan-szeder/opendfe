@@ -14,7 +14,7 @@
 static OptionalPtr* readFileZeroTerminated(InMemoryFile* file);
 
 static bool startsWith(char* str, char c) {
-    for(int i = 0; i < strlen(str); i++) {
+    for(size_t i = 0; i < strlen(str); i++) {
         if(str[i] == ' ' || str[i] == '\t')
             continue;
         if(str[i] == c)
@@ -34,7 +34,7 @@ OptionalPtr* msgOpenFile(InMemoryFile* file) {
 
     List* lines = strSplitByLineBreak(content);
 
-    for(int i = 0; i < listSize(lines); i++) {
+    for(size_t i = 0; i < listSize(lines); i++) {
         char* line = optionalGet(listGet(lines, i));
         if(strlen(line) == 0 || startsWith(line, '#'))
             continue;
@@ -51,7 +51,7 @@ OptionalPtr* msgOpenFile(InMemoryFile* file) {
 
     memoryRelease(content);
 
-    for(int i = 0; i < listSize(lines); i++) {
+    for(size_t i = 0; i < listSize(lines); i++) {
         char* line = optionalGet(listGet(lines, i));
         memoryRelease(line);
     }

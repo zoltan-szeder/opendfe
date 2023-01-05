@@ -95,8 +95,8 @@ uint8_t* bmDecompress(BMFile* bmFile) {
 
 static uint8_t* rotcc90(uint8_t* image, int w,int h);
 Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8_t* data,  Palette* palette) {
-    int w = bmFile->header->sizeX;
-    int h = bmFile->header->sizeY;
+    size_t w = bmFile->header->sizeX;
+    size_t h = bmFile->header->sizeY;
     Image8Bit* img = img8bCreate2D(w, h, 4);
     ucvec4* texture = (ucvec4*) img->data;
     uint8_t* rotatedImage = rotcc90(data, w, h);

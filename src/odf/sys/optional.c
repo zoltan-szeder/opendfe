@@ -40,7 +40,7 @@ bool optionalIsEmpty(void* optional) {
     return !((Optional*) optional)->isPresent;
 }
 
-Optional* optionalFirstEmpty(int length, ...) {
+Optional* optionalFirstEmpty(size_t length, ...) {
     if(length == 0)
         return false;
 
@@ -48,7 +48,7 @@ Optional* optionalFirstEmpty(int length, ...) {
     va_start(args, length);
 
     Optional* optional;
-    for(int i = 0; i < length; i++) {
+    for(size_t i = 0; i < length; i++) {
         optional = va_arg(args, Optional*);
         if(optionalIsEmpty(optional)) {
             va_end(args);

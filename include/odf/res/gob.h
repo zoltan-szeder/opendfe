@@ -3,9 +3,10 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "odf/res/types/gob.h"
 
-#include "odf/sys/types.h"
 #include "odf/sys/types/optional.h"
 #include "odf/sys/types/list.h"
 #include "odf/sys/types/inmemoryfile.h"
@@ -14,7 +15,7 @@ OptionalPtr* gobOpenArchive(char* file_name);
 int gobCloseArchive(GobArchive*);
 int gobPrintArchive(GobArchive*);
 
-uint32_t gobCountFiles(GobArchive*);
+size_t gobCountFiles(GobArchive*);
 List* gobListFiles(GobArchive*);
 GobFile* gobGetFile(GobArchive*, char*);
 char* gobGetFileName(GobFile*);

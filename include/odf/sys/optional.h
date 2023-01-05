@@ -9,7 +9,7 @@
 
 void* optionalEmpty(const char* message, ...);
 bool optionalIsEmpty(void*);
-Optional* optionalFirstEmpty(int length, ...);
+Optional* optionalFirstEmpty(size_t length, ...);
 void optionalDelete(void*);
 char* optionalGetMessage(void*);
 void optionalPrint(FILE* stream, Optional* optional);

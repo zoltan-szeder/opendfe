@@ -52,7 +52,7 @@ int gobCloseArchive(GobArchive* archive) {
     return fclose(stream);
 }
 
-uint32_t gobCountFiles(GobArchive* archive){
+size_t gobCountFiles(GobArchive* archive){
     return listSize(archive->files);
 }
 
@@ -61,7 +61,7 @@ List* gobListFiles(GobArchive* archive){
 }
 
 GobFile* gobGetFile(GobArchive* archive, char* file_name){
-    for(int i = 0; i < listSize(archive->files); i++) {
+    for(size_t i = 0; i < listSize(archive->files); i++) {
         OptionalPtr* optionalGobFile = listGet(archive->files, i);
         GobFile* gob_file = optionalGet(optionalGobFile);
         if(strcmp(file_name, gob_file->header->name) == 0) return gob_file;
@@ -106,9 +106,9 @@ int gobPrintArchive(GobArchive* archive){
 
     printf("Magic: 0x%x\n", *magic);
     printf("Directory offset: %d\n", headers->directoryOffset);
-    printf("Number of Files: %d\n", listSize(files));
+    printf("Number of Files: %ld\n", listSize(files));
     printf("Files:\n");
-    for(int i = 0; i < listSize(files); i++) {
+    for(size_t i = 0; i < listSize(files); i++) {
         OptionalPtr* optionalGobFile = listGet(files, i);
         GobFile* gob_file = optionalGet(optionalGobFile);
         GobFileHeader* headers = gob_file->header;
@@ -159,12 +159,12 @@ uint32_t gobReadArchiveFileCount(GobArchive* archive) {
 OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32_t fileCount) {
     List* list = listCreate(fileCount);
 
-    for(int i = 0; i < fileCount; i++) {
+    for(uint32_t i = 0; i < fileCount; i++) {
 
         OptionalPtr* optFile = gobReadArchiveFile(archive);
 
         if(optionalIsEmpty(optFile)) {
-            for(int j = 0; j < i; j++) {
+            for(uint32_t j = 0; j < i; j++) {
                 OptionalPtr* item = listGet(list, j);
                 memoryRelease(optionalGet(item));
             }

@@ -21,9 +21,9 @@ struct MemoryAllocation {
     void* ptr;
     size_t size;
     bool valid;
-    uint32_t referenceSize;
+    size_t referenceSize;
     MemoryAllocation** references;
-    uint32_t refereeSize;
+    size_t refereeSize;
     MemoryAllocation** referees;
 };
 
@@ -105,8 +105,8 @@ void memoryReleaseAll() {
     MEMORY_ALLOCATION_SIZE = 0;
 }
 
-int refArrayFindFirst(void** array, int arraySize, void* reference) {
-    for(int i = 0; i < arraySize; i++) {
+int refArrayFindFirst(void** array, size_t arraySize, void* reference) {
+    for(size_t i = 0; i < arraySize; i++) {
         if(array[i] == reference) return i;
     }
 
@@ -127,7 +127,7 @@ void memoryRemoveReferee(MemoryAllocation* reference, MemoryAllocation* referee)
 }
 
 void memoryRemoveAllReference(MemoryAllocation* alloc) {
-    for(int i = 0; i < alloc->referenceSize; i++) {
+    for(size_t i = 0; i < alloc->referenceSize; i++) {
         memoryRemoveReferee(alloc->references[i], alloc);
         alloc->references[i] = NULL;
     }
@@ -149,7 +149,7 @@ void memoryRemoveReference(MemoryAllocation* referee, MemoryAllocation* referenc
 }
 
 void memoryRemoveAllReferee(MemoryAllocation* alloc) {
-    for(int i = 0; i < alloc->refereeSize; i++) {
+    for(size_t i = 0; i < alloc->refereeSize; i++) {
         memoryRemoveReference(alloc->referees[i], alloc);
         alloc->referees[i] = NULL;
     }
@@ -233,7 +233,7 @@ bool memoryIsReferencedBy(void* referencedPtr, void* refereePtr) {
     MemoryAllocation* referenced = memoryFindAllocation(referencedPtr);
     MemoryAllocation* referee = memoryFindAllocation(refereePtr);
 
-    for(int i = 0; i < referee->referenceSize; i++) {
+    for(size_t i = 0; i < referee->referenceSize; i++) {
         MemoryAllocation* refAlloc = referee->references[i];
         if(refAlloc == referenced) return true;
     }
@@ -248,7 +248,7 @@ void memoryDump(bool includeInvalid){
 
 void memoryFileDump(FILE* stream, bool includeInvalid){
     uint32_t sum = 0;
-    for(int i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
+    for(size_t i = 0; i < MEMORY_ALLOCATION_SIZE; i++) {
         MemoryAllocation* alloc = &(MEMORY_ALLOCATIONS[i]);
 
         if(alloc->valid || includeInvalid) {
@@ -258,7 +258,7 @@ void memoryFileDump(FILE* stream, bool includeInvalid){
             fprintf(stream, "  valid: %s\n", alloc->valid ? "true" : "false");
             if(alloc->referenceSize > 0) {
                 fprintf(stream, "  ref_to:\n");
-                for(int j = 0; j < alloc->referenceSize; j++) {
+                for(size_t j = 0; j < alloc->referenceSize; j++) {
                     MemoryAllocation* refAlloc = alloc->references[j];
                     fprintf(stream, "  - %p (%s)\n", refAlloc->ptr, refAlloc->name);
                 }
@@ -266,7 +266,7 @@ void memoryFileDump(FILE* stream, bool includeInvalid){
 
             if(alloc->refereeSize > 0) {
                 fprintf(stream, "  ref_by:\n");
-                for(int j = 0; j < alloc->refereeSize; j++) {
+                for(size_t j = 0; j < alloc->refereeSize; j++) {
                     MemoryAllocation* refAlloc = alloc->referees[j];
                     fprintf(stream, "  - %p (%s)\n", refAlloc->ptr, refAlloc->name);
                 }

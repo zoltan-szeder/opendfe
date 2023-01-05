@@ -4,8 +4,8 @@
 #include "odf/res/rle.h"
 #include "odf/sys/memory.h"
 
-void rleCopyBlock(uint8_t* dest, uint8_t destOffset, uint8_t* src, uint8_t srcOffset, uint8_t length);
-void rleSkipBlock(uint8_t* dest, uint8_t destOffset, uint8_t length, uint8_t color);
+static void rleCopyBlock(uint8_t* dest, uint8_t destOffset, uint8_t* src, uint8_t srcOffset, uint8_t length);
+static void rleSkipBlock(uint8_t* dest, uint8_t destOffset, uint8_t length, uint8_t color);
 
 uint8_t* rle0Decompress(uint8_t* src, int32_t length, int32_t width, int32_t height) {
     uint8_t* dest = memoryAllocateWithTag(width*height*sizeof(uint8_t), "odf/res/ldf/rle0Decompress");
@@ -59,12 +59,12 @@ uint8_t* rle1Decompress(uint8_t* src, int32_t length, int32_t width, int32_t hei
 }
 
 
-void rleCopyBlock(uint8_t* dest, uint8_t destOffset, uint8_t* src, uint8_t srcOffset, uint8_t length) {
+static void rleCopyBlock(uint8_t* dest, uint8_t destOffset, uint8_t* src, uint8_t srcOffset, uint8_t length) {
     memcpy(dest + destOffset, src + srcOffset, length);
 }
 
-void rleSkipBlock(uint8_t* dest, uint8_t destOffset, uint8_t length, uint8_t color) {
-    for(int i = 0; i < length; i++) {
+static void rleSkipBlock(uint8_t* dest, uint8_t destOffset, uint8_t length, uint8_t color) {
+    for(uint8_t i = 0; i < length; i++) {
         dest[destOffset+i] = color;
     }
 }

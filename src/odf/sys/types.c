@@ -73,8 +73,8 @@ void setToBigEndian() {
 
 void reverseEndianness(void* bytes, int lenght){
     uint8_t* array = bytes;
-    for(int i = 0; i < lenght/2; i++) {
-        int j = lenght - 1 - i;
+    for(size_t i = 0; i < lenght/2; i++) {
+        size_t j = lenght - 1 - i;
         uint8_t temp = array[i];
         array[i] = (uint8_t) array[j];
         array[j] = temp;

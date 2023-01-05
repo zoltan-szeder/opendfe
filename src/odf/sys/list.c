@@ -9,13 +9,13 @@ struct List {
     void** values;
 };
 
-List* listCreate(uint32_t size) {
+List* listCreate(size_t size) {
     List* list = memoryAllocateWithTag(sizeof(List), "odf/sys/list/List");
 
     list->values = memoryAllocateWithTag(size*sizeof(void**), "odf/sys/list/List/values");
     list->size = size;
 
-    for(int i = 0; i < list->size; i++) {
+    for(size_t i = 0; i < list->size; i++) {
         list->values[i] = NULL;
     }
 
@@ -27,11 +27,11 @@ void listDelete(List* list) {
     memoryRelease(list);
 }
 
-uint32_t listSize(List* list) {
+size_t listSize(List* list) {
     return list->size;
 }
 
-OptionalPtr* listGet(List* list, uint32_t index) {
+OptionalPtr* listGet(List* list, size_t index) {
     if(index >= list->size) {
         return optionalEmpty("odf/sys/list.c:listGet: Array index (%s) is out of bounds (>=%s)", index, list->size);
     }
@@ -39,7 +39,7 @@ OptionalPtr* listGet(List* list, uint32_t index) {
     return optionalOf(list->values[index]);
 }
 
-OptionalPtr* listPut(List* list, uint32_t index, void* value) {
+OptionalPtr* listPut(List* list, size_t index, void* value) {
     if(index >= list->size) {
         return optionalEmpty("odf/sys/list.c:listPut: Array index (%s) is out of bounds (>=%s)", index, list->size);
     }
@@ -50,22 +50,22 @@ OptionalPtr* listPut(List* list, uint32_t index, void* value) {
 }
 
 void listForEach(List* list, void (*func)(void*)) {
-    for(int i = 0;  i < list->size; i++) {
+    for(size_t i = 0;  i < list->size; i++) {
         func(list->values[i]);
     }
 }
 
-List* listOfVaList(int n, va_list* args) {
+List* listOfVaList(size_t n, va_list* args) {
     List* list = listCreate(n);
 
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         listPut(list, i, va_arg(*args, void*));
     }
 
     return list;
 }
 
-List* listOf(int n, ...) {
+List* listOf(size_t n, ...) {
     va_list args;
     va_start(args, n);
 
@@ -77,11 +77,11 @@ List* listOf(int n, ...) {
 }
 
 
-List* listOfArray(int n, void* array) {
+List* listOfArray(size_t n, void* array) {
     List* list = listCreate(n);
 
 
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         listPut(list, i, array + i);
     }
 

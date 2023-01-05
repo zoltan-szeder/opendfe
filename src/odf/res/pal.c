@@ -49,8 +49,8 @@ static ucvec3 normalizedPaletteColor(ucvec3* color) {
     return vec;
 }
 
-void palUnindex(Palette* palette, ucvec4* buffer, bool isTransparent, uint8_t* indexedStream, uint32_t length) {
-    for(int i = 0; i < length; i++) {
+void palUnindex(Palette* palette, ucvec4* buffer, bool isTransparent, uint8_t* indexedStream, size_t length) {
+    for(size_t i = 0; i < length; i++) {
         ucvec4* pixel = buffer + i;
         uint8_t colorIndex = indexedStream[i];
 
