@@ -13,65 +13,53 @@
 #include "odf/ogl/model.h"
 #include "odf/ogl/texture.h"
 
-OptionalPtr* palExtract(char* gobFile, char* palFile) {
-    OptionalPtr* optionalPalArchive = gobOpenArchive(gobFile);
-    if(optionalIsEmpty(optionalPalArchive)) return optionalPalArchive;
+Palette* palExtract(char* gobFile, char* palFile) {
+    GobArchive* palArchive = optionalGet(gobOpenArchive(gobFile));
+    GobFile* palGobFile = optionalGet(gobGetFile(palArchive, palFile));
+    InMemoryFile* palInMem = optionalGet(gobReadFile(palGobFile));
 
-    GobArchive* palArchive = optionalGet(optionalPalArchive);
-    InMemoryFile* palInMem = gobReadFile(gobGetFile(palArchive, palFile));
     memoryTag(palInMem, "PaletteInMemory");
 
     OptionalPtr* optionalPal = palOpen(palInMem);
-    if(optionalIsEmpty(optionalPal)) return optionalPal;
     Palette* pal = optionalGet(optionalPal);
     memoryTag(pal, "Palette");
 
     gobCloseFile(palInMem);
     gobCloseArchive(palArchive);
 
-    return optionalOf(pal);
+    return pal;
 }
 
-OptionalPtr* bmExtract(char* gobFile, char* bmFile) {
+BMFile* bmExtract(char* gobFile, char* bmFile) {
     OptionalPtr* optionalGobArchive = gobOpenArchive(gobFile);
-    if(optionalIsEmpty(optionalGobArchive)) return optionalGobArchive;
-
     GobArchive* bmArchive = optionalGet(optionalGobArchive);
-    InMemoryFile* bmInMem = gobReadFile(gobGetFile(bmArchive, bmFile));
+
+    GobFile* bmGobFile = optionalGet(gobGetFile(bmArchive, bmFile));
+    OptionalPtr* optBmInMem = gobReadFile(bmGobFile);
+    InMemoryFile* bmInMem = optionalGet(optBmInMem);
+
     memoryTag(bmInMem, "BmInMemory");
 
     BMFile* bm = bmOpenInMemoryFile(bmInMem);
     memoryTag(bm, "Bm");
-    bmPrintFile(bm);
 
     gobCloseFile(bmInMem);
     gobCloseArchive(bmArchive);
 
-    return optionalOf(bm);
+    return bm;
 }
 
 int main(int argc, char** argv) {
-    Display* display = dglCreateDisplay();
 
     if(argc < 5) return 1;
-    OptionalPtr* optionalBm = bmExtract(argv[1], argv[2]);
-    if(optionalIsEmpty(optionalBm)) {
-        printf("Could not find %s in %s\n", argv[2], argv[1]);
-        printf("%s\n", optionalGetMessage(optionalBm));
-    }
+    BMFile* bm = bmExtract(argv[1], argv[2]);
+    Palette* pal = palExtract(argv[3], argv[4]);
 
-    OptionalPtr* optionalPal = palExtract(argv[3], argv[4]);
-    if(optionalIsEmpty(optionalPal)) {
-        printf("Could not find %s in %s\n", argv[4], argv[3]);
-        printf("%s\n", optionalGetMessage(optionalPal));
-        return 1;
-    }
-
-    BMFile* bm = optionalGet(optionalBm);
-    Palette* pal = optionalGet(optionalPal);
     Image8Bit* image = bmCreateImage(bm, pal);
     bmClose(bm);
     palClose(pal);
+
+    Display* display = dglCreateDisplay();
 
     DglTexture* texture = dglTextureCreate(image);
 
@@ -116,12 +104,14 @@ int main(int argc, char** argv) {
         1, 2, 3  // second triangle
     };
 
+
     GameState gamestate;
     gamestate.model = dglModelCreate(vertices, sizeof(vertices), indices, sizeof(indices));
     dglModelBindTexture(gamestate.model, texture);
 
     GameControl gameControl;
     gameControl.shouldExit = false;
+
     while(!gameControl.shouldExit)
     {
         dglReadInputs(display, &gameControl);

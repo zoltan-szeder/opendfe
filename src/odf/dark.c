@@ -9,37 +9,29 @@
 #include "odf/ogl/model.h"
 #include "odf/ogl/texture.h"
 #include "odf/sys/file.h"
+#include "odf/sys/optional.h"
 #include "odf/res/gob.h"
 #include "odf/res/bm.h"
 #include "odf/res/pal.h"
 
 
 int main(int argc, char** argv) {
+    if(argc < 5) return 1;
+
     Display* display = dglCreateDisplay();
 
-    if(argc < 5) return 1;
-    OptionalPtr* optionalGobArchive = gobOpenArchive(argv[1]);
-    if(optionalIsEmpty(optionalGobArchive)) {
-        printf("%s\n", optionalGetMessage(optionalGobArchive));
-        return 1;
-    }
-    GobArchive* bmArchive = optionalGet(optionalGobArchive);
-
-    GobFile* bmFile = gobGetFile(bmArchive, argv[2]);
-    InMemoryFile* bmInMem = gobReadFile(bmFile);
+    GobArchive* bmArchive = optionalGet(gobOpenArchive(argv[1]));
+    GobFile* bmFile = optionalGet(gobGetFile(bmArchive, argv[2]));
+    InMemoryFile* bmInMem = optionalGet(gobReadFile(bmFile));
     BMFile* bm = bmOpenInMemoryFile(bmInMem);
     gobCloseFile(bmInMem);
     gobCloseArchive(bmArchive);
 
-    OptionalPtr* optionalPalArchive = gobOpenArchive(argv[3]);
-    if(optionalIsEmpty(optionalPalArchive)) {
-        printf("%s\n", optionalGetMessage(optionalPalArchive));
-        return 1;
-    }
-    GobArchive* palArchive = optionalGet(optionalPalArchive);
-    GobFile* paletteFile = gobGetFile(palArchive, argv[4]);
-    InMemoryFile* palInMem = gobReadFile(paletteFile);
-    Palette* pal = palOpen(palInMem);
+    GobArchive* palArchive = optionalGet(gobOpenArchive(argv[3]));
+
+    GobFile* paletteFile = optionalGet(gobGetFile(palArchive, argv[4]));
+    InMemoryFile* palInMem = optionalGet(gobReadFile(paletteFile));
+    Palette* pal = optionalGet(palOpen(palInMem));
 
 
     gobCloseFile(palInMem);

@@ -17,10 +17,10 @@ int gobPrintArchive(GobArchive*);
 
 size_t gobCountFiles(GobArchive*);
 List* gobListFiles(GobArchive*);
-GobFile* gobGetFile(GobArchive*, char*);
+OptionalPtr* gobGetFile(GobArchive*, char*);
 char* gobGetFileName(GobFile*);
 
-InMemoryFile* gobReadFile(GobFile*);
+OptionalPtr* gobReadFile(GobFile*);
 void gobCloseFile(InMemoryFile*);
 
 #endif

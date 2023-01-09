@@ -31,8 +31,8 @@ void testOpenMissingFile(){
 void testReadFile() {
     testCase("testReadFile");
     GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
-    GobFile* helloFile = gobGetFile(archive, "HELLO.TXT");
-    InMemoryFile* hello = gobReadFile(helloFile);
+    GobFile* helloFile = optionalGet(gobGetFile(archive, "HELLO.TXT"));
+    InMemoryFile* hello = optionalGet(gobReadFile(helloFile));
 
     OptionalPtr* optContent = inMemFileRead(hello, inMemFileSize(hello));
     if(optionalIsEmpty(optContent)) {

@@ -9,7 +9,7 @@
 OptionalPtr* fileOpen(char* filePath, char* modifiers) {
     FILE* stream = fopen(filePath, modifiers);
     if(stream == NULL) {
-        return optionalEmpty("odf/sys/file.c:fileOpen - Could not open file");
+        return optionalEmpty("odf/sys/file.c:fileOpen - Could not open file \"%s\"", filePath);
     } else {
         return optionalOf(stream);
     }

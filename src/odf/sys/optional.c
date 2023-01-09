@@ -91,6 +91,10 @@ void* optionalCreate(size_t size) {
 }
 
 OptionalPtr* optionalOf(void* ptr) {
+    if(ptr == NULL) {
+        return optionalEmpty("odf/sys/optional.c:optionalOf - Received NULL instead of a valid pointer");
+    }
+
     OptionalPtr* optional = optionalCreate(sizeof(OptionalPtr));
     optional->value = ptr;
     return optional;
@@ -98,10 +102,12 @@ OptionalPtr* optionalOf(void* ptr) {
 
 
 void* optionalGet(OptionalPtr* optional){
-    if(!optional->isPresent) {
-        fprintf(stderr, "Invoking optionalGet on an empty Optional! Aborting!");
-        abort();
+    if(optionalIsEmpty(optional)) {
+        fprintf(stderr, "Invoking optionalGet on an empty Optional! Aborting!\n");
+        optionalPrint(stderr, (Optional*) optional);
+        exit(1);
     }
+
     void* value = optional->value;
     optionalDelete(optional);
     return value;

@@ -59,7 +59,7 @@ List* listOfVaList(size_t n, va_list* args) {
     List* list = listCreate(n);
 
     for(size_t i = 0; i < n; i++) {
-        listPut(list, i, va_arg(*args, void*));
+        optionalDelete(listPut(list, i, va_arg(*args, void*)));
     }
 
     return list;
@@ -82,7 +82,7 @@ List* listOfArray(size_t n, void* array) {
 
 
     for(size_t i = 0; i < n; i++) {
-        listPut(list, i, array + i);
+        optionalDelete(listPut(list, i, array + i));
     }
 
     return list;
