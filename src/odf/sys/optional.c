@@ -23,7 +23,7 @@ Optional MEMORY_ALLOCATION_ISSUE = {
     .message = "odf/sys/optional.c:optionalCreate - Could not allocate memory for Optional type"
 };
 
-void* optionalEmpty(const char* formatString, ...) {
+void* optionalEmptyMessage(const char* formatString, ...) {
     Optional* optional = memoryAllocateWithTag(sizeof(Optional), "odf/sys/optional/EmptyOptional");
     optional->isPresent = false;
 
@@ -40,39 +40,24 @@ bool optionalIsEmpty(void* optional) {
     return !((Optional*) optional)->isPresent;
 }
 
-Optional* optionalFirstEmpty(size_t length, ...) {
-    if(length == 0)
-        return false;
-
-    va_list args;
-    va_start(args, length);
-
-    Optional* optional;
-    for(size_t i = 0; i < length; i++) {
-        optional = va_arg(args, Optional*);
-        if(optionalIsEmpty(optional)) {
-            va_end(args);
-            return optional;
-        }
-    }
-
-    va_end(args);
-
-    return NULL;
-}
-
-void optionalDelete(void* ptr) {
-    Optional* optional = ptr;
-
+static void optionalShallowDelete(Optional* optional) {
     if(optional == &MEMORY_ALLOCATION_ISSUE) return;
 
     memoryRelease(optional);
 }
 
+void optionalDelete(void* ptr) {
+    Optional* optional = ptr;
+    if(optionalIsEmpty(optional)) {
+        memoryRelease(optional->message);
+    }
+    optionalShallowDelete(ptr);
+}
+
 char* optionalGetMessage(void* ptr) {
     Optional* optional = ptr;
     char* message = optional->message;
-    optionalDelete(optional);
+    optionalShallowDelete(optional);
     return message;
 }
 
@@ -92,7 +77,7 @@ void* optionalCreate(size_t size) {
 
 OptionalPtr* optionalOf(void* ptr) {
     if(ptr == NULL) {
-        return optionalEmpty("odf/sys/optional.c:optionalOf - Received NULL instead of a valid pointer");
+        return optionalEmpty("optionalOf - Received NULL instead of a valid pointer");
     }
 
     OptionalPtr* optional = optionalCreate(sizeof(OptionalPtr));

@@ -61,6 +61,17 @@ void* memoryAllocate(size_t size) {
     return ptr;
 }
 
+void* memoryReallocate(void* ptr, size_t size) {
+    MemoryAllocation* alloc = memoryFindAllocation(ptr);
+
+    void* newPtr = realloc(ptr, size);
+
+    alloc->ptr = newPtr;
+    alloc->size = size;
+
+    return newPtr;
+}
+
 void* memoryAllocateWithTag(size_t size, const char* tag) {
     void* block = memoryAllocate(size);
     memoryTag(block, tag);

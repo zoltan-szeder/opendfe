@@ -4,22 +4,40 @@
 #include "odf/sys/memory.h"
 #include "odf/sys/optional.h"
 
+#define LIST_INCREMENT 32
+
 struct List {
-    uint32_t size;
+    size_t bufferSize;
+    size_t size;
     void** values;
 };
 
-List* listCreate(size_t size) {
+static void listExtendToSize(List* list, size_t size);
+
+List* listCreate(size_t initialSize) {
     List* list = memoryAllocateWithTag(sizeof(List), "odf/sys/list/List");
+    list->size = 0;
+    list->bufferSize = initialSize;
 
-    list->values = memoryAllocateWithTag(size*sizeof(void**), "odf/sys/list/List/values");
-    list->size = size;
+    if(initialSize == 0) {
+        list->values = NULL;
+        return list;
+    }
 
-    for(size_t i = 0; i < list->size; i++) {
+    list->values = memoryAllocateWithTag(initialSize*sizeof(void**), "odf/sys/list/List/values");
+
+    for(size_t i = 0; i < initialSize; i++) {
         list->values[i] = NULL;
     }
 
     return list;
+}
+
+void listAppend(List* list, void* item) {
+    listExtendToSize(list, list->size + 1);
+
+    list->values[list->size] = item;
+    list->size++;
 }
 
 void listDelete(List* list) {
@@ -33,20 +51,20 @@ size_t listSize(List* list) {
 
 OptionalPtr* listGet(List* list, size_t index) {
     if(index >= list->size) {
-        return optionalEmpty("odf/sys/list.c:listGet: Array index (%s) is out of bounds (>=%s)", index, list->size);
+        return optionalEmpty("listGet - Array index (%ld) is out of bounds (>=%ld)", index, list->size);
     }
 
     return optionalOf(list->values[index]);
 }
 
-OptionalPtr* listPut(List* list, size_t index, void* value) {
-    if(index >= list->size) {
-        return optionalEmpty("odf/sys/list.c:listPut: Array index (%s) is out of bounds (>=%s)", index, list->size);
-    }
+void listPut(List* list, size_t index, void* value) {
+    size_t requiredSize = index+1;
+    listExtendToSize(list, requiredSize);
+
+    if(list->size < requiredSize)
+        list->size = requiredSize;
 
     list->values[index] = value;
-
-    return optionalOf(value);
 }
 
 void listForEach(List* list, void (*func)(void*)) {
@@ -59,56 +77,43 @@ List* listOfVaList(size_t n, va_list* args) {
     List* list = listCreate(n);
 
     for(size_t i = 0; i < n; i++) {
-        optionalDelete(listPut(list, i, va_arg(*args, void*)));
+        listAppend(list, va_arg(*args, void*));
     }
 
     return list;
 }
-
-List* listOf(size_t n, ...) {
-    va_list args;
-    va_start(args, n);
-
-    List* list = listOfVaList(n, &args);
-
-    va_end(args);
-
-    return list;
-}
-
 
 List* listOfArray(size_t n, void* array) {
     List* list = listCreate(n);
 
 
     for(size_t i = 0; i < n; i++) {
-        optionalDelete(listPut(list, i, array + i));
+        listAppend(list, array + i);
     }
 
     return list;
 }
 
-List* listOf1(void* i1){
-    return listOf(1, i1);
+
+// Private functions
+static void listExtendToSize(List* list, size_t size){
+    if(size <= list->bufferSize) return;
+
+    size_t oldBuffSize = list->bufferSize;
+    size_t incBuffSize = oldBuffSize + LIST_INCREMENT;
+    size_t newBuffSize = size > incBuffSize ? size : incBuffSize;
+
+    if(oldBuffSize == 0) {
+        list->values = memoryAllocateWithTag(newBuffSize*sizeof(void*), "odf/sys/list/List.values");
+    } else {
+        list->values = memoryReallocate(list->values, newBuffSize*sizeof(void*));
+    }
+
+    for(int i = oldBuffSize; i < newBuffSize; i++) {
+        list->values[i] = NULL;
+    }
+
+    list->bufferSize = newBuffSize;
+
 }
-List* listOf2(void* i1, void* i2){
-    return listOf(2, i1, i2);
-}
-List* listOf3(void* i1, void* i2, void* i3){
-    return listOf(3, i1, i2, i3);
-}
-List* listOf4(void* i1, void* i2, void* i3, void* i4){
-    return listOf(4, i1, i2, i3, i4);
-}
-List* listOf5(void* i1, void* i2, void* i3, void* i4, void* i5){
-    return listOf(5, i1, i2, i3, i4, i5);
-}
-List* listOf6(void* i1, void* i2, void* i3, void* i4, void* i5, void* i6){
-    return listOf(6, i1, i2, i3, i4, i5, i6);
-}
-List* listOf7(void* i1, void* i2, void* i3, void* i4, void* i5, void* i6, void* i7){
-    return listOf(7, i1, i2, i3, i4, i5, i6, i7);
-}
-List* listOf8(void* i1, void* i2, void* i3, void* i4, void* i5, void* i6, void* i7, void* i8){
-    return listOf(8, i1, i2, i3, i4, i5, i6, i7, i8);
-}
+

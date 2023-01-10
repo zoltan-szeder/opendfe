@@ -45,7 +45,7 @@ OptionalPtr* filmFindFirst(LfdArchive* archive) {
         if(strncmp("FILM", lfdGetFileName(file), 4)) return optionalOf(file);
     }
 
-    return optionalEmpty("odf/res/film - filmFindFirst: Could not find FILM element in LFD archive");
+    return optionalEmpty("filmFindFirst - Could not find FILM element in LFD archive");
 }
 
 

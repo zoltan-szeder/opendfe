@@ -49,7 +49,7 @@ OptionalPtr* lfdOpenArchive(char* file_name) {
         lfdFile->offset = currentOffset;
         currentOffset += fileHeader->length;
 
-        optionalDelete(listPut(archive->files, i, lfdFile));
+        listAppend(archive->files, lfdFile);
     }
 
     return optionalOf(archive);

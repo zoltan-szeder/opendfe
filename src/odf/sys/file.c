@@ -9,7 +9,7 @@
 OptionalPtr* fileOpen(char* filePath, char* modifiers) {
     FILE* stream = fopen(filePath, modifiers);
     if(stream == NULL) {
-        return optionalEmpty("odf/sys/file.c:fileOpen - Could not open file \"%s\"", filePath);
+        return optionalEmpty("fileOpen - Could not open file \"%s\"", filePath);
     } else {
         return optionalOf(stream);
     }
@@ -26,7 +26,7 @@ OptionalPtr* fileReadAll(char* filePath) {
     long length = ftell(stream);
     fseek(stream, 0, SEEK_SET);
 
-    if(length == -1L) return optionalEmpty("odf/sys/file.c:fileReadAll - File lenght is invalid");
+    if(length == -1L) return optionalEmpty("fileReadAll - File lenght is invalid");
 
     char* content = memoryAllocateWithTag(length, "odf/sys/file/fileReadAll");
 
@@ -60,7 +60,7 @@ OptionalPtr* fileReadBytes(FILE* stream, size_t length) {
     uint32_t objects = fread(bytes, length, 1, stream);
     if(objects != 1) {
         memoryRelease(bytes);
-        return optionalEmpty("odf/sys/file.c:fileReadBytes - Could not read %d byte(s). End of file", length);
+        return optionalEmpty("fileReadBytes - Could not read %d byte(s). End of file", length);
     }
 
     return optionalOf(bytes);

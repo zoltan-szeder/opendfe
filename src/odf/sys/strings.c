@@ -90,7 +90,7 @@ List* strSplitByLineBreak(char* content) {
         memcpy(line, cursor, lineLength);
         line[lineLength] = 0;
 
-        optionalDelete(listPut(lines, i, line));
+        listAppend(lines, line);
         uint8_t lineBreakLength = lineBreakSize(cursor + lineLength);
         cursor += lineLength + lineBreakLength;
     }

@@ -22,39 +22,49 @@ static Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8_t* data,  Pale
 BMFile* bmOpenFile(char* file) {
     FILE* stream = fopen(file, "rb");
 
-    OptionalPtr* optionalBmHeader = fileReadStruct(stream, BM_HEADER_FORMAT);
-    if(optionalIsEmpty(optionalBmHeader)) return NULL;
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+        BMHeader*, header, fileReadStruct(stream, BM_HEADER_FORMAT),
+        {
+            fclose(stream);
+        },
+        NULL
+    );
+    memoryTag(header, "odf/res/bm/BmHeader");
 
-    BMHeader* bmHeader = optionalGet(optionalBmHeader);
-    memoryTag(bmHeader, "odf/res/bm/BmHeader");
-
-    OptionalPtr* optData = fileReadBytes(stream, bmHeader->dataSize);
-    if(optionalIsEmpty(optData)) return NULL;
-    uint8_t* data = optionalGet(optData);
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+        uint8_t*, data, fileReadBytes(stream, header->dataSize),
+        {
+            memoryRelease(header);
+            fclose(stream);
+        },
+        NULL
+    )
     memoryTag(data, "odf/res/bm/BMFile/data");
 
     fclose(stream);
 
     BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
-    bmFile->header = bmHeader;
+    bmFile->header = header;
     bmFile->data = data;
 
     return bmFile;
 }
 
 BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
-    OptionalPtr* optionalBmHeader = inMemFileReadStruct(file, BM_HEADER_FORMAT);
-    if(optionalIsEmpty(optionalBmHeader)) return NULL;
+    OPTIONAL_ASSIGN_OR_RETURN(
+        BMHeader*, bmHeader, inMemFileReadStruct(file, BM_HEADER_FORMAT),
+        NULL
+    )
 
-    BMHeader* bmHeader = optionalGet(optionalBmHeader);
-
-    OptionalPtr* optionalData = inMemFileRead(file, bmHeader->dataSize);
-    if(optionalIsEmpty(optionalData)) return NULL;
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+        uint8_t*, data, inMemFileRead(file, bmHeader->dataSize),
+        {memoryRelease(bmHeader);},
+        NULL
+    )
 
     BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
-
     bmFile->header = bmHeader;
-    bmFile->data = optionalGet(optionalData);
+    bmFile->data = data;
 
     return bmFile;
 }

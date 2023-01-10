@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 void* memoryAllocate(size_t size);
+void* memoryReallocate(void* ptr, size_t size);
 void* memoryAllocateWithTag(size_t size, const char* tag);
 void memoryTag(void* ptr, const char* name);
 void memoryRelease(void*);

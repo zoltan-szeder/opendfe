@@ -158,6 +158,22 @@ void testReferenceReplacement() {
     assertTrueMsg(memoryIsReferencedBy(memoryBlock, ptr3), error("memoryBlock is not referenced by ptr3"));
 }
 
+
+
+void testReallocation() {
+    testCase("testReallocation");
+
+    ObjPtrFirst* allocated = memoryAllocate(sizeof(ObjPtrFirst));
+    allocated->c = 1;
+    ObjPtrFirst* reallocated = memoryReallocate(allocated, 2*sizeof(ObjPtrFirst));
+    reallocated[1].c = 2;
+
+    assertEquali(1, reallocated[0].c);
+    assertEquali(2, reallocated[1].c);
+    assertFalse(memoryIsValid(allocated));
+    assertTrue(memoryIsValid(reallocated));
+}
+
 int main(int argc, char** argv){
     void (*testFunctions[])() = {
         &testMemoryInitialization,

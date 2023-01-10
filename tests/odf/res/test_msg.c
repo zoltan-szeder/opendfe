@@ -4,9 +4,29 @@
 
 #include "odf/res/msg.h"
 #include "odf/res/types/msg_def.h"
+
+#include <string.h>
+
 #include "odf/sys/optional.h"
+#include "odf/sys/list.h"
 #include "odf/sys/stringbuffer.h"
 #include "odf/sys/inmemoryfile.h"
+#include "odf/sys/log.h"
+
+static const char* exampleMsg =
+    "#MSG 1.0\n"
+    "MSG 2.0\n"
+    "\n"
+    "MSGS 5\n"
+    "\n"
+    "# internal game messages\n"
+    "# <INDEX> <PRIORITY>: \"<MESSAGE>\"\n"
+    "0 0: \"message 1\"\n"
+    "\t1 0: \"message 2\"\n"
+    "    2\t1:\t\"message 3\"\n"
+    "\t3\t2:\t\"message 4\" # This is a comment\n"
+    "\t4\t3:\t\"message 5\" # This is a \"comment\"\n"
+    "END";
 
 StringBuffer* sb;
 
@@ -16,8 +36,12 @@ void setUp() {
 
 void tearDown(){
     stringBufferDelete(sb);
-
     assertAllMemoryReleased();
+
+    if(!memoryIsEmpty()) {
+        memoryDump(false);
+        memoryReleaseAll();
+    }
 }
 
 static OptionalPtr* buildMsg() {
@@ -31,6 +55,12 @@ static OptionalPtr* buildMsg() {
     inMemFileDelete(file);
 
     return optMsg;
+}
+
+static void assertMsg(Msg* msg, size_t index, size_t priority, char* value) {
+    assertEquali(index, msg->index);
+    assertEquali(priority, msg->priority);
+    assertEquals(value, msg->value, strlen(value));
 }
 
 void testNonMsgFile() {
@@ -48,12 +78,7 @@ void testMinimalMsgFile() {
 
     OptionalPtr* optMsg = buildMsg();
 
-    assertOptionalNotEmpty(optMsg);
-    MsgFile* msgFile = optionalGet(optMsg);
-    assertEquali(1, msgFile->majorVersion);
-    assertEquali(0, msgFile->minorVersion);
-
-    msgCloseFile(msgFile);
+    assertOptionalIsEmpty(optMsg);
 }
 
 void testDifferentVersionMsgFile() {
@@ -63,12 +88,7 @@ void testDifferentVersionMsgFile() {
 
     OptionalPtr* optMsg = buildMsg();
 
-    assertOptionalNotEmpty(optMsg);
-    MsgFile* msgFile = optionalGet(optMsg);
-    assertEquali(2, msgFile->majorVersion);
-    assertEquali(0, msgFile->minorVersion);
-
-    msgCloseFile(msgFile);
+    assertOptionalIsEmpty(optMsg);
 }
 
 void testEmptyFirstLineMsgFile() {
@@ -78,18 +98,53 @@ void testEmptyFirstLineMsgFile() {
 
     OptionalPtr* optMsg = buildMsg();
 
-    assertOptionalNotEmpty(optMsg);
-    MsgFile* msgFile = optionalGet(optMsg);
-    assertEquali(2, msgFile->majorVersion);
-    assertEquali(0, msgFile->minorVersion);
-
-    msgCloseFile(msgFile);
+    assertOptionalIsEmpty(optMsg);
 }
 
-void testCommentedOutFirstLineMsgFile() {
-    testCase("testCommentedOutFirstLineMsgFile");
+void testInvalidVersion() {
+    testCase("testInvalidVersion");
 
-    stringBufferAppend(sb, "#MSG 1.0\nMSG 2.0");
+    stringBufferAppend(sb, "MSG MISSING");
+
+    OptionalPtr* optMsg = buildMsg();
+
+    assertOptionalIsEmpty(optMsg);
+}
+
+void testInvalidMessageCount() {
+    testCase("testInvalidMessageCount");
+
+    stringBufferAppend(
+        sb,
+        "MSG 1.0\n"
+        "MSGS INVALID"
+    );
+
+    OptionalPtr* optMsg = buildMsg();
+
+    assertOptionalIsEmpty(optMsg);
+}
+
+void testInvalidMessage() {
+    testCase("testInvalidMessage");
+
+    stringBufferAppend(
+        sb,
+        "MSG 1.0\n"
+        "MSGS 1\n"
+        "0: 1: \"MissingClosingQuotationMark\n"
+        "END"
+    );
+
+    OptionalPtr* optMsg = buildMsg();
+
+    assertOptionalIsEmpty(optMsg);
+}
+
+void testFullMsgFile() {
+    testCase("testFullMsgFile");
+
+    stringBufferAppend(sb, exampleMsg);
 
     OptionalPtr* optMsg = buildMsg();
 
@@ -97,6 +152,12 @@ void testCommentedOutFirstLineMsgFile() {
     MsgFile* msgFile = optionalGet(optMsg);
     assertEquali(2, msgFile->majorVersion);
     assertEquali(0, msgFile->minorVersion);
+    assertEquali(5, listSize( msgFile->messages));
+    assertMsg(optionalGet(msgGet(msgFile, 0)), 0, 0, "message 1");
+    assertMsg(optionalGet(msgGet(msgFile, 1)), 1, 0, "message 2");
+    assertMsg(optionalGet(msgGet(msgFile, 2)), 2, 1, "message 3");
+    assertMsg(optionalGet(msgGet(msgFile, 3)), 3, 2, "message 4");
+    assertMsg(optionalGet(msgGet(msgFile, 4)), 4, 3, "message 5");
 
     msgCloseFile(msgFile);
 }
@@ -108,7 +169,10 @@ int main(int argc, char** argv){
         &testMinimalMsgFile,
         &testDifferentVersionMsgFile,
         &testEmptyFirstLineMsgFile,
-        &testCommentedOutFirstLineMsgFile
+        &testFullMsgFile,
+        &testInvalidVersion,
+        &testInvalidMessageCount,
+        &testInvalidMessage,
     };
 
     TestFixture fixture = createFixture();

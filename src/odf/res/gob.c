@@ -12,10 +12,10 @@
 #include "odf/sys/optional.h"
 #include "odf/sys/inmemoryfile.h"
 
-OptionalPtr* gobReadArchive(FILE*);
-OptionalPtr* gobReadArchiveFile(GobArchive*);
-OptionalPtr* gobReadArchiveFiles(GobArchive*, uint32_t fileCount);
-uint32_t gobReadArchiveFileCount(GobArchive* archive);
+static OptionalPtr* gobReadArchive(FILE*);
+static OptionalPtr* gobReadArchiveFile(GobArchive*);
+static OptionalPtr* gobReadArchiveFiles(GobArchive*, uint32_t fileCount);
+static uint32_t gobReadArchiveFileCount(FILE* stream, GobArchiveHeaders* headers);
 
 struct GobArchive {
     FILE* stream;
@@ -29,10 +29,11 @@ struct GobFile {
 };
 
 OptionalPtr* gobOpenArchive(char* filename) {
-    OptionalPtr* optionalFile = fileOpen(filename, "rb");
-    if(optionalIsEmpty(optionalFile)) return optionalFile;
+    OPTIONAL_ASSIGN_OR_PASSTROUGH(
+        FILE*, file, fileOpen(filename, "rb")
+    );
 
-    return gobReadArchive(optionalGet(optionalFile));
+    return gobReadArchive(file);
 }
 
 void gobCloseArchiveFile(void* file) {
@@ -68,7 +69,7 @@ OptionalPtr* gobGetFile(GobArchive* archive, char* file_name){
             return optionalOf(gob_file);
     }
 
-    return optionalEmpty("odf/res/gob.c:gobGetFile - Could not find \"%s\" in GOB archive", file_name);
+    return optionalEmpty("gobGetFile - Could not find \"%s\" in GOB archive", file_name);
 }
 
 char* gobGetFileName(GobFile* gob_file) {
@@ -81,14 +82,14 @@ OptionalPtr* gobReadFile(GobFile* gob_file){
 
     int failure = fseek(stream, gob_file->header->offset, SEEK_SET);
     if(failure)
-        return optionalEmpty("odf/res/gob:gobReadFile - Could not find beginning of GOB archive content");
+        return optionalEmpty("gobReadFile - Could not find beginning of GOB archive content");
 
     char* content = memoryAllocateWithTag(gob_file->header->length, "odf/res/gob/GobFileContent");
 
     int objects = fread(content, gob_file->header->length, 1, stream);
     if(objects == 0)
         return optionalEmpty(
-            "odf/res/gob:gobReadFile - Could not read file GOB file \"%s\"",
+            "gobReadFile - Could not read file GOB file \"%s\"",
             gobGetFileName(gob_file)
         );
 
@@ -121,76 +122,75 @@ int gobPrintArchive(GobArchive* archive){
     return 0;
 }
 
-OptionalPtr* gobReadArchive(FILE* stream) {
+static OptionalPtr* gobReadArchive(FILE* stream) {
+    OPTIONAL_ASSIGN_OR_PASSTROUGH(
+        GobArchiveHeaders*, headers, fileReadStruct(stream, GOB_ARCHIVE_HEADER_FORMAT)
+    );
+
+    uint32_t fileCount = gobReadArchiveFileCount(stream, headers);
+    if(fileCount == 0) {
+        memoryRelease(headers);
+        return optionalEmpty("gobReadArchive - Archive is empty");
+    }
+
     GobArchive* archive = memoryAllocateWithTag(sizeof(GobArchive), "odf/res/gob/GobArchive");
-
     archive->stream = stream;
+    archive->headers = headers;
 
-    OptionalPtr* optionalHeaders = fileReadStruct(stream, GOB_ARCHIVE_HEADER_FORMAT);
-    if(optionalIsEmpty(optionalHeaders)) return optionalHeaders;
-    archive->headers = optionalGet(optionalHeaders);
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        List*, files, gobReadArchiveFiles(archive, fileCount),
+        {
+            memoryRelease(archive->headers);
+            memoryRelease(archive);
+        }
+    );
 
-    uint32_t fileCount = gobReadArchiveFileCount(archive);
-    if(fileCount == 0)
-        return optionalEmpty("ogl/res/gob.c:gobReadArchive - Archive is empty");
-
-    OptionalPtr* optionalFiles = gobReadArchiveFiles(archive, fileCount);
-    if(optionalIsEmpty(optionalFiles)) {
-        memoryRelease(archive->headers);
-        memoryRelease(archive);
-        return (void*) optionalFiles;
-    };
-    archive->files = optionalGet(optionalFiles);
+    archive->files = files;
 
     return optionalOf(archive);
 }
 
-uint32_t gobReadArchiveFileCount(GobArchive* archive) {
-    FILE* stream = archive->stream;
-
-    int failure = fseek(stream, (long) archive->headers->directoryOffset, SEEK_SET);
+static uint32_t gobReadArchiveFileCount(FILE* stream, GobArchiveHeaders* headers) {
+    int failure = fseek(stream, (long) headers->directoryOffset, SEEK_SET);
     if(failure) return 0;
 
-    OptionalPtr* optionalCount = fileReadStruct(stream, "%l4");
-    if(optionalIsEmpty(optionalCount)) return 0;
+    OPTIONAL_ASSIGN_OR_RETURN(
+        uint32_t*, countPtr, fileReadStruct(stream, "%l4"),
+        0
+    )
 
-    uint32_t* countPtr = optionalGet(optionalCount);
     uint32_t count = *countPtr;
     memoryRelease(countPtr);
     return count;
 }
 
-OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32_t fileCount) {
+static OptionalPtr* gobReadArchiveFiles(GobArchive* archive, uint32_t fileCount) {
     List* list = listCreate(fileCount);
 
     for(uint32_t i = 0; i < fileCount; i++) {
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            GobFileHeader*, header, gobReadArchiveFile(archive),
+            {
+                for(uint32_t j = 0; j < i; j++) {
+                    memoryRelease(optionalGet(listGet(list, j)));
+                }
 
-        OptionalPtr* optFile = gobReadArchiveFile(archive);
-
-        if(optionalIsEmpty(optFile)) {
-            for(uint32_t j = 0; j < i; j++) {
-                OptionalPtr* item = listGet(list, j);
-                memoryRelease(optionalGet(item));
+                listDelete(list);
             }
-
-            listDelete(list);
-            return optFile;
-        }
+        )
 
         GobFile* file = memoryAllocateWithTag(sizeof(GobFile), "odf/res/gob/GobFile");
-        file->header = optionalGet(optFile);
+        file->header = header;
         file->parent = archive;
 
-        OptionalPtr* opt = listPut(list, i, file);
-        if(optionalIsEmpty(opt)) return opt;
-        optionalDelete(opt);
+        listAppend(list, file);
     }
 
     return optionalOf(list);
 }
 
 
-OptionalPtr* gobReadArchiveFile(GobArchive* archive) {
+static OptionalPtr* gobReadArchiveFile(GobArchive* archive) {
     FILE* stream = archive->stream;
     return fileReadStruct(stream, GOB_FILE_HEADER_FORMAT);
 }

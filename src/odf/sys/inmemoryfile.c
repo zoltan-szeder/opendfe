@@ -68,7 +68,7 @@ OptionalPtr* inMemFileReadStruct(InMemoryFile* file, const char* format) {
 OptionalPtr* inMemFileRead(InMemoryFile* file, uint32_t length) {
     if(inMemFileOverEOF(file, length))
         return optionalEmpty(
-            "odf/sys/inmemoryfile.c:inMemFileRead - Could not read %d bytes from %d offset in a %d long file",
+            "inMemFileRead - Could not read %d bytes from %d offset in a %d long file",
             length, file->pos, file->length
         );
 

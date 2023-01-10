@@ -22,7 +22,7 @@ OptionalPtr* palOpen(InMemoryFile* file){
 
     OptionalPtr* optContent = inMemFileRead(file, fileSize);
     if(optionalIsEmpty(optContent))
-        return optionalEmpty("odf/res/pal.c:palOpenInMemoryFile - Could not read Palette");
+        return optionalEmpty("palOpenInMemoryFile - Could not read Palette");
     Palette* content = optionalGet(optContent);
     memoryTag(content, "odf/res/pal/Palette");
 
