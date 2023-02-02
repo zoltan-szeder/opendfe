@@ -26,12 +26,18 @@ unsigned int loadShaderProgram(char* vsFile, char* fragFile) {
 
     unsigned int vertexShader;
     OptionalPtr* optionalVertexShader = loadShader(&vertexShader, GL_VERTEX_SHADER, vsFile);
-    if(optionalIsEmpty(optionalVertexShader)) return 0;
+    if(optionalIsEmpty(optionalVertexShader)) {
+		optionalPrint(stderr, (void*) optionalVertexShader);
+		return 0;
+	};
 	glAttachShader(shaderProgram, vertexShader);
 
     unsigned int fragmentShader;
 	OptionalPtr* optionalFragmentShader = loadShader(&fragmentShader,GL_FRAGMENT_SHADER, fragFile);
-    if(optionalIsEmpty(optionalFragmentShader)) return 0;
+    if(optionalIsEmpty(optionalFragmentShader)) {
+		optionalPrint(stderr, (void*) optionalFragmentShader);
+		return 0;
+	}
 	glAttachShader(shaderProgram, fragmentShader);
 
 	glLinkProgram(shaderProgram);
@@ -52,8 +58,10 @@ unsigned int loadShaderProgram(char* vsFile, char* fragFile) {
 
 OptionalPtr* loadShader(unsigned int* shaderId, GLenum shaderType, char* glslFile) {
 	OptionalPtr* optionalGlslFile = fileReadAll(glslFile);
-	if(optionalIsEmpty(optionalGlslFile))
+	if(optionalIsEmpty(optionalGlslFile)) {
+		optionalPrint(stderr, (void*) optionalGlslFile);
 		return optionalGlslFile;
+	}
 
 	char* glsl = optionalGet(optionalGlslFile);
 

@@ -138,7 +138,7 @@ static OptionalPtr* msgReadVersion(List* lines, size_t* i) {
 
         if(result != 3) {
             memoryRelease(msgFile);
-            return optionalEmpty("Could not parse MSG version number from \"%s\"", line);
+            return optionalEmpty("Could not parse MSG version number at line %ld: \"%s\"", *i, line);
         }
 
         logDebug("Found MSG file with version %d.%d", msgFile->majorVersion, msgFile->minorVersion);
@@ -164,7 +164,7 @@ static OptionalPtr* msgReadMsgList(List* lines, size_t* i) {
 
     if(sscanf(line, "%s %ld", msgs, msgCount) != 2) {
         memoryRelease(msgCount);
-        return optionalEmpty("Could not parse MSG count from: \"%s\"", line);
+        return optionalEmpty("Could not parse MSG count at line %ld: \"%s\"", *i, line);
     }
 
     logDebug("%s Count: %ld", msgs, *msgCount);
@@ -195,7 +195,7 @@ static OptionalPtr* msgReadMessage(List* lines, size_t* i){
     if(result != 3) {
         memoryRelease(msg->value);
         memoryRelease(msg);
-        return optionalEmpty("Could not parse MSG message from line: \"%s\"", line);
+        return optionalEmpty("Could not parse MSG message at line %ld: \"%s\"", *i, line);
     }
 
     logDebug("Found message %ld with priority %ld: \"%s\"", msg->index, msg->priority, msg->value);

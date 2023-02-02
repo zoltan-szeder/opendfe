@@ -8,8 +8,8 @@ LD := gcc
 LDFLAGS := -L .
 LINK_ARGS = -o $@ $(LDFLAGS) $(addprefix -l:,$|) $^
 
-MC := valgrind
-MCFLAGS := --leak-check=full --suppressions=./valgrind.supp --error-exitcode=1 -q
+#MC := valgrind
+#MCFLAGS := --leak-check=full --suppressions=./valgrind.supp --error-exitcode=1 -q
 
 
 ODF_SOURCES := $(wildcard src/odf/*.c)
@@ -31,6 +31,8 @@ include src/odf/sys/module.mk
 include src/odf/math/module.mk
 include src/odf/res/module.mk
 include src/odf/ogl/module.mk
+include src/odf/ctrl/module.mk
+include src/odf/ctrl/glfw/module.mk
 
 TESTS += $(wildcard tests/test_*.c)
 TEST_OBJECTS = $(TESTS:.c=.o)

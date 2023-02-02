@@ -7,6 +7,8 @@
 #include "odf/sys/memory.h"
 #include "stddef.h"
 
+#define OptionalOf(type) OptionalPtr
+
 struct Optional {
     bool isPresent;
     char* message;
