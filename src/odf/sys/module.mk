@@ -14,5 +14,5 @@ ODF_SYS_SO_DEPS = $(ODF_SYS_SO)
 TESTS += $(wildcard tests/odf/sys/test_*.c)
 
 tests/odf/sys/test_%.out: tests/odf/sys/test_%.o $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS) | $(ODF_SYS_SO_DEPS)
-	$(LD) $(LINK_ARGS)
+	$(LD) -lcmocka $(LINK_ARGS)
 	$(MC) $(MCFLAGS) ./$@

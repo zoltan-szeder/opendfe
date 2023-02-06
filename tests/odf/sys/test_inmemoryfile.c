@@ -9,10 +9,18 @@
 #include "odf/sys/memory.h"
 #include "odf/sys/inmemoryfile.h"
 #include "odf/sys/optional.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 
-void tearDown(){
-    assertAllMemoryReleased();
+int tearDownClass(void** state){
+    setToOriginalEndianness();
+
+    return 0;
+}
+
+int tearDown(void** state){
+    assert_true(memoryGetAllocations() == 0);
+
+    return 0;
 }
 
 OptionalPtr* createTestInMemFile(char* content) {
@@ -28,30 +36,29 @@ void assertOptionalIsEmpty(void* optional){
     if(optionalIsEmpty(optional)) {
         memoryRelease(optionalGetMessage(optional));
     } else {
-        fail(error("Optional is not empty"));
+        fail();
     }
 }
 
 void assertOptionalBytes(char* expected,void* optional){
     if(optionalIsEmpty(optional)) {
         char* msg = optionalGetMessage(optional);
-        fail(error("%s", msg));
+        fail();
         memoryRelease(msg);
     } else {
         void* actual = optionalGet(optional);
-        assertEquals(expected, actual, strlen(expected));
+        assert_memory_equal(expected, actual, strlen(expected));
         memoryRelease(actual);
     }
 }
 
 
 void testInMemFileReadAll(){
-    testCase("testInMemFileReadAll");
     char* content = "abcdefghij";
 
     OptionalPtr* optionalFile = createTestInMemFile(content);
     if(optionalIsEmpty(optionalFile)) {
-        fail(optionalGetMessage(optionalFile));
+        fail();
         return;
     }
 
@@ -83,18 +90,13 @@ void testInMemFileReadAll(){
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testInMemFileReadAll,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testInMemFileReadAll, NULL, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/sys/inmemoryfile.c", tests, NULL, tearDownClass);
 
-    fixture.name = "odf/sys/inmemoryfile.c";
-    fixture.before = &setToLittleEndian;
-    fixture.tests = testFunctions;
-    fixture.after = &setToOriginalEndianness;
-    fixture.afterEach = &tearDown;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }

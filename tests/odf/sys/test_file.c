@@ -4,35 +4,33 @@
 #include <string.h>
 
 #include "test_fixtures.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 
 #include "odf/sys/file.h"
 #include "odf/sys/optional.h"
 
 
-void tearDown(){
-    assertAllMemoryReleased();
+int tearDown(void** state){
+    assert_true(memoryGetAllocations() == 0);
+    return 0;
 }
 
 void testOpenMissingFile(){
     OptionalPtr* optional = fileOpen("missing/nonExistent.file", "rb");
-    assertTrueMsg(optionalIsEmpty(optional), error("File should be missing, but is present"));
+    assert_true(optionalIsEmpty(optional));
     char* msg = optionalGetMessage(optional);
-    assertTrue(msg != NULL);
+    assert_true(msg != NULL);
     memoryRelease(msg);
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testOpenMissingFile,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testOpenMissingFile, NULL, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/sys/file.c", tests, NULL, NULL);
 
-    fixture.name = "odf/sys/file.c";
-    fixture.afterEach = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }

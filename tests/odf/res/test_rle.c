@@ -5,258 +5,228 @@
 
 #include "odf/sys/types.h"
 #include "odf/res/rle.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 
-void tearDown(){
-    assertAllMemoryReleased();
+int tearDown(void** state){
+    assert_int_equal(0, memoryGetAllocations());
+    return 0;
 }
 
 void testLRE0Decompress_1(){
-    testCase("LRE0 1x1 image 01");
-
     int w = 1;
     int h = 1;
     char* lre = "\x01\x01";
 
     uint8_t* image = rle0Decompress((unsigned char*) lre, 2, w, h);
 
-    assertEquali(image[0], lre[1]);
+    assert_int_equal(image[0], lre[1]);
     memoryRelease(image);
 }
 
 void testLRE0Decompress_2(){
-    testCase("LRE0 1x1 image 02");
-
     int w = 1;
     int h = 1;
     char* lre = "\x01\x02";
 
     uint8_t* image = rle0Decompress((unsigned char*) lre, 2, w, h);
 
-    assertEquali(image[0], lre[1]);
+    assert_int_equal(image[0], lre[1]);
     memoryRelease(image);
 }
 
 void testLRE0Decompress_3(){
-    testCase("LRE0 2x1 image");
-
     int w = 2;
     int h = 1;
     char* lre = "\x02\x01\x02";
 
     uint8_t* image = rle0Decompress((unsigned char*) lre, 3, w, h);
 
-    assertEquali(image[0], lre[1]);
-    assertEquali(image[1], lre[2]);
+    assert_int_equal(image[0], lre[1]);
+    assert_int_equal(image[1], lre[2]);
 
     memoryRelease(image);
 }
 
 void testLRE0Decompress_4(){
-    testCase("LRE0 3x1 image 1 2 0");
-
     int w = 3;
     int h = 1;
     char* lre = "\x02\x01\x02\x81";
 
     uint8_t* image = rle0Decompress((unsigned char*) lre, 4, w, h);
 
-    assertEquali(image[0], lre[1]);
-    assertEquali(image[1], lre[2]);
-    assertEquali(image[2], '\x00');
+    assert_int_equal(image[0], lre[1]);
+    assert_int_equal(image[1], lre[2]);
+    assert_int_equal(image[2], '\x00');
 
     memoryRelease(image);
 }
 
 
 void testLRE0Decompress_5(){
-    testCase("LRE0 2x2 image 1 2 0 0");
-
     int w = 2;
     int h = 2;
     char* lre = "\x02\x01\x02\x82";
 
     uint8_t* image = rle0Decompress((unsigned char*) lre, 4, w, h);
 
-    assertEquali(image[0], lre[1]);
-    assertEquali(image[1], lre[2]);
-    assertEquali(image[2], '\x00');
-    assertEquali(image[3], '\x00');
+    assert_int_equal(image[0], lre[1]);
+    assert_int_equal(image[1], lre[2]);
+    assert_int_equal(image[2], '\x00');
+    assert_int_equal(image[3], '\x00');
 
     memoryRelease(image);
 }
 
 
 void testLRE0Decompress_6(){
-    testCase("LRE0 2x2 image 1 2 3 4");
-
     int w = 2;
     int h = 2;
     char* lre = "\x02\x01\x02\x02\x03\x04";
 
     uint8_t* image = rle0Decompress((unsigned char*) lre, 6, w, h);
 
-    assertEquali(image[0], '\x01');
-    assertEquali(image[1], '\x02');
-    assertEquali(image[2], '\x03');
-    assertEquali(image[3], '\x04');
+    assert_int_equal(image[0], '\x01');
+    assert_int_equal(image[1], '\x02');
+    assert_int_equal(image[2], '\x03');
+    assert_int_equal(image[3], '\x04');
 
     memoryRelease(image);
 }
 
 void testLRE0Decompress_7(){
-    testCase("LRE0 2x2 image 0 0 0 4");
-
     int w = 2;
     int h = 2;
     char* lre = "\x83\x01\x04";
 
     uint8_t* image = rle0Decompress((unsigned char*) lre, 3, w, h);
 
-    assertEquali(image[0], '\x00');
-    assertEquali(image[1], '\x00');
-    assertEquali(image[2], '\x00');
-    assertEquali(image[3], '\x04');
+    assert_int_equal(image[0], '\x00');
+    assert_int_equal(image[1], '\x00');
+    assert_int_equal(image[2], '\x00');
+    assert_int_equal(image[3], '\x04');
 
     memoryRelease(image);
 }
 
 
 void testLRE1Decompress_1(){
-    testCase("LRE1 1x1 image 01");
-
     int w = 1;
     int h = 1;
     char* lre = "\x01\x01";
 
     uint8_t* image = rle1Decompress((unsigned char*) lre, 2, w, h);
 
-    assertEquali(image[0], lre[1]);
+    assert_int_equal(image[0], lre[1]);
     memoryRelease(image);
 }
 
 void testLRE1Decompress_2(){
-    testCase("LRE1 1x1 image 02");
-
     int w = 1;
     int h = 1;
     char* lre = "\x01\x02";
 
     uint8_t* image = rle1Decompress((unsigned char*) lre, 2, w, h);
 
-    assertEquali(image[0], lre[1]);
+    assert_int_equal(image[0], lre[1]);
     memoryRelease(image);
 }
 
 void testLRE1Decompress_3(){
-    testCase("LRE1 2x1 image");
-
     int w = 2;
     int h = 1;
     char* lre = "\x02\x01\x02";
 
     uint8_t* image = rle1Decompress((unsigned char*) lre, 3, w, h);
 
-    assertEquali(image[0], lre[1]);
-    assertEquali(image[1], lre[2]);
+    assert_int_equal(image[0], lre[1]);
+    assert_int_equal(image[1], lre[2]);
 
     memoryRelease(image);
 }
 
 void testLRE1Decompress_4(){
-    testCase("LRE1 3x1 image 1 2 3");
-
     int w = 3;
     int h = 1;
     char* lre = "\x02\x01\x02\x81\x03";
 
     uint8_t* image = rle1Decompress((unsigned char*) lre, 5, w, h);
 
-    assertEquali(image[0], '\x01');
-    assertEquali(image[1], '\x02');
-    assertEquali(image[2], '\x03');
+    assert_int_equal(image[0], '\x01');
+    assert_int_equal(image[1], '\x02');
+    assert_int_equal(image[2], '\x03');
 
     memoryRelease(image);
 }
 
 
 void testLRE1Decompress_5(){
-    testCase("LRE1 2x2 image 1 2 3 3");
-
     int w = 2;
     int h = 2;
     char* lre = "\x02\x01\x02\x82\x03";
 
     uint8_t* image = rle1Decompress((unsigned char*) lre, 5, w, h);
 
-    assertEquali(image[0], '\x01');
-    assertEquali(image[1], '\x02');
-    assertEquali(image[2], '\x03');
-    assertEquali(image[3], '\x03');
+    assert_int_equal(image[0], '\x01');
+    assert_int_equal(image[1], '\x02');
+    assert_int_equal(image[2], '\x03');
+    assert_int_equal(image[3], '\x03');
 
     memoryRelease(image);
 }
 
 
 void testLRE1Decompress_6(){
-    testCase("LRE1 2x2 image 1 2 3 4");
-
     int w = 2;
     int h = 2;
     char* lre = "\x02\x01\x02\x02\x03\x04";
 
     uint8_t* image = rle1Decompress((unsigned char*) lre, 6, w, h);
 
-    assertEquali(image[0], '\x01');
-    assertEquali(image[1], '\x02');
-    assertEquali(image[2], '\x03');
-    assertEquali(image[3], '\x04');
+    assert_int_equal(image[0], '\x01');
+    assert_int_equal(image[1], '\x02');
+    assert_int_equal(image[2], '\x03');
+    assert_int_equal(image[3], '\x04');
 
     memoryRelease(image);
 }
 
 void testLRE1Decompress_7(){
-    testCase("LRE1 2x2 image 0 0 0 4");
-
     int w = 2;
     int h = 2;
     char* lre = "\x83\x01\x01\x04";
 
     uint8_t* image = rle1Decompress((unsigned char*) lre, 4, w, h);
 
-    assertEquali(image[0], '\x01');
-    assertEquali(image[1], '\x01');
-    assertEquali(image[2], '\x01');
-    assertEquali(image[3], '\x04');
+    assert_int_equal(image[0], '\x01');
+    assert_int_equal(image[1], '\x01');
+    assert_int_equal(image[2], '\x01');
+    assert_int_equal(image[3], '\x04');
 
     memoryRelease(image);
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testLRE0Decompress_1,
-        &testLRE0Decompress_2,
-        &testLRE0Decompress_3,
-        &testLRE0Decompress_4,
-        &testLRE0Decompress_5,
-        &testLRE0Decompress_6,
-        &testLRE0Decompress_7,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
 
-        &testLRE1Decompress_1,
-        &testLRE1Decompress_2,
-        &testLRE1Decompress_3,
-        &testLRE1Decompress_4,
-        &testLRE1Decompress_5,
-        &testLRE1Decompress_6,
-        &testLRE1Decompress_7,
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testLRE0Decompress_1, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE0Decompress_2, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE0Decompress_3, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE0Decompress_4, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE0Decompress_5, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE0Decompress_6, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE0Decompress_7, NULL, tearDown),
+
+        cmocka_unit_test_setup_teardown(testLRE1Decompress_1, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE1Decompress_2, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE1Decompress_3, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE1Decompress_4, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE1Decompress_5, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE1Decompress_6, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testLRE1Decompress_7, NULL, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/res/lre.c", tests, NULL, NULL);
 
-    fixture.name = "odf/res/lre.c";
-    fixture.tests = testFunctions;
-    fixture.afterEach = &tearDown;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }

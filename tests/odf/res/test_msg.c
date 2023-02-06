@@ -1,5 +1,5 @@
 #include "test_fixtures.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 #include "assertions/optional.h"
 
 #include "odf/res/msg.h"
@@ -30,18 +30,22 @@ static const char* exampleMsg =
 
 StringBuffer* sb;
 
-void setUp() {
+int setUp(void** state) {
     sb = stringBufferCreate();
+
+    return 0;
 }
 
-void tearDown(){
+int tearDown(void** state){
     stringBufferDelete(sb);
-    assertAllMemoryReleased();
+    assert_int_equal(0, memoryGetAllocations());
 
     if(!memoryIsEmpty()) {
         memoryDump(false);
         memoryReleaseAll();
     }
+
+    return 0;
 }
 
 static OptionalPtr* buildMsg() {
@@ -58,22 +62,18 @@ static OptionalPtr* buildMsg() {
 }
 
 static void assertMsg(Msg* msg, size_t index, size_t priority, char* value) {
-    assertEquali(index, msg->index);
-    assertEquali(priority, msg->priority);
-    assertEquals(value, msg->value, strlen(value));
+    assert_int_equal(index, msg->index);
+    assert_int_equal(priority, msg->priority);
+    assert_memory_equal(value, msg->value, strlen(value));
 }
 
 void testNonMsgFile() {
-    testCase("testNonMsgFile");
-
     OptionalPtr* optMsg = buildMsg();
 
     assertOptionalIsEmpty(optMsg);
 }
 
 void testMinimalMsgFile() {
-    testCase("testMinimalMsgFile");
-
     stringBufferAppend(sb, "MSG 1.0");
 
     OptionalPtr* optMsg = buildMsg();
@@ -82,8 +82,6 @@ void testMinimalMsgFile() {
 }
 
 void testDifferentVersionMsgFile() {
-    testCase("testDifferentVersionMsgFile");
-
     stringBufferAppend(sb, "MSG 2.0");
 
     OptionalPtr* optMsg = buildMsg();
@@ -92,8 +90,6 @@ void testDifferentVersionMsgFile() {
 }
 
 void testEmptyFirstLineMsgFile() {
-    testCase("testEmptyFirstLineMsgFile");
-
     stringBufferAppend(sb, "\nMSG 2.0");
 
     OptionalPtr* optMsg = buildMsg();
@@ -102,18 +98,12 @@ void testEmptyFirstLineMsgFile() {
 }
 
 void testInvalidVersion() {
-    testCase("testInvalidVersion");
-
-    stringBufferAppend(sb, "MSG MISSING");
-
     OptionalPtr* optMsg = buildMsg();
 
     assertOptionalIsEmpty(optMsg);
 }
 
 void testInvalidMessageCount() {
-    testCase("testInvalidMessageCount");
-
     stringBufferAppend(
         sb,
         "MSG 1.0\n"
@@ -126,8 +116,6 @@ void testInvalidMessageCount() {
 }
 
 void testInvalidMessage() {
-    testCase("testInvalidMessage");
-
     stringBufferAppend(
         sb,
         "MSG 1.0\n"
@@ -142,17 +130,15 @@ void testInvalidMessage() {
 }
 
 void testFullMsgFile() {
-    testCase("testFullMsgFile");
-
     stringBufferAppend(sb, exampleMsg);
 
     OptionalPtr* optMsg = buildMsg();
 
     assertOptionalNotEmpty(optMsg);
     MsgFile* msgFile = optionalGet(optMsg);
-    assertEquali(2, msgFile->majorVersion);
-    assertEquali(0, msgFile->minorVersion);
-    assertEquali(5, listSize( msgFile->messages));
+    assert_int_equal(2, msgFile->majorVersion);
+    assert_int_equal(0, msgFile->minorVersion);
+    assert_int_equal(5, listSize( msgFile->messages));
     assertMsg(optionalGet(msgGet(msgFile, 0)), 0, 0, "message 1");
     assertMsg(optionalGet(msgGet(msgFile, 1)), 1, 0, "message 2");
     assertMsg(optionalGet(msgGet(msgFile, 2)), 2, 1, "message 3");
@@ -164,25 +150,21 @@ void testFullMsgFile() {
 
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testNonMsgFile,
-        &testMinimalMsgFile,
-        &testDifferentVersionMsgFile,
-        &testEmptyFirstLineMsgFile,
-        &testFullMsgFile,
-        &testInvalidVersion,
-        &testInvalidMessageCount,
-        &testInvalidMessage,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testNonMsgFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testMinimalMsgFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testDifferentVersionMsgFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testEmptyFirstLineMsgFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testFullMsgFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testInvalidVersion, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testInvalidMessageCount, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testInvalidMessage, setUp, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/res/msg.c", tests, NULL, NULL);
 
-    fixture.name = "odf/res/msg.c";
-    fixture.beforeEach = &setUp;
-    fixture.afterEach = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }
 

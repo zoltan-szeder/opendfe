@@ -1,5 +1,5 @@
 #include "test_fixtures.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 #include "assertions/optional.h"
 
 #include "odf/res/fme.h"
@@ -15,24 +15,27 @@ FMEFile* fme;
 
 OptionalPtr* fmeReadStringBuffer(StringBuffer* sb);
 
-void setUp() {
+int setUp(void** state) {
     sb = stringBufferCreate();
     fileContent = NULL;
     fmeInMemoryFile = NULL;
     fme = NULL;
+
+    return 0;
 }
 
-void tearDown(){
+int tearDown(void** state){
     stringBufferDelete(sb);
     if(fileContent) memoryRelease(fileContent);
     if(fmeInMemoryFile) inMemFileDelete(fmeInMemoryFile);
     if(fme) fmeClose(fme);
 
-    assertAllMemoryReleased();
+    assert_int_equal(0, memoryGetAllocations());
+
+    return 0;
 }
 
 void testInvalidFmeRead(){
-    testCase("testInvalidFmeRead");
     stringBufferAppend(sb, "\x00");
 
     OptionalPtr* optFile = fmeReadStringBuffer(sb);
@@ -40,8 +43,6 @@ void testInvalidFmeRead(){
 }
 
 void testMissingSubHeaderFmeRead(){
-    testCase("testMissingSubHeaderFmeRead");
-
     // Header (0x00)
     stringBufferAppendBytes(sb, "\x01\x00\x00\x00", 4); // insertX
     stringBufferAppendBytes(sb, "\x02\x00\x00\x00", 4); // insertY
@@ -56,8 +57,6 @@ void testMissingSubHeaderFmeRead(){
 }
 
 void testFmeRead(){
-    testCase("testFmeRead");
-
     // Header (0x00)
     stringBufferAppendBytes(sb, "\x01\x00\x00\x00", 4); // insertX
     stringBufferAppendBytes(sb, "\x02\x00\x00\x00", 4); // insertY
@@ -79,18 +78,18 @@ void testFmeRead(){
     assertOptionalNotEmpty(optFile);
     fme = optionalGet(optFile);
 
-    assertEquali(1, fme->header->insertX);
-    assertEquali(2, fme->header->insertY);
-    assertEquali(FME_FLIP_NONE, fme->header->flip);
-    assertEquali(32, fme->header->subHeaderPtr);
-    assertEquali(3, fme->header->unitWidth);
-    assertEquali(4, fme->header->unitHeight);
+    assert_int_equal(1, fme->header->insertX);
+    assert_int_equal(2, fme->header->insertY);
+    assert_int_equal(FME_FLIP_NONE, fme->header->flip);
+    assert_int_equal(32, fme->header->subHeaderPtr);
+    assert_int_equal(3, fme->header->unitWidth);
+    assert_int_equal(4, fme->header->unitHeight);
 
-    assertEquali(8, fme->subHeader->sizeX);
-    assertEquali(8, fme->subHeader->sizeY);
-    assertEquali(FME_COMPRESS_NONE, fme->subHeader->compressed);
-    assertEquali(0, fme->subHeader->dataSize);
-    assertEquali(0, fme->subHeader->columnOffset);
+    assert_int_equal(8, fme->subHeader->sizeX);
+    assert_int_equal(8, fme->subHeader->sizeY);
+    assert_int_equal(FME_COMPRESS_NONE, fme->subHeader->compressed);
+    assert_int_equal(0, fme->subHeader->dataSize);
+    assert_int_equal(0, fme->subHeader->columnOffset);
 }
 
 
@@ -105,19 +104,15 @@ OptionalPtr* fmeReadStringBuffer(StringBuffer* sb) {
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testInvalidFmeRead,
-        &testMissingSubHeaderFmeRead,
-        &testFmeRead,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testInvalidFmeRead, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testMissingSubHeaderFmeRead, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testFmeRead, setUp, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/res/fme.c", tests, NULL, NULL);
 
-    fixture.name = "odf/res/fme.c";
-    fixture.beforeEach = &setUp;
-    fixture.afterEach = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }

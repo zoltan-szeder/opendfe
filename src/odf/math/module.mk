@@ -16,5 +16,5 @@ TESTS += $(wildcard tests/odf/math/test_*.c)
 REQUIREMENTS += $(ODF_MATH_REQUIREMENTS)
 
 tests/odf/math/test_%.out: tests/odf/math/test_%.o $(MOCK_OBJECTS) $(TEST_TOOL_OBJECTS) | $(ODF_MATH_SO_DEPS)
-	$(LD) $(ODF_MATH_REQUIREMENTS) $(LINK_ARGS)
+	$(LD) -lcmocka $(ODF_MATH_REQUIREMENTS) $(LINK_ARGS)
 	$(MC) $(MCFLAGS) ./$@

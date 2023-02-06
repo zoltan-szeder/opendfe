@@ -1,5 +1,5 @@
 #include "test_fixtures.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 
 #include "odf/sys/list.h"
 
@@ -8,9 +8,11 @@
 
 List* list;
 
-void tearDown() {
+int tearDown(void** state) {
     listDelete(list);
-    assertAllMemoryReleased();
+    assert_true(memoryGetAllocations() == 0);
+
+    return 0;
 }
 
 typedef struct {
@@ -18,17 +20,13 @@ typedef struct {
 } MyStruct;
 
 void testEmptyList() {
-    testCase("testEmptyList");
-
     list = listCreate(0);
 
-    assertEquali(0, listSize(list));
+    assert_int_equal(0, listSize(list));
     assertOptionalIsEmpty(listGet(list, 0));
 }
 
 void testAppendToEmptyList() {
-    testCase("testAppendToEmptyList");
-
     MyStruct ms = {
         .value = 3
     };
@@ -38,12 +36,10 @@ void testAppendToEmptyList() {
 
     MyStruct* msPtr = optionalGet(listGet(list, 0));
 
-    assertEquali(ms.value, msPtr->value);
+    assert_int_equal(ms.value, msPtr->value);
 }
 
 void testAppendToList() {
-    testCase("testAppendToList");
-
     MyStruct ms1 = {
         .value = 1
     };
@@ -58,23 +54,20 @@ void testAppendToList() {
     MyStruct* ms1Ptr = optionalGet(listGet(list, 0));
     MyStruct* ms2Ptr = optionalGet(listGet(list, 1));
 
-    assertEquali(ms1.value, ms1Ptr->value);
-    assertEquali(ms2.value, ms2Ptr->value);
+    assert_int_equal(ms1.value, ms1Ptr->value);
+    assert_int_equal(ms2.value, ms2Ptr->value);
 }
 
 void testOneMissingItemList() {
-    testCase("testOneMissingItemList");
-
     list = listCreate(1);
 
     assertOptionalIsEmpty(listGet(list, 0));
     assertOptionalIsEmpty(listGet(list, 1));
 
-    assertEquali(0, listSize(list));
+    assert_int_equal(0, listSize(list));
 }
 
 void testOneItemList() {
-    testCase("testOneItemList");
     MyStruct ms = {
         .value = 3
     };
@@ -83,11 +76,10 @@ void testOneItemList() {
     listPut(list, 0, &ms);
 
     MyStruct* msPtr = optionalGet(listGet(list, 0));
-    assertEquali(ms.value, msPtr->value);
+    assert_int_equal(ms.value, msPtr->value);
 }
 
 void testListPutIncreasesListSize() {
-    testCase("testListPutIncreasesListSize");
     MyStruct ms = {
         .value = 3
     };
@@ -96,10 +88,9 @@ void testListPutIncreasesListSize() {
     listPut(list, 0, &ms);
 
     MyStruct* msPtr = optionalGet(listGet(list, 0));
-    assertEquali(ms.value, msPtr->value);
+    assert_int_equal(ms.value, msPtr->value);
 }
 void testListBufferIncreaseWillKeepUnpopulatedEntriesEmpty() {
-    testCase("testListBufferIncreaseWillKeepUnpopulatedEntriesEmpty");
     MyStruct ms = {
         .value = 3
     };
@@ -110,11 +101,10 @@ void testListBufferIncreaseWillKeepUnpopulatedEntriesEmpty() {
     assertOptionalIsEmpty(listGet(list, 0));
 
     MyStruct* msPtr = optionalGet(listGet(list, 10));
-    assertEquali(ms.value, msPtr->value);
+    assert_int_equal(ms.value, msPtr->value);
 }
 
 void testListOfOne() {
-    testCase("testListOfOne");
 
     MyStruct ms = {
         .value = 3
@@ -123,26 +113,24 @@ void testListOfOne() {
     list = listOf(&ms);
 
     MyStruct* msPtr = optionalGet(listGet(list, 0));
-    assertEquali(3, msPtr->value);
+    assert_int_equal(3, msPtr->value);
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testEmptyList,
-        &testAppendToEmptyList,
-        &testAppendToList,
-        &testOneMissingItemList,
-        &testOneItemList,
-        &testListPutIncreasesListSize,
-        &testListBufferIncreaseWillKeepUnpopulatedEntriesEmpty,
-        &testListOfOne,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testEmptyList, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testAppendToEmptyList, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testAppendToList, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testOneMissingItemList, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testOneItemList, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testListPutIncreasesListSize, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testListBufferIncreaseWillKeepUnpopulatedEntriesEmpty, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testListOfOne, NULL, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/sys/list.c", tests, NULL, NULL);
 
-    fixture.name = "odf/sys/list.c";
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }

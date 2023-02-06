@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "test_fixtures.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 
 #include "odf/res/gob.h"
 #include "odf/sys/list.h"
@@ -12,11 +12,10 @@
 #include "odf/sys/inmemoryfile.h"
 
 void tearDown(){
-    assertAllMemoryReleased();
+    assert_true(memoryGetAllocations() > 0);
 }
 
 void testOpenMissingFile(){
-    testCase("testOpenMissingFile");
     GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
     List* files = gobListFiles(archive);
     GobFile* file = optionalGet(listGet(files, 0));
@@ -29,21 +28,20 @@ void testOpenMissingFile(){
 }
 
 void testReadFile() {
-    testCase("testReadFile");
     GobArchive* archive = optionalGet(gobOpenArchive("tests/resources/test.gob"));
     GobFile* helloFile = optionalGet(gobGetFile(archive, "HELLO.TXT"));
     InMemoryFile* hello = optionalGet(gobReadFile(helloFile));
 
     OptionalPtr* optContent = inMemFileRead(hello, inMemFileSize(hello));
     if(optionalIsEmpty(optContent)) {
-        fail(error("Could not find of test.gob/HELLO.TXT"));
+        fail();
         return;
     }
 
     char* content = optionalGet(optContent);
 
     assert(gobCountFiles(archive) == 1);
-    assertEquals("Hello World", content, 12);
+    assert_memory_equal("Hello World", content, 12);
 
     memoryRelease(content);
     inMemFileDelete(hello);
@@ -51,17 +49,14 @@ void testReadFile() {
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testOpenMissingFile,
-        &testReadFile,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testOpenMissingFile, NULL, NULL),
+        cmocka_unit_test_setup_teardown(testReadFile, NULL, NULL),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/res/gob.c", tests, NULL, NULL);
 
-    fixture.name = "odf/res/gob.c";
-    fixture.afterEach = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }

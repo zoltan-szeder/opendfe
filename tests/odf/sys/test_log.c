@@ -1,6 +1,5 @@
 #include "test_fixtures.h"
-#include "assertions/string.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 
 #include "odf/sys/log.h"
 
@@ -16,20 +15,23 @@ static FILE* openLog();
 static char* readLog();
 static void assertLog(char* expectedContent);
 
-void tearDown(){
-    fclose(logStream);
-    remove(LOG_FILE);
-    assertAllMemoryReleased();
-}
 
-void setUp() {
+int setUp(void** state) {
     logStream = openLog();
     logSetStream(logStream);
+
+    return 0;
+}
+
+int tearDown(void** state){
+    fclose(logStream);
+    remove(LOG_FILE);
+    assert_true(memoryGetAllocations() == 0);
+
+    return 0;
 }
 
 void testFatal(){
-    testCase("testFatal");
-
     logSetLevel(FATAL);
     logFatal("fatal: %d", 6);
     logError("error: %d", 5);
@@ -38,12 +40,10 @@ void testFatal(){
     logDebug("debug: %d", 2);
     logTrace("trace: %d", 1);
 
-    assertLog("tests/odf/sys/test_log.c:L34 - fatal: 6");
+    assertLog("tests/odf/sys/test_log.c:L36 - fatal: 6");
 }
 
 void testError(){
-    testCase("testError");
-
     logSetLevel(ERROR);
     logFatal("fatal");
     logError("error");
@@ -59,8 +59,6 @@ void testError(){
 }
 
 void testWarn(){
-    testCase("testWarn");
-
     logSetLevel(WARN);
     logFatal("fatal");
     logError("error");
@@ -70,15 +68,13 @@ void testWarn(){
     logTrace("trace");
 
     assertLog(
-        "tests/odf/sys/test_log.c:L65 - fatal\n"
-        "tests/odf/sys/test_log.c:L66 - error\n"
-        "tests/odf/sys/test_log.c:L67 - warn"
+        "tests/odf/sys/test_log.c:L63 - fatal\n"
+        "tests/odf/sys/test_log.c:L64 - error\n"
+        "tests/odf/sys/test_log.c:L65 - warn"
     );
 }
 
 void testTrace(){
-    testCase("testWarn");
-
     logSetLevel(TRACE);
     logFatal("fatal");
     logError("error");
@@ -88,12 +84,12 @@ void testTrace(){
     logTrace("trace");
 
     assertLog(
-        "tests/odf/sys/test_log.c:L83 - fatal\n"
-        "tests/odf/sys/test_log.c:L84 - error\n"
-        "tests/odf/sys/test_log.c:L85 - warn\n"
-        "tests/odf/sys/test_log.c:L86 - info\n"
-        "tests/odf/sys/test_log.c:L87 - debug\n"
-        "tests/odf/sys/test_log.c:L88 - trace"
+        "tests/odf/sys/test_log.c:L79 - fatal\n"
+        "tests/odf/sys/test_log.c:L80 - error\n"
+        "tests/odf/sys/test_log.c:L81 - warn\n"
+        "tests/odf/sys/test_log.c:L82 - info\n"
+        "tests/odf/sys/test_log.c:L83 - debug\n"
+        "tests/odf/sys/test_log.c:L84 - trace"
     );
 }
 
@@ -104,7 +100,7 @@ static FILE* openLog() {
 static void assertLog(char* expectedContent) {
     char* content = readLog();
 
-    assertEquals(expectedContent, content, strlen(expectedContent));
+    assert_string_equal(expectedContent, content);
     memoryRelease(content);
 }
 
@@ -113,20 +109,16 @@ static char* readLog() {
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testFatal,
-        &testError,
-        &testWarn,
-        &testTrace,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testFatal, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testError, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testWarn, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testTrace, setUp, tearDown),\
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/sys/log.c", tests, NULL, NULL);
 
-    fixture.name = "odf/sys/log.c";
-    fixture.beforeEach = &setUp;
-    fixture.afterEach = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }

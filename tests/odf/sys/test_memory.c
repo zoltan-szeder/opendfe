@@ -17,94 +17,79 @@ typedef struct ObjPtrLast {
     void* ptr;
 } ObjPtrLast;
 
-void tearDown(){
+int tearDown(void** state){
     memoryReleaseAll();
+    return 0;
 }
 
 void testMemoryInitialization() {
-    testCase("testMemoryInitialization");
-
-    assertEquali(0, memoryGetAllocations());
+    assert_int_equal(0, memoryGetAllocations());
 }
 
 void testMemoryWithOneAllocation() {
-    testCase("testMemoryWithOneAllocation");
-
     void* memoryBlock = memoryAllocate(100);
 
-    assertEquali(1, memoryGetAllocations());
-    assertNotNull(memoryBlock);
-    assertTrue(memoryIsValid(memoryBlock));
+    assert_int_equal(1, memoryGetAllocations());
+    assert_non_null(memoryBlock);
+    assert_true(memoryIsValid(memoryBlock));
 
     memoryRelease(memoryBlock);
 }
 
 void testMemoryBoundaries() {
-    testCase("testMemoryBoundaries");
-
     void* memoryBlock1 = memoryAllocate(1);
     void* memoryBlock2 = memoryAllocate(100);
 
-    assertFalse(memoryIsValid(memoryBlock1-1));
-    assertTrue(memoryIsValid(memoryBlock1));
-    assertFalse(memoryIsValid(memoryBlock1+1));
+    assert_false(memoryIsValid(memoryBlock1-1));
+    assert_true(memoryIsValid(memoryBlock1));
+    assert_false(memoryIsValid(memoryBlock1+1));
 
-    assertFalse(memoryIsValid(memoryBlock2-1));
-    assertTrue(memoryIsValid(memoryBlock2));
-    assertTrue(memoryIsValid(memoryBlock2+1));
-    assertTrue(memoryIsValid(memoryBlock2+50));
-    assertTrue(memoryIsValid(memoryBlock2+99));
-    assertFalse(memoryIsValid(memoryBlock2+100));
+    assert_false(memoryIsValid(memoryBlock2-1));
+    assert_true(memoryIsValid(memoryBlock2));
+    assert_true(memoryIsValid(memoryBlock2+1));
+    assert_true(memoryIsValid(memoryBlock2+50));
+    assert_true(memoryIsValid(memoryBlock2+99));
+    assert_false(memoryIsValid(memoryBlock2+100));
 
     memoryReleaseAll();
 }
 
 void testMemoryRelease() {
-    testCase("testMemoryRelease");
-
     void* memoryBlock = memoryAllocate(100);
     memoryRelease(memoryBlock);
-    assertFalse(memoryIsValid(memoryBlock));
+    assert_false(memoryIsValid(memoryBlock));
 
-    assertEquali(0, memoryGetAllocations());
+    assert_int_equal(0, memoryGetAllocations());
 }
 
 void testMemoryReleaseWithOffset() {
-    testCase("testMemoryReleaseWithOffset");
-
     void* memoryBlock = memoryAllocate(100);
     memoryRelease(memoryBlock + 50);
-    assertFalse(memoryIsValid(memoryBlock));
+    assert_false(memoryIsValid(memoryBlock));
 
-    assertEquali(0, memoryGetAllocations());
+    assert_int_equal(0, memoryGetAllocations());
 }
 
 void testMemoryReleaseOutOfOrder() {
-    testCase("testMemoryReleaseOutOfOrder");
-
     void* memoryBlock1 = memoryAllocate(100);
     void* memoryBlock2 = memoryAllocate(100);
 
     memoryRelease(memoryBlock1);
 
-    assertFalseMsg(memoryIsValid(memoryBlock1), error("memoryBlock1 is valid"));
-    assertTrueMsg(memoryIsValid(memoryBlock2), error("memoryBlock2 is invalid"));
-    assertEquali(1, memoryGetAllocations());
+    assert_false(memoryIsValid(memoryBlock1));
+    assert_true(memoryIsValid(memoryBlock2));
+    assert_int_equal(1, memoryGetAllocations());
 }
 
 void testReleaseAll() {
-    testCase("testReleaseAll");
-
     void* memoryBlock = memoryAllocate(100);
     memoryReleaseAll();
 
-    assertEquali(0, memoryGetAllocations());
-    assertFalse(memoryIsValid(memoryBlock));
+    assert_int_equal(0, memoryGetAllocations());
+    assert_false(memoryIsValid(memoryBlock));
 }
 
 void testReferences() {
-    testCase("testReleaseAll");
-
     void* memoryBlock = memoryAllocate(1);
     ObjPtrFirst* ptrFirst = memoryAllocate(sizeof(ObjPtrFirst));
     ObjPtrMiddle* ptrMiddle = memoryAllocate(sizeof(ObjPtrMiddle));
@@ -119,24 +104,22 @@ void testReferences() {
     memoryScan(ptrMiddle);
     memoryScan(ptrLast);
 
-    assertEquali(3, memoryGetRefereeCount(memoryBlock));
-    assertEquali(1, memoryGetReferenceCount(ptrFirst));
-    assertEquali(1, memoryGetReferenceCount(ptrMiddle));
-    assertEquali(1, memoryGetReferenceCount(ptrLast));
+    assert_int_equal(3, memoryGetRefereeCount(memoryBlock));
+    assert_int_equal(1, memoryGetReferenceCount(ptrFirst));
+    assert_int_equal(1, memoryGetReferenceCount(ptrMiddle));
+    assert_int_equal(1, memoryGetReferenceCount(ptrLast));
 
-    assertFalseMsg(memoryIsReferencedBy(ptrFirst, memoryBlock), error("memoryBlock contains reference to ptrFirst"));
-    assertTrueMsg(memoryIsReferencedBy(memoryBlock, ptrFirst), error("memoryBlock is not referenced by ptrFirst"));
+    assert_false(memoryIsReferencedBy(ptrFirst, memoryBlock));
+    assert_true(memoryIsReferencedBy(memoryBlock, ptrFirst));
 
-    assertFalseMsg(memoryIsReferencedBy(ptrMiddle, memoryBlock), error("memoryBlock contains reference to ptrMiddle"));
-    assertTrueMsg(memoryIsReferencedBy(memoryBlock, ptrMiddle), error("memoryBlock is not referenced by ptrMiddle"));
+    assert_false(memoryIsReferencedBy(ptrMiddle, memoryBlock));
+    assert_true(memoryIsReferencedBy(memoryBlock, ptrMiddle));
 
-    assertFalseMsg(memoryIsReferencedBy(ptrLast, memoryBlock), error("memoryBlock contains reference to ptrLast"));
-    assertTrueMsg(memoryIsReferencedBy(memoryBlock, ptrLast), error("memoryBlock is not referenced by ptrLast"));
+    assert_false(memoryIsReferencedBy(ptrLast, memoryBlock));
+    assert_true(memoryIsReferencedBy(memoryBlock, ptrLast));
 }
 
 void testReferenceReplacement() {
-    testCase("testReferenceReplacement");
-
     void* memoryBlock = memoryAllocate(1);
     ObjPtrFirst* ptr1 = memoryAllocate(sizeof(ObjPtrFirst));
     ObjPtrFirst* ptr2 = memoryAllocate(sizeof(ObjPtrFirst));
@@ -153,46 +136,41 @@ void testReferenceReplacement() {
 
     memoryRelease(ptr2);
 
-    assertEquali(2, memoryGetRefereeCount(memoryBlock));
-    assertTrueMsg(memoryIsReferencedBy(memoryBlock, ptr1), error("memoryBlock is not referenced by ptr1"));
-    assertTrueMsg(memoryIsReferencedBy(memoryBlock, ptr3), error("memoryBlock is not referenced by ptr3"));
+    assert_int_equal(2, memoryGetRefereeCount(memoryBlock));
+    assert_true(memoryIsReferencedBy(memoryBlock, ptr1));
+    assert_true(memoryIsReferencedBy(memoryBlock, ptr3));
 }
 
 
 
 void testReallocation() {
-    testCase("testReallocation");
-
     ObjPtrFirst* allocated = memoryAllocate(sizeof(ObjPtrFirst));
     allocated->c = 1;
     ObjPtrFirst* reallocated = memoryReallocate(allocated, 2*sizeof(ObjPtrFirst));
     reallocated[1].c = 2;
 
-    assertEquali(1, reallocated[0].c);
-    assertEquali(2, reallocated[1].c);
-    assertFalse(memoryIsValid(allocated));
-    assertTrue(memoryIsValid(reallocated));
+    assert_int_equal(1, reallocated[0].c);
+    assert_int_equal(2, reallocated[1].c);
+    assert_false(memoryIsValid(allocated));
+    assert_true(memoryIsValid(reallocated));
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testMemoryInitialization,
-        &testMemoryWithOneAllocation,
-        &testMemoryRelease,
-        &testMemoryReleaseWithOffset,
-        &testMemoryReleaseOutOfOrder,
-        &testMemoryBoundaries,
-        &testReleaseAll,
-        &testReferences,
-        &testReferenceReplacement,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testMemoryInitialization, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testMemoryWithOneAllocation, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testMemoryRelease, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testMemoryReleaseWithOffset, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testMemoryReleaseOutOfOrder, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testMemoryBoundaries, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testReleaseAll, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testReferences, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testReferenceReplacement, NULL, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/sys/memory.c", tests, NULL, NULL);
 
-    fixture.name = "odf/sys/memory.c";
-    fixture.after = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    return runTests(&fixture);
+    return ret;
 }

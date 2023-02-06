@@ -10,7 +10,7 @@
 #include "odf/res/types/bm_def.h"
 #include "odf/res/pal.h"
 #include "odf/res/types/pal_def.h"
-#include "assertions/memory.h"
+#include "system/test_memory.h"
 
 #define PX_A 0
 #define PX_R 15
@@ -23,8 +23,10 @@
 #define COL_B   0,   0, 255, 255
 
 
-void tearDown(){
-    assertAllMemoryReleased();
+int tearDown(void** state){
+    assert_int_equal(0, memoryGetAllocations());
+
+    return 0;
 }
 
 
@@ -54,10 +56,7 @@ bool isPixel(ucvec4* pixel, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 void assertPixel(Image8Bit* img, uint32_t i, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     ucvec4* pixels = (ucvec4*) img->data;
     ucvec4* pixel = pixels + i;
-    assertTrueMsg(isPixel(pixel, r, g, b, a), error(
-        "Color (%d,%d,%d,%d) does not match expected (%d,%d,%d,%d)",
-        pixel->r, pixel->g, pixel->b, pixel->a,
-        r, g, b, a));
+    assert_true(isPixel(pixel, r, g, b, a));
 }
 
 BMHeader getTransparentHeader(int width, int height) {
@@ -72,14 +71,12 @@ BMHeader getTransparentHeader(int width, int height) {
 }
 
 void testBmReadFile(){
-    testCase("Test .BM file parsing");
     BMFile* bmFile = bmOpenFile("tests/resources/test.bm");
 
     bmClose(bmFile);
 }
 
 void testBmCreateImage_1() {
-    testCase("Test 1x1 image parse");
     BMHeader header = getTransparentHeader(1, 1);
     unsigned char image[] = {
         PX_R
@@ -99,7 +96,6 @@ void testBmCreateImage_1() {
 }
 
 void testBmCreateImage_2() {
-    testCase("Test 2x1 image parse");
     BMHeader header = getTransparentHeader(2, 1);
     unsigned char image[] = {
     //    TL    TR
@@ -121,7 +117,6 @@ void testBmCreateImage_2() {
 }
 
 void testBmCreateImage_3() {
-    testCase("Test 1x2 image parse");
     BMHeader header = getTransparentHeader(1, 2);
     unsigned char image[] = {
     //    BL    TL
@@ -144,7 +139,6 @@ void testBmCreateImage_3() {
 
 
 void testBmCreateImage_4() {
-    testCase("Test 2x2 image parse");
     BMHeader header = getTransparentHeader(2, 2);
     // +-----> y
     // | R B
@@ -178,7 +172,6 @@ void testBmCreateImage_4() {
 }
 
 void testRLE0EncodedBmCreateImage() {
-    testCase("Test 2x2 RLE0 image");
     BMHeader header = getTransparentHeader(2, 2);
     header.compressed = BM_COMPRESSION_RLE0;
     // +-----> y
@@ -214,7 +207,6 @@ void testRLE0EncodedBmCreateImage() {
 }
 
 void testRLE1EncodedBmCreateImage() {
-    testCase("Test 2x2 RLE1 image");
     BMHeader header = getTransparentHeader(2, 2);
     header.compressed = BM_COMPRESSION_RLE1;
     // +-----> y
@@ -251,22 +243,19 @@ void testRLE1EncodedBmCreateImage() {
 
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testBmReadFile,
-        &testBmCreateImage_1,
-        &testBmCreateImage_2,
-        &testBmCreateImage_3,
-        &testBmCreateImage_4,
-        &testRLE0EncodedBmCreateImage,
-        &testRLE1EncodedBmCreateImage,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testBmReadFile, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_1, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_2, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_3, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_4, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testRLE0EncodedBmCreateImage, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testRLE1EncodedBmCreateImage, NULL, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/res/bm.c", tests, NULL, NULL);
 
-    fixture.name = "odf/res/bm.c";
-    fixture.afterEach = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    return runTests(&fixture);
+    return ret;
 }

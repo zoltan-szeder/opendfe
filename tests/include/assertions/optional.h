@@ -7,7 +7,7 @@
 
 void assertOptionalIsEmpty(void* opt){
     if(!optionalIsEmpty(opt)) {
-        fail(error("Optional is not empty"));
+        fail();
         optionalDelete(opt);
         return;
     }
@@ -19,7 +19,7 @@ void assertOptionalIsEmpty(void* opt){
 void assertOptionalNotEmpty(void* opt){
     if(optionalIsEmpty(opt)) {
         char* msg = optionalGetMessage(opt);
-        fail(error("Optional is empty:\n%s", msg));
+        fail();
         memoryRelease(msg);
         return;
     }

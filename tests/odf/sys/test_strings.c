@@ -1,5 +1,9 @@
 #include "test_fixtures.h"
-#include "assertions/memory.h"
+#include <stddef.h>
+#include <setjmp.h>
+#include <cmocka.h>
+
+#include "system/test_memory.h"
 #include "assertions/optional.h"
 
 #include <string.h>
@@ -7,7 +11,7 @@
 
 
 void assertStringList(List* strList, size_t expectedListSize, ...) {
-    assertEquali(expectedListSize, listSize(strList));
+    assert_int_equal(expectedListSize, listSize(strList));
 
     va_list args;
     va_start(args, expectedListSize);
@@ -20,8 +24,8 @@ void assertStringList(List* strList, size_t expectedListSize, ...) {
         char* actual = optionalGet(listGet(strList, i));
         size_t actualSize = strlen(actual);
 
-        assertEquali(expectedSize, actualSize);
-        assertEquals(expected, actual, expectedSize);
+        assert_int_equal(expectedSize, actualSize);
+        assert_string_equal(expected, actual);
         memoryRelease(actual);
     }
 
@@ -33,8 +37,6 @@ void assertStringList(List* strList, size_t expectedListSize, ...) {
 
 
 void testReadLines() {
-    testCase("testReadLines");
-
     assertStringList(strSplitByLineBreak(""), 1, "");
 
     assertStringList(strSplitByLineBreak("\n"), 2, "", "");
@@ -54,16 +56,14 @@ void testReadLines() {
 
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testReadLines,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testReadLines, NULL, NULL),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/sys/strings.c", tests, NULL, NULL);
 
-    fixture.name = "odf/sys/strings.c";
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }
 

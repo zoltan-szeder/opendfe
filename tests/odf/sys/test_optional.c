@@ -1,5 +1,10 @@
+#define CMOCKA_TEST
 #include "test_fixtures.h"
-#include "assertions/memory.h"
+#include <stddef.h>
+#include <setjmp.h>
+#include <cmocka.h>
+
+#include "system/test_memory.h"
 
 #include "odf/sys/optional.h"
 
@@ -10,17 +15,17 @@ typedef struct {
     uint32_t n;
 } TestStruct;
 
-void tearDown(){
-    assertAllMemoryReleased();
+int tearDown(void** state){
+    assert_int_equal(0, memoryGetAllocations());
 
     if(!memoryIsEmpty()) {
         memoryDump(false);
     }
+
+    return 0;
 }
 
 void testOptional(){
-    testCase("testOptional");
-
     TestStruct ts = {
         .c = 'c',
         .n = 32,
@@ -28,47 +33,41 @@ void testOptional(){
 
     OptionalPtr* optional = optionalOf(&ts);
 
-    assertFalse(optionalIsEmpty(optional));
+    assert_false(optionalIsEmpty(optional));
 
     TestStruct* tsPtr = optionalGet(optional);
 
-    assertEquali(tsPtr->c, ts.c);
-    assertEquali(tsPtr->n, ts.n);
+    assert_int_equal(tsPtr->c, ts.c);
+    assert_int_equal(tsPtr->n, ts.n);
 }
 
 void testEmptyOptional(){
-    testCase("testEmptyOptional");
-
     OptionalPtr* optional = optionalEmpty("testEmptyOptional - This optional is empty");
 
-    assertTrueMsg(optionalIsEmpty(optional), error("Optional is not empty"));
+    assert_true(optionalIsEmpty(optional));
 
     char* msg = optionalGetMessage(optional);
-    char* expectedMessage = "tests/odf/sys/test_optional.c:L42:"
+    char* expectedMessage = "tests/odf/sys/test_optional.c:L45:"
         "testEmptyOptional - This optional is empty";
-    assertEquals(expectedMessage, msg, strlen(expectedMessage));
+    assert_string_equal(expectedMessage, msg);
 
     memoryRelease(msg);
 }
 
 void testEmptyOptionalWithParameters(){
-    testCase("testEmptyOptionalWithParameters");
-
     OptionalPtr* optional = optionalEmpty("testEmptyOptionalWithParameters - This optional is \"%s\"", "empty");
 
-    assertTrueMsg(optionalIsEmpty(optional), error("Optional is not empty"));
+    assert_true(optionalIsEmpty(optional));
 
     char* msg = optionalGetMessage(optional);
-    char* expectedMessage = "tests/odf/sys/test_optional.c:L57:"
+    char* expectedMessage = "tests/odf/sys/test_optional.c:L58:"
     "testEmptyOptionalWithParameters - This optional is \"empty\"";
-    assertEquals(expectedMessage, msg, strlen(expectedMessage));
+    assert_string_equal(expectedMessage, msg);
 
     memoryRelease(msg);
 }
 
 void testOptionalCanBeDeleted(){
-    testCase("testOptionalCanBeDeleted");
-
     TestStruct ts = {
         .c = 'c',
         .n = 32,
@@ -80,43 +79,36 @@ void testOptionalCanBeDeleted(){
 }
 
 void testEmptyOptionalCanBeDeleted(){
-    testCase("testEmptyOptionalCanBeDeleted");
-
     OptionalPtr* optional = optionalEmpty("message");
 
     optionalDelete(optional);
 }
 
 void testOptionalOfNullIsAnEmptyOptional(){
-    testCase("testOptionalOfNullIsAnEmptyOptional");
-
     OptionalPtr* optional = optionalOf(NULL);
 
-    assertTrue(optionalIsEmpty(optional));
+    assert_true(optionalIsEmpty(optional));
 
     char* msg = optionalGetMessage(optional);
 
-    assertTrueMsg(strlen(msg) > 0, error("Optional of NULL doesn't contain any error message"));
+    assert_true(strlen(msg) > 0);
 
     memoryRelease(msg);
 }
 
 int main(int argc, char** argv){
-    void (*testFunctions[])() = {
-        &testOptional,
-        &testEmptyOptional,
-        &testEmptyOptionalWithParameters,
-        &testOptionalCanBeDeleted,
-        &testEmptyOptionalCanBeDeleted,
-        &testOptionalOfNullIsAnEmptyOptional,
+    cmocka_set_message_output(CM_OUTPUT_TAP);
+
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test_setup_teardown(testOptional, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testEmptyOptional, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testEmptyOptionalWithParameters, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testOptionalCanBeDeleted, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testEmptyOptionalCanBeDeleted, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testOptionalOfNullIsAnEmptyOptional, NULL, tearDown),
     };
 
-    TestFixture fixture = createFixture();
+    int ret = cmocka_run_group_tests_name("odf/sys/optional.c", tests, NULL, NULL);
 
-    fixture.name = "odf/sys/optional.c";
-    fixture.afterEach = &tearDown;
-    fixture.tests = testFunctions;
-    fixture.length = sizeof(testFunctions) / sizeof(testFunctions[0]);
-
-    runTests(&fixture);
+    return ret;
 }
