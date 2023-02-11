@@ -5,4 +5,6 @@ typedef struct Optional Optional;
 
 typedef struct OptionalPtr OptionalPtr;
 
+#define OptionalOf(T) OptionalPtr
+
 #endif

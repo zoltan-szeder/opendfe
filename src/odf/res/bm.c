@@ -12,15 +12,23 @@
 #include "odf/res/rle.h"
 #include "odf/sys/memory.h"
 #include "odf/sys/optional.h"
+#include "odf/sys/log.h"
+#include "odf/sys/list.h"
 
 bool bmIsTransparent(BMFile* bmFile);
 
+static OptionalOf(ListOf(BMSubFile*)*)* bmReadSubFiles(InMemoryFile* file, BMHeader* header);
 static uint8_t* bmDecompress(BMFile* bmFile);
 static Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8_t* data,  Palette* palette);
+static void bmCloseSubFiles(ListOf(BMSubFile*)* subFiles);
 
 
 BMFile* bmOpenFile(char* file) {
     FILE* stream = fopen(file, "rb");
+    BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
+    bmFile->header = NULL;
+    bmFile->subBMFiles = NULL;
+    bmFile->data = NULL;
 
     OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
         BMHeader*, header, fileReadStruct(stream, BM_HEADER_FORMAT),
@@ -30,51 +38,176 @@ BMFile* bmOpenFile(char* file) {
         NULL
     );
     memoryTag(header, "odf/res/bm/BmHeader");
+    bmFile->header = header;
 
     OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
         uint8_t*, data, fileReadBytes(stream, header->dataSize),
         {
-            memoryRelease(header);
+            bmClose(bmFile);
             fclose(stream);
         },
         NULL
     )
     memoryTag(data, "odf/res/bm/BMFile/data");
+    bmFile->data = data;
 
     fclose(stream);
-
-    BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
-    bmFile->header = header;
-    bmFile->data = data;
 
     return bmFile;
 }
 
 BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
-    OPTIONAL_ASSIGN_OR_RETURN(
-        BMHeader*, bmHeader, inMemFileReadStruct(file, BM_HEADER_FORMAT),
-        NULL
-    )
-
-    OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
-        uint8_t*, data, inMemFileRead(file, bmHeader->dataSize),
-        {memoryRelease(bmHeader);},
-        NULL
-    )
-
+    logTrace("Assembling BM File");
     BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
+    bmFile->header = NULL;
+    bmFile->subBMFiles = NULL;
+    bmFile->frameRate = 0;
+    bmFile->data = NULL;
+
+    logTrace("Reading BM header");
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+        BMHeader*, bmHeader, inMemFileReadStruct(file, BM_HEADER_FORMAT),
+        {
+            logWarn("Could not read BM header");
+            bmClose(bmFile);
+        },
+        NULL
+    )
     bmFile->header = bmHeader;
-    bmFile->data = data;
+
+    if(bmHeader->sizeX == 1 && bmHeader->sizeY > 1) {
+        bmPrintFile(bmFile);
+        logTrace("Reading frameRate");
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+            uint8_t*, frameRate, inMemFileReadStruct(file, "%c1"),
+            {
+                logWarn("Could not read frame rate");
+                bmClose(bmFile);
+            },
+            NULL
+        );
+        logTrace("Multiple BM frame rate is %d", *frameRate);
+        bmFile->frameRate = *frameRate;
+        memoryRelease(frameRate);
+
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+            ListOf(BMSubFile*)*, innerSubFiles, bmReadSubFiles(file, bmFile->header),
+            {
+                logWarn("Could not read BM subheaders");
+                bmClose(bmFile);
+            },
+            NULL
+        );
+
+        bmFile->subBMFiles = innerSubFiles;
+    } else {
+        logTrace("Reading BM Data");
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+            uint8_t*, innerData, inMemFileRead(file, bmHeader->dataSize),
+            {
+                logWarn("Could not read BM data");
+                bmClose(bmFile);
+            },
+            NULL
+        )
+        bmFile->data = innerData;
+    }
 
     return bmFile;
 }
 
+
+static OptionalOf(ListOf(BMSubFile*)*)* bmReadSubFiles(InMemoryFile* file, BMHeader* header) {
+    OPTIONAL_ASSIGN_OR_PASSTROUGH(uint8_t*, byte2, inMemFileReadStruct(file, "%c1"));
+    if(*byte2 != 2) {
+        logTrace("Byte after framerate is not '\\x02': '%x'", *byte2);
+        memoryRelease(byte2);
+        return optionalEmpty("Byte after framerate is not '\\x02'");
+    }
+    memoryRelease(byte2);
+
+
+    uint16_t subHeaderCount = header->sizeY;
+
+    logTrace("Reading offsets");
+    ListOf(uint8_t*)* offsets = listCreate(subHeaderCount);
+    for(uint16_t i = 0; i < subHeaderCount; i++) {
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            uint32_t*, offset, inMemFileReadStruct(file, "%l4"), {
+                forEachListItem(uint32_t*, o, offsets, {
+                    memoryRelease(o);
+                });
+                memoryRelease(offsets);
+            }
+        )
+        *offset = *offset + sizeof(BMHeader) + 2L;
+        logTrace("Found offset %d", *offset);
+        listAppend(offsets, offset);
+    }
+
+
+    logTrace("Reading subheaders");
+    ListOf(BMSubFile*)* subFiles = listCreate(header->sizeY);
+    forEachListItem(uint32_t*, offset, offsets, {
+        memFileSeek(file, *offset, SEEK_SET);
+
+        BMSubFile* subFile = memoryAllocateWithTag(sizeof(BMSubFile), "odf/res/bm:BMSubFile");
+        subFile->header = NULL;
+        subFile->data = NULL;
+        listAppend(subFiles, subFile);
+
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            BMSubHeader*, subHeader, inMemFileReadStruct(file, BM_SUBHEADER_FORMAT),
+            {
+                logTrace("Could not read BM sub header at offset %d", *offset);
+                bmCloseSubFiles(subFiles);
+            }
+        );
+        memoryTag(subHeader, "odf/res/bm:BMSubHeader");
+        subFile->header = subHeader;
+
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            uint8_t*, data, inMemFileRead(file, subHeader->dataSize),
+            {
+                logTrace("Could not read BM sub data at offset %d", *offset);
+                bmCloseSubFiles(subFiles);
+            }
+        );
+        memoryTag(data, "odf/res/bm:BMSubData");
+        subFile->data = data;
+    });
+
+    forEachListItem(uint32_t*, offset, offsets, {
+        memoryRelease(offset);
+    })
+    listDelete(offsets);
+
+    return optionalOf(subFiles);
+}
+
 void bmClose(BMFile* bmFile) {
-    memoryRelease(bmFile->header);
-    memoryRelease(bmFile->data);
+    logTrace("Releasing BM file %p", bmFile);
+
+    bmCloseSubFiles(bmFile->subBMFiles);
+    if(bmFile->header) memoryRelease(bmFile->header);
+    if(bmFile->data) memoryRelease(bmFile->data);
+
     memoryRelease(bmFile);
 }
 
+static void bmCloseSubFiles(ListOf(BMSubFile*)* subFiles) {
+    if(!subFiles) return;
+
+    forEachListItem(BMSubFile*, subFile, subFiles, {
+        logTrace("Releasing BM subfile %p", subFile);
+
+        if(subFile->header) memoryRelease(subFile->header);
+        if(subFile->data) memoryRelease(subFile->data);
+        memoryRelease(subFile);
+    });
+
+    listDelete(subFiles);
+}
 
 
 Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
@@ -140,13 +273,13 @@ void bmPrintFile(BMFile* bmFile) {
     BMHeader* bmHeader = bmFile->header;
     uint32_t* magic = (uint32_t*) &(bmHeader->magic);
 
-    printf("magic: 0x%x\n", *magic);
-    printf("sizeX: %d\n", bmHeader->sizeX);
-    printf("sizeY: %d\n", bmHeader->sizeY);
-    printf("idemX: %d\n", bmHeader->idemX);
-    printf("idemY: %d\n", bmHeader->idemY);
-    printf("transparent: 0x%x\n", bmHeader->transparent);
-    printf("logSizeY: %d\n", bmHeader->logSizeY);
-    printf("compressed: %d\n", bmHeader->compressed);
-    printf("dataSize: %d\n", bmHeader->dataSize);
+    logTrace("magic: 0x%x", *magic);
+    logTrace("sizeX: %d", bmHeader->sizeX);
+    logTrace("sizeY: %d", bmHeader->sizeY);
+    logTrace("idemX: %d", bmHeader->idemX);
+    logTrace("idemY: %d", bmHeader->idemY);
+    logTrace("transparent: 0x%x", bmHeader->transparent);
+    logTrace("logSizeY: %d", bmHeader->logSizeY);
+    logTrace("compressed: %d", bmHeader->compressed);
+    logTrace("dataSize: %d", bmHeader->dataSize);
 }

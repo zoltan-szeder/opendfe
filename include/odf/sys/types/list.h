@@ -3,4 +3,6 @@
 
 typedef struct List List;
 
+#define ListOf(type) List
+
 #endif

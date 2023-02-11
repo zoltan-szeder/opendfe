@@ -9,6 +9,10 @@
 #include "odf/res/bm.h"
 #include "odf/res/types/bm_def.h"
 #include "odf/res/pal.h"
+#include "odf/sys/stringbuffer.h"
+#include "odf/sys/inmemoryfile.h"
+#include "odf/sys/log.h"
+#include "odf/sys/optional.h"
 #include "odf/res/types/pal_def.h"
 #include "system/test_memory.h"
 
@@ -22,9 +26,40 @@
 #define COL_G   0, 255,   0, 255
 #define COL_B   0,   0, 255, 255
 
+#define TEST_BM_HEADER_2X2 \
+    "BM \x1e" "\x02\x00" "\x02\x00" "\x00\x00" "\x00\x00" \
+    "\x36" "\x01" "\x00\x00" "\x04\x00\x00\x00" \
+    "\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0"
+#define TEST_BM_HEADER_MULTIPLE \
+    "BM \x1e" "\x1\x0" "\x2\x0" "\x0\x0" "\x0\x0" \
+    "\x36" "\x1" "\x0\x0" "\x4\x0\x0\x0" \
+    "\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0"
+#define TEST_BM_FRAME_RATE "\x19"
+#define TEST_BM_2 "\x02"
+#define TEST_1ST_SUBHEADER_OFFSET "\x08\x0\x0\x0"
+#define TEST_2ND_SUBHEADER_OFFSET "\x28\x0\x0\x0"
+#define TEST_BM_SUBHEADER_2X2 \
+    "\x2\x0" "\x2\x0" "\x0\x0" "\x0\x0" \
+    "\x4\x0\x0\x0" "\x1" "\x0\x0\x0" "\x0\x0\x0" \
+    "\x0\x0\x0\x0\x0" "\x36" "\x0\x0\x0"
+#define TEST_BM_DATA_1 \
+    "\x0\x1\x2\x3"
+#define TEST_BM_DATA_2 \
+    "\x3\x2\x01\x0"
+
+
+int setUp(void** state){
+    logSetLevel(WARN);
+
+    return 0;
+}
 
 int tearDown(void** state){
-    assert_int_equal(0, memoryGetAllocations());
+    if(memoryGetAllocations() != 0) {
+        memoryDump(false);
+        memoryReleaseAll();
+        fail_msg("Found remaining memory");
+    }
 
     return 0;
 }
@@ -241,18 +276,45 @@ void testRLE1EncodedBmCreateImage() {
     img8bDelete(img);
 }
 
+void testMultipleBM() {
+    StringBuffer* sb = stringBufferCreate();
+    stringBufferAppendBytes(sb, TEST_BM_HEADER_MULTIPLE,   sizeof(BMHeader));
+    stringBufferAppendBytes(sb, TEST_BM_FRAME_RATE,        1);
+    stringBufferAppendBytes(sb, TEST_BM_2,                 1);
+    stringBufferAppendBytes(sb, TEST_1ST_SUBHEADER_OFFSET, 4);
+    stringBufferAppendBytes(sb, TEST_2ND_SUBHEADER_OFFSET, 4);
+    stringBufferAppendBytes(sb, TEST_BM_SUBHEADER_2X2,     sizeof(BMSubHeader));
+    stringBufferAppendBytes(sb, TEST_BM_DATA_1,            4);
+    stringBufferAppendBytes(sb, TEST_BM_SUBHEADER_2X2,     sizeof(BMSubHeader));
+    stringBufferAppendBytes(sb, TEST_BM_DATA_2,            4);
+
+    OptionalOf(InMemoryFile*)* optFile = memFileCreate(stringBufferToString(sb), stringBufferSize(sb));
+    assert_false(optionalIsEmpty(optFile));
+
+    InMemoryFile* bmInMemFile = optionalGet(optFile);
+
+    stringBufferDelete(sb);
+
+    BMFile* bmFile = bmOpenInMemoryFile(bmInMemFile);
+    assert_non_null(bmFile->subBMFiles);
+
+    inMemFileDelete(bmInMemFile);
+
+    bmClose(bmFile);
+}
+
 
 int main(int argc, char** argv){
     cmocka_set_message_output(CM_OUTPUT_TAP);
 
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test_setup_teardown(testBmReadFile, NULL, tearDown),
-        cmocka_unit_test_setup_teardown(testBmCreateImage_1, NULL, tearDown),
-        cmocka_unit_test_setup_teardown(testBmCreateImage_2, NULL, tearDown),
-        cmocka_unit_test_setup_teardown(testBmCreateImage_3, NULL, tearDown),
-        cmocka_unit_test_setup_teardown(testBmCreateImage_4, NULL, tearDown),
-        cmocka_unit_test_setup_teardown(testRLE0EncodedBmCreateImage, NULL, tearDown),
-        cmocka_unit_test_setup_teardown(testRLE1EncodedBmCreateImage, NULL, tearDown),
+        cmocka_unit_test_setup_teardown(testBmReadFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_1, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_2, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_3, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testBmCreateImage_4, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testRLE0EncodedBmCreateImage, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testMultipleBM, setUp, tearDown),
     };
 
     int ret = cmocka_run_group_tests_name("odf/res/bm.c", tests, NULL, NULL);

@@ -22,7 +22,15 @@ List* listOfArray(size_t n, void* array);
 #define ARGS_COUNT(type, ...) (sizeof((type){__VA_ARGS__})/sizeof(type))
 #define listOf(...) listOfArray(ARGS_COUNT(void*, __VA_ARGS__), __VA_ARGS__)
 
-#define ListOf(type) List
+
+#define forEachListItem(TYPE, NAME, LIST, EXPR) \
+    for(size_t _i = 0; _i < listSize(LIST); _i++) { \
+         OptionalPtr* _opt_NAME = listGet(LIST, _i); \
+         if(!optionalIsEmpty(_opt_NAME)) {\
+             TYPE NAME = optionalGet(_opt_NAME); \
+             EXPR \
+         } \
+    }
 
 #endif
 

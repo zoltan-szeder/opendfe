@@ -7,6 +7,7 @@
 #include "odf/sys/optional.h"
 #include "odf/sys/memory.h"
 #include "odf/sys/strings.h"
+#include "odf/sys/log.h"
 
 struct InMemoryFile {
     uint32_t length;
@@ -15,6 +16,7 @@ struct InMemoryFile {
 };
 
 OptionalPtr* memFileCreate(char* content, uint32_t length) {
+    logTrace("Creating an in memory file with %d byte(s)", length);
     InMemoryFile* file = memoryAllocateWithTag(sizeof(InMemoryFile), "odf/sys/inmemoryfile/InMemoryFile");
 
     file->content = content;
@@ -25,20 +27,30 @@ OptionalPtr* memFileCreate(char* content, uint32_t length) {
 }
 
 int32_t memFileSeek(InMemoryFile* file, int64_t offset, int32_t origin) {
+    logTrace(
+        "Seeking from position %d, moving %d from %s",
+        file->pos,
+        offset,
+        origin == SEEK_CUR ? "SEEK_CURR" : (origin == SEEK_SET ? "SEEK_SET" : "SEEK_END")
+    );
     uint64_t currentPosition;
     if (origin == SEEK_CUR) currentPosition = file->pos;
     else if (origin == SEEK_SET) currentPosition = 0;
     else currentPosition = file->length;
 
     currentPosition += offset;
-    if(currentPosition > file->length)
+    if(currentPosition > file->length) {
+        logTrace("Could not find position");
         return 1;
+    }
 
     file->pos = currentPosition;
+    logTrace("New position in file is %d", file->pos);
     return 0;
 }
 
 void inMemFileDelete(InMemoryFile* file) {
+    logTrace("Releasing InMemoryFile %p", file);
     memoryRelease(file->content);
     memoryRelease(file);
 }
@@ -66,11 +78,17 @@ OptionalPtr* inMemFileReadStruct(InMemoryFile* file, const char* format) {
 }
 
 OptionalPtr* inMemFileRead(InMemoryFile* file, uint32_t length) {
-    if(inMemFileOverEOF(file, length))
+    logTrace("Reading %d byte(s)", length);
+    if(inMemFileOverEOF(file, length)) {
+        logTrace(
+            "inMemFileRead - Could not read %d bytes from %d offset in a %d long file",
+            length, file->pos, file->length
+        );
         return optionalEmpty(
             "inMemFileRead - Could not read %d bytes from %d offset in a %d long file",
             length, file->pos, file->length
         );
+    }
 
     uint8_t* bytes = memoryAllocateWithTag(length, "odf/sys/inmemoryfile/InMemoryFile/content");
     memcpy(bytes, file->content + file->pos, length);
