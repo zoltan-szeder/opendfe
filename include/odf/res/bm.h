@@ -3,12 +3,13 @@
 
 #include "odf/res/types/bm.h"
 #include "odf/res/types/pal.h"
+#include "odf/sys/types/optional.h"
 
 #include "odf/sys/inmemoryfile.h"
 #include "odf/sys/img.h"
 
 BMFile* bmOpenFile(char*);
-BMFile* bmOpenInMemoryFile(InMemoryFile*);
+OptionalOf(BMFile*)* bmOpenInMemoryFile(InMemoryFile*);
 void bmClose(BMFile*);
 
 void bmPrintFile(BMFile*);

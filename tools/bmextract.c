@@ -34,7 +34,8 @@ BMFile* bmExtract(char* gobFile, char* bmFile) {
     GobArchive* bmArchive = optionalGet(gobOpenArchive(gobFile));
     GobFile* bmGobFile = optionalGet(gobGetFile(bmArchive, bmFile));
     InMemoryFile* bmInMem = optionalGet(gobReadFile(bmGobFile));
-    BMFile* bm = bmOpenInMemoryFile(bmInMem);
+
+    BMFile* bm = optionalGet(bmOpenInMemoryFile(bmInMem));
     memoryTag(bm, "Bm");
 
     gobCloseFile(bmInMem);

@@ -31,16 +31,10 @@ Palette* palExtract(char* gobFile, char* palFile) {
 }
 
 BMFile* bmExtract(char* gobFile, char* bmFile) {
-    OptionalPtr* optionalGobArchive = gobOpenArchive(gobFile);
-    GobArchive* bmArchive = optionalGet(optionalGobArchive);
-
+    GobArchive* bmArchive = optionalGet(gobOpenArchive(gobFile));
     GobFile* bmGobFile = optionalGet(gobGetFile(bmArchive, bmFile));
-    OptionalPtr* optBmInMem = gobReadFile(bmGobFile);
-    InMemoryFile* bmInMem = optionalGet(optBmInMem);
-
-    memoryTag(bmInMem, "BmInMemory");
-
-    BMFile* bm = bmOpenInMemoryFile(bmInMem);
+    InMemoryFile* bmInMem = optionalGet(gobReadFile(bmGobFile));
+    BMFile* bm = optionalGet(bmOpenInMemoryFile(bmInMem));
     memoryTag(bm, "Bm");
 
     gobCloseFile(bmInMem);

@@ -295,7 +295,13 @@ void testMultipleBM() {
 
     stringBufferDelete(sb);
 
-    BMFile* bmFile = bmOpenInMemoryFile(bmInMemFile);
+    OptionalOf(BMFile*)* optBmFile = bmOpenInMemoryFile(bmInMemFile);
+    if(optionalIsEmpty(optBmFile)) {
+        inMemFileDelete(bmInMemFile);
+        fail_msg("Optional BMFile is empty");
+    };
+
+    BMFile* bmFile = optionalGet(optBmFile);
     assert_non_null(bmFile->subBMFiles);
 
     inMemFileDelete(bmInMemFile);

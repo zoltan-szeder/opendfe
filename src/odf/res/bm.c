@@ -56,7 +56,7 @@ BMFile* bmOpenFile(char* file) {
     return bmFile;
 }
 
-BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
+OptionalOf(BMFile*)* bmOpenInMemoryFile(InMemoryFile* file) {
     logTrace("Assembling BM File");
     BMFile* bmFile = memoryAllocateWithTag(sizeof(BMFile), "odf/res/bm/BMFile");
     bmFile->header = NULL;
@@ -65,55 +65,51 @@ BMFile* bmOpenInMemoryFile(InMemoryFile* file) {
     bmFile->data = NULL;
 
     logTrace("Reading BM header");
-    OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
         BMHeader*, bmHeader, inMemFileReadStruct(file, BM_HEADER_FORMAT),
         {
             logWarn("Could not read BM header");
             bmClose(bmFile);
-        },
-        NULL
+        }
     )
     bmFile->header = bmHeader;
 
     if(bmHeader->sizeX == 1 && bmHeader->sizeY > 1) {
         bmPrintFile(bmFile);
         logTrace("Reading frameRate");
-        OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
             uint8_t*, frameRate, inMemFileReadStruct(file, "%c1"),
             {
                 logWarn("Could not read frame rate");
                 bmClose(bmFile);
-            },
-            NULL
+            }
         );
         logTrace("Multiple BM frame rate is %d", *frameRate);
         bmFile->frameRate = *frameRate;
         memoryRelease(frameRate);
 
-        OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
             ListOf(BMSubFile*)*, innerSubFiles, bmReadSubFiles(file, bmFile->header),
             {
                 logWarn("Could not read BM subheaders");
                 bmClose(bmFile);
-            },
-            NULL
+            }
         );
 
         bmFile->subBMFiles = innerSubFiles;
     } else {
         logTrace("Reading BM Data");
-        OPTIONAL_ASSIGN_OR_CLEANUP_AND_RETURN(
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
             uint8_t*, innerData, inMemFileRead(file, bmHeader->dataSize),
             {
                 logWarn("Could not read BM data");
                 bmClose(bmFile);
-            },
-            NULL
+            }
         )
         bmFile->data = innerData;
     }
 
-    return bmFile;
+    return optionalOf(bmFile);
 }
 
 

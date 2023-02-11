@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
     GobArchive* bmArchive = optionalGet(gobOpenArchive(argv[1]));
     GobFile* bmFile = optionalGet(gobGetFile(bmArchive, argv[2]));
     InMemoryFile* bmInMem = optionalGet(gobReadFile(bmFile));
-    BMFile* bm = bmOpenInMemoryFile(bmInMem);
+    BMFile* bm = optionalGet(bmOpenInMemoryFile(bmInMem));
+
     gobCloseFile(bmInMem);
     gobCloseArchive(bmArchive);
 
