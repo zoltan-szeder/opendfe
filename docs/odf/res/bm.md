@@ -29,7 +29,7 @@ The `logSizeY` field is a single byte that stores the logarithm (base 2) of the 
 
 The `compressed` field is a 16-bit unsigned integer that specifies the type of compression used on the image data. If it is 0, the image data is not compressed. If it is 1, the image data is RLE1 compressed. If it is 2, the image data is LRE0 compressed.
 
-The `dataSize` field is a 32-bit unsigned integer that stores the length of the image data, in bytes, after the header.
+The `dataSize` field is a 32-bit unsigned integer that stores the length of the image data, in bytes, after the header. If the `dataSize` is 0 and the compression is set to `0`, the dataSize should be calculated from `sizeX` and `sizeY`
 
 The `pad` field is a 12-byte array of `0x00` bytes that is currently not used and should be left as is.
 

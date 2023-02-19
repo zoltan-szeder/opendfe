@@ -18,9 +18,19 @@
 bool bmIsTransparent(BMFile* bmFile);
 
 static OptionalOf(ListOf(BMSubFile*)*)* bmReadSubFiles(InMemoryFile* file, BMHeader* header);
-static uint8_t* bmDecompress(BMFile* bmFile);
-static Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8_t* data,  Palette* palette);
+static Image8Bit* bmCreateRawImage(uint8_t* data, uint32_t dataSize, uint16_t width, uint16_t height, uint16_t compressed, uint8_t transparent, Palette* palette);
+static Image8Bit* bmCreateImageDecompressed(uint8_t* data, uint32_t width, uint32_t height, uint8_t transparent, Palette* palette);
+static uint8_t* bmDecomress(uint8_t* data, uint32_t dataSize, uint16_t width, uint16_t height, uint16_t compressed);
 static void bmCloseSubFiles(ListOf(BMSubFile*)* subFiles);
+static bool _isTransparent(uint8_t transparent);
+static Image8Bit* bmCreateSubImage(BMFile* bmFile, BMSubFile* subFile, Palette* palette);
+static void bmPrintHeader(BMHeader* header);
+static void bmPrintSubHeader(BMSubHeader* subHeader);
+static void bmCorrectHeader(BMHeader* header, InMemoryFile* file);
+static bool bmIsMultiple(BMHeader* header, InMemoryFile* file);
+static bool bmHasEndiannessIssues(BMHeader* header, InMemoryFile* file);
+static OptionalOf(BMHeader*)* bmReadHeader(InMemoryFile* file);
+
 
 
 BMFile* bmOpenFile(char* file) {
@@ -64,18 +74,19 @@ OptionalOf(BMFile*)* bmOpenInMemoryFile(InMemoryFile* file) {
     bmFile->frameRate = 0;
     bmFile->data = NULL;
 
-    logTrace("Reading BM header");
     OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
-        BMHeader*, bmHeader, inMemFileReadStruct(file, BM_HEADER_FORMAT),
+        BMHeader*, bmHeader, bmReadHeader(file),
         {
-            logWarn("Could not read BM header");
             bmClose(bmFile);
         }
     )
-    bmFile->header = bmHeader;
 
-    if(bmHeader->sizeX == 1 && bmHeader->sizeY > 1) {
-        bmPrintFile(bmFile);
+    bmFile->header = bmHeader;
+    logTrace("Assigned BM Header:");
+    bmPrintHeader(bmHeader);
+
+
+    if(bmIsMultiple(bmHeader, file)) {
         logTrace("Reading frameRate");
         OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
             uint8_t*, frameRate, inMemFileReadStruct(file, "%c1"),
@@ -110,6 +121,22 @@ OptionalOf(BMFile*)* bmOpenInMemoryFile(InMemoryFile* file) {
     }
 
     return optionalOf(bmFile);
+}
+
+static OptionalOf(BMHeader*)* bmReadHeader(InMemoryFile* file) {
+    logTrace("Reading BM header");
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        BMHeader*, header, inMemFileReadStruct(file, BM_HEADER_FORMAT),
+        {logWarn("Could not read BM header");}
+    )
+    logTrace("Read header:");
+    bmPrintHeader(header);
+    if(memcmp(header->magic, "BM \x1e", 4) != 0) {
+        return optionalEmpty("File is not a proper .BM file. Magic value mismatch");
+    }
+    bmCorrectHeader(header, file);
+
+    return optionalOf(header);
 }
 
 
@@ -161,6 +188,7 @@ static OptionalOf(ListOf(BMSubFile*)*)* bmReadSubFiles(InMemoryFile* file, BMHea
         );
         memoryTag(subHeader, "odf/res/bm:BMSubHeader");
         subFile->header = subHeader;
+        bmPrintSubHeader(subHeader);
 
         OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
             uint8_t*, data, inMemFileRead(file, subHeader->dataSize),
@@ -205,45 +233,89 @@ static void bmCloseSubFiles(ListOf(BMSubFile*)* subFiles) {
     listDelete(subFiles);
 }
 
+ListOf(Image8Bit*)* bmCreateImages(BMFile* bmFile, Palette* palette) {
+    BMHeader* header = bmFile->header;
+
+    if(bmFile->subBMFiles != NULL) {
+        ListOf(BMSubFile*)* subFiles = bmFile->subBMFiles;
+        ListOf(Image8Bit*)* images = listCreate(listSize(subFiles));
+
+        forEachListItem(BMSubFile*, subFile, subFiles, {
+            listAppend(images, bmCreateSubImage(bmFile, subFile, palette));
+        });
+
+        return images;
+    } else {
+        return listOf(
+            bmCreateImage(bmFile, palette)
+        );
+    }
+}
 
 Image8Bit* bmCreateImage(BMFile* bmFile, Palette* palette) {
-    uint32_t compressed = bmFile->header->compressed;
+    BMHeader* header = bmFile->header;
+
+    return bmCreateRawImage(
+        bmFile->data,
+        header->dataSize,
+        header->sizeX,
+        header->sizeY,
+        header->compressed,
+        header->transparent,
+        palette
+    );
+}
+
+static Image8Bit* bmCreateSubImage(BMFile* bmFile, BMSubFile* subFile, Palette* palette) {
+    BMHeader* header = bmFile->header;
+    BMSubHeader* subHeader = subFile->header;
+
+    return bmCreateRawImage(
+        subFile->data,
+        subHeader->dataSize,
+        subHeader->sizeX,
+        subHeader->sizeY,
+        header->compressed,
+        subHeader->transparent,
+        palette
+    );
+}
+
+static Image8Bit* bmCreateRawImage(uint8_t* data, uint32_t dataSize, uint16_t width, uint16_t height, uint16_t compressed, uint8_t transparent, Palette* palette) {
     if(compressed == BM_COMPRESSION_NONE) {
-        return bmCreateImageDecompressed(bmFile, bmFile->data, palette);
+        return bmCreateImageDecompressed(data, width, height, transparent, palette);
     }
 
-    uint8_t* data = bmDecompress(bmFile);
-    Image8Bit* image = bmCreateImageDecompressed(bmFile, data, palette);
-    memoryRelease(data);
+    uint8_t* decompressedData = bmDecomress(data, dataSize, width, height, compressed);
+    Image8Bit* image = bmCreateImageDecompressed(decompressedData, width, height, transparent, palette);
+    memoryRelease(decompressedData);
 
     return image;
 }
 
-uint8_t* bmDecompress(BMFile* bmFile) {
-    int width = bmFile->header->sizeX;
-    int height = bmFile->header->sizeY;
-    int length = bmFile->header->dataSize;
-
-    uint32_t compressed = bmFile->header->compressed;
+static uint8_t* bmDecomress(uint8_t* data, uint32_t dataSize, uint16_t width, uint16_t height, uint16_t compressed) {
     if(compressed == BM_COMPRESSION_RLE0) {
-        return rle0Decompress(bmFile->data, length, width, height);
+        return rle0Decompress(data, dataSize, width, height);
     } else {
-        return rle1Decompress(bmFile->data, length, width, height);
+        return rle1Decompress(data, dataSize, width, height);
     }
 }
 
+
 static uint8_t* rotcc90(uint8_t* image, int w,int h);
-Image8Bit* bmCreateImageDecompressed(BMFile* bmFile, uint8_t* data,  Palette* palette) {
-    size_t w = bmFile->header->sizeX;
-    size_t h = bmFile->header->sizeY;
-    Image8Bit* img = img8bCreate2D(w, h, 4);
+
+static Image8Bit* bmCreateImageDecompressed(uint8_t* data, uint32_t width, uint32_t height, uint8_t transparent, Palette* palette) {
+    uint32_t length = width * height;
+    Image8Bit* img = img8bCreate2D(width, height, 4);
     ucvec4* texture = (ucvec4*) img->data;
-    uint8_t* rotatedImage = rotcc90(data, w, h);
-    palUnindex(palette, texture, bmIsTransparent(bmFile), rotatedImage, w*h);
+    uint8_t* rotatedImage = rotcc90(data, width, height);
+    palUnindex(palette, texture, _isTransparent(transparent), rotatedImage, length);
     memoryRelease(rotatedImage);
 
     return img;
 }
+
+
 
 static uint8_t* rotcc90(uint8_t* image, int w,int h) {
     uint8_t* rotatedImage = memoryAllocate(w*h*sizeof(uint8_t));
@@ -260,22 +332,69 @@ static uint8_t* rotcc90(uint8_t* image, int w,int h) {
 }
 
 bool bmIsTransparent(BMFile* bmFile) {
-    uint8_t transparent = bmFile->header->transparent;
+    return _isTransparent(bmFile->header->transparent);
+}
 
+static bool _isTransparent(uint8_t transparent) {
     return (transparent == BM_TRANSPARENT || transparent == BM_WEAPON);
 }
 
+static void bmCorrectHeader(BMHeader* header, InMemoryFile* file) {
+    if(bmHasEndiannessIssues(header, file)) {
+        logDebug("BM File has incorrect endianness");
+        reverseEndianness(&(header->sizeX), sizeof(uint16_t));
+        reverseEndianness(&(header->sizeY), sizeof(uint16_t));
+        reverseEndianness(&(header->idemX), sizeof(uint16_t));
+        reverseEndianness(&(header->idemY), sizeof(uint16_t));
+        reverseEndianness(&(header->dataSize), sizeof(uint32_t));
+    }
+    if(header->compressed == 0 && header->dataSize == 0) {
+        header->dataSize = (uint32_t) header->sizeX * (uint32_t) header->sizeY;
+    }
+}
+
+static bool bmHasEndiannessIssues(BMHeader* header, InMemoryFile* file) {
+    return bmIsMultiple(header, file) &&
+        header->compressed == 0 &&
+        header->dataSize != header->sizeX * header->sizeY;
+}
+
+static bool bmIsMultiple(BMHeader* header, InMemoryFile* file) {
+    size_t size = inMemFileSize(file);
+    uint16_t w = header->sizeX;
+    uint16_t h = header->sizeY;
+    return w == 1 &&
+        h > 1 &&
+        size != w*h + sizeof(BMHeader);
+}
+
 void bmPrintFile(BMFile* bmFile) {
-    BMHeader* bmHeader = bmFile->header;
-    uint32_t* magic = (uint32_t*) &(bmHeader->magic);
+    bmPrintHeader(bmFile->header);
+    forEachListItem(BMSubFile*, subFile, bmFile->subBMFiles, {
+        bmPrintSubHeader(subFile->header);
+    });
+}
+
+void bmPrintHeader(BMHeader* header) {
+    uint32_t* magic = (uint32_t*) &(header->magic);
 
     logTrace("magic: 0x%x", *magic);
-    logTrace("sizeX: %d", bmHeader->sizeX);
-    logTrace("sizeY: %d", bmHeader->sizeY);
-    logTrace("idemX: %d", bmHeader->idemX);
-    logTrace("idemY: %d", bmHeader->idemY);
-    logTrace("transparent: 0x%x", bmHeader->transparent);
-    logTrace("logSizeY: %d", bmHeader->logSizeY);
-    logTrace("compressed: %d", bmHeader->compressed);
-    logTrace("dataSize: %d", bmHeader->dataSize);
+    logTrace("sizeX: %d", header->sizeX);
+    logTrace("sizeY: %d", header->sizeY);
+    logTrace("idemX: %d", header->idemX);
+    logTrace("idemY: %d", header->idemY);
+    logTrace("transparent: 0x%x", header->transparent);
+    logTrace("logSizeY: %d", header->logSizeY);
+    logTrace("compressed: %d", header->compressed);
+    logTrace("dataSize: %d", header->dataSize);
+}
+
+void bmPrintSubHeader(BMSubHeader* subHeader) {
+    logTrace("sizeX: %d", subHeader->sizeX);
+    logTrace("sizeY: %d", subHeader->sizeY);
+    logTrace("idemX: %d", subHeader->idemX);
+    logTrace("idemY: %d", subHeader->idemY);
+    logTrace("transparent: 0x%x", subHeader->transparent);
+    logTrace("logSizeY: %d", subHeader->logSizeY);
+    logTrace("dataSize: %d", subHeader->dataSize);
 }

@@ -7,6 +7,7 @@
 
 #include "odf/sys/inmemoryfile.h"
 #include "odf/sys/img.h"
+#include "odf/sys/types/list.h"
 
 BMFile* bmOpenFile(char*);
 OptionalOf(BMFile*)* bmOpenInMemoryFile(InMemoryFile*);
@@ -15,5 +16,7 @@ void bmClose(BMFile*);
 void bmPrintFile(BMFile*);
 
 Image8Bit* bmCreateImage(BMFile*, Palette*);
+ListOf(Image8Bit*)* bmCreateImages(BMFile* bmFile, Palette* palette);
+
 
 #endif
