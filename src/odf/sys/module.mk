@@ -7,6 +7,7 @@ ODF_OBJECTS_ALL += $(ODF_SYS_OBJECTS)
 ODF_SO_ALL += $(ODF_SYS_SO)
 
 $(ODF_SYS_SO): $(ODF_SYS_OBJECTS)
+	mkdir -p lib
 	$(CC) $(SOFLAGS) $(LINK_ARGS)
 
 
