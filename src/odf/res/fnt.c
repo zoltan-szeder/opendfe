@@ -6,11 +6,16 @@
 
 
 static OptionalOf(ListOf(FNTChar*)*)* fntReadChars(InMemoryFile* file, FNTHeader* header);
+static OptionalOf(FNTChar*)* fntReadChar(InMemoryFile* file, FNTHeader* header);
+
 static void fntCloseChars(ListOf(FNTChar*)* fntChars);
+static void fntCloseChar(FNTChar* fntChar);
 
 
 OptionalOf(FNTFile*)* fntRead(InMemoryFile* file) {
     FNTFile* fntFile = memoryAllocate(sizeof(FNTFile));
+    fntFile->header = NULL;
+    fntFile->chars = NULL;
 
     OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
         FNTHeader*, header, inMemFileReadStruct(file, FNT_HEADER_FORMAT),
@@ -36,11 +41,11 @@ OptionalOf(FNTFile*)* fntRead(InMemoryFile* file) {
 void fntClose(FNTFile* fntFile) {
     if(!fntFile) return;
 
-    if(fntFile->chars)
-        fntCloseChars(fntFile->chars);
-
     if(fntFile->header)
         memoryRelease(fntFile->header);
+
+    if(fntFile->chars)
+        fntCloseChars(fntFile->chars);
 
     memoryRelease(fntFile);
 }
@@ -48,42 +53,57 @@ void fntClose(FNTFile* fntFile) {
 static void fntCloseChars(ListOf(FNTChar*)* fntChars) {
     forEachListItem(
         FNTChar*, fntChar, fntChars,
-        memoryRelease(fntChar->data);
-        memoryRelease(fntChar);
+        fntCloseChar(fntChar);
     )
     listDelete(fntChars);
+}
+
+static void fntCloseChar(FNTChar* fntChar) {
+    if(fntChar->data)
+        memoryRelease(fntChar->data);
+
+    memoryRelease(fntChar);
 }
 
 static OptionalOf(ListOf(FNTChar*)*)* fntReadChars(InMemoryFile* file, FNTHeader* header) {
     uint8_t charCount = header->lastChar - header->firstChar + 1;
     ListOf(FNTChar*)* fntChars = listCreate(charCount);
+
     for(uint8_t i = 0; i < charCount; i++) {
-        FNTChar* fntChar = memoryAllocateWithTag(sizeof(FNTChar), "odf/res/fnt/FNTChar");
-
         OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
-            uint8_t*, width, inMemFileReadStruct(file, "%c1"),
+            FNTChar*, fntChar, fntReadChar(file, header),
             {
-                memoryRelease(fntChar);
                 fntCloseChars(fntChars);
             }
         )
-
-        fntChar->width = *width;
-        memoryRelease(width);
-
-        uint16_t dataSize = header->height * fntChar->width;
-        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
-            uint8_t*, data, inMemFileRead(file, dataSize),
-            {
-                memoryRelease(fntChar);
-                fntCloseChars(fntChars);
-            }
-        )
-
-        fntChar->data = data;
 
         listAppend(fntChars, fntChar);
-
     }
+
     return optionalOf(fntChars);
+}
+
+static OptionalOf(FNTChar*)* fntReadChar(InMemoryFile* file, FNTHeader* header) {
+    FNTChar* fntChar = memoryAllocateWithTag(sizeof(FNTChar), "odf/res/fnt/FNTChar");
+    fntChar->data = NULL;
+
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        uint8_t*, width, inMemFileReadStruct(file, "%c1"),
+        {
+            fntCloseChar(fntChar);
+        }
+    )
+    fntChar->width = *width;
+    memoryRelease(width);
+
+    uint16_t dataSize = header->height * fntChar->width;
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        uint8_t*, data, inMemFileRead(file, dataSize),
+        {
+            fntCloseChar(fntChar);
+        }
+    )
+    fntChar->data = data;
+
+    return optionalOf(fntChar);
 }
