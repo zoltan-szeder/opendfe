@@ -1,10 +1,7 @@
 FROM ubuntu:22.04
 
-RUN echo "hello"
 RUN apt-get update
-RUN apt-get install -y build-essential git cmake libcmocka0 libcmocka-dev \
-    libgl-dev libglew-dev libglfw3-dev libstb-dev libglm-dev \
-    bash-completion
+RUN apt-get install -y build-essential git cmake libgl-dev libgl1 libglm-dev libglfw3-dev libglfw3 libglew-dev libglew2.2  libcmocka-dev libcmocka0 libstb-dev
 
 RUN mkdir -p /root/odfe/build
 COPY .git /root/odfe/.git

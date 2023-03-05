@@ -23,7 +23,7 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 # set(GL_LIBRARY GL GLU X11)
-target_link_libraries(OpenDFELib PUBLIC glfw m GLEW glm)
+target_link_libraries(OpenDFELib PUBLIC glfw m GLEW)
 
 
 # Test
