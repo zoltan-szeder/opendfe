@@ -11,3 +11,4 @@ vgcore.*
 *.bak
 lib/
 bin/
+build/
