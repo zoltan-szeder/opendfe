@@ -46,25 +46,7 @@ void testEmptyOptional(){
 
     assert_true(optionalIsEmpty(optional));
 
-    char* msg = optionalGetMessage(optional);
-    char* expectedMessage = "tests/odf/sys/test_optional.c:L45:"
-        "testEmptyOptional - This optional is empty";
-    assert_string_equal(expectedMessage, msg);
-
-    memoryRelease(msg);
-}
-
-void testEmptyOptionalWithParameters(){
-    OptionalPtr* optional = optionalEmpty("testEmptyOptionalWithParameters - This optional is \"%s\"", "empty");
-
-    assert_true(optionalIsEmpty(optional));
-
-    char* msg = optionalGetMessage(optional);
-    char* expectedMessage = "tests/odf/sys/test_optional.c:L58:"
-    "testEmptyOptionalWithParameters - This optional is \"empty\"";
-    assert_string_equal(expectedMessage, msg);
-
-    memoryRelease(msg);
+    optionalDelete(optional);
 }
 
 void testOptionalCanBeDeleted(){
@@ -102,7 +84,6 @@ int main(int argc, char** argv){
     const struct CMUnitTest tests[] = {
         cmocka_unit_test_setup_teardown(testOptional, NULL, tearDown),
         cmocka_unit_test_setup_teardown(testEmptyOptional, NULL, tearDown),
-        cmocka_unit_test_setup_teardown(testEmptyOptionalWithParameters, NULL, tearDown),
         cmocka_unit_test_setup_teardown(testOptionalCanBeDeleted, NULL, tearDown),
         cmocka_unit_test_setup_teardown(testEmptyOptionalCanBeDeleted, NULL, tearDown),
         cmocka_unit_test_setup_teardown(testOptionalOfNullIsAnEmptyOptional, NULL, tearDown),

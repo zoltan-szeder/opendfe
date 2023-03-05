@@ -18,19 +18,7 @@ jobs:
       run: sudo apt-get update
    
     - name: Install libraries
-      run: sudo apt-get install -y build-essential libcmocka-dev libgl-dev libglew-dev libglfw3-dev
+      run: sudo apt-get install -y build-essential git cmake libcmocka0 libcmocka-dev libgl-dev libglew-dev libglfw3-dev libglm-dev libstb-dev
 
     - name: Run tests
-      run: make clean test
-
-#    - name: configure
-#      run: ./configure
-
-#    - name: Install dependencies
-#      run: make
-
-#    - name: Run check
-#      run: make check
-
-#    - name: Run distcheck
-#      run: make distcheck
+      run: mkdir build && cd build && cmake .. && make check
