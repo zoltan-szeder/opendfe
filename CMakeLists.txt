@@ -52,6 +52,25 @@ endforeach()
 
 add_custom_target(check DEPENDS ${TEST_TARGETS} COMMAND ctest --output-on-failure)
 
+# Build tools
+set(PROJECT_TOOLS_DIR tools)
+file(GLOB_RECURSE PROJECT_TOOLS ${PROJECT_TOOLS_DIR}/*.c)
+
+set(TOOL_TARGETS "")
+foreach(TOOL_SRC ${PROJECT_TOOLS})
+    get_filename_component(TOOL_NAME ${TOOL_SRC} NAME_WE)
+    add_executable(${TOOL_NAME} ${TOOL_SRC})
+    target_include_directories(${TOOL_NAME} PRIVATE ${PROJECT_INCLUDE_DIR})
+    target_link_libraries(${TOOL_NAME} OpenDFELib)
+    list(APPEND TOOL_TARGETS ${TOOL_NAME})
+endforeach()
+
+configure_file(src/odf/ogl/shaders/hud.vs ${CMAKE_CURRENT_BINARY_DIR}/src/odf/ogl/shaders/hud.vs COPYONLY)
+configure_file(src/odf/ogl/shaders/hud.frag ${CMAKE_CURRENT_BINARY_DIR}/src/odf/ogl/shaders/hud.frag COPYONLY)
+
+add_custom_target(tools DEPENDS ${TOOL_TARGETS})
+
+
 # Build executable project
 set(PROJECT_SRC_DIR src)
 file(GLOB_RECURSE PROJECT_MAIN ${PROJECT_SRC_DIR}/dark.c)
