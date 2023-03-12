@@ -12,3 +12,4 @@ vgcore.*
 lib/
 bin/
 build/
+*.user
