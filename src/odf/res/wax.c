@@ -14,17 +14,24 @@ static OptionalOf(ListOf(WAX*)*)* waxReadWaxList(InMemoryFile* file);
 static OptionalOf(WAX*)* waxReadWax(InMemoryFile* file);
 static OptionalOf(ListOf(WAXSequence*)*)* waxReadSequences(InMemoryFile* file);
 static OptionalOf(WAXSequence*)* waxReadSequence(InMemoryFile* file);
+static OptionalOf(ListOf(WAXFrame*)*)* waxReadFrames(InMemoryFile* file);
+static OptionalOf(WAXFrame*)* waxReadFrame(InMemoryFile* file);
+static OptionalOf(WAXCell*)* waxReadCell(InMemoryFile* file);
 
 static void waxCloseWaxList(ListOf(WAX*)* waxList);
 static void waxCloseWax(WAX* wax);
 static void waxCloseSequences(ListOf(WAXSequence*)* sequences);
 static void waxCloseSequence(WAXSequence* sequence);
+static void waxCloseFrames(ListOf(WAXFrame*)* frames);
+static void waxCloseFrame(WAXFrame* frame);
+static void waxCloseCell(WAXCell* frame);
 
 static void waxPrint(WAXFile* waxFile);
 static void waxPrintHeader(WAXHeader* header);
 static void waxPrintWAX(WAX* wax);
 static void waxPrintSeq(WAXSequence* seq);
 static void waxPrintFrame(WAXFrame* frame);
+static void waxPrintCell(WAXCell* cell);
 
 OptionalOf(WAXFile*)* waxReadInMemoryFile(InMemoryFile* file) {
     WAXFile* waxFile = memoryAllocateWithTag(sizeof(WAXFile), "WAXFile");
@@ -58,12 +65,11 @@ static OptionalOf(ListOf(WAX*)*)* waxReadWaxList(InMemoryFile* file){
         {waxCloseWaxList(waxList);}
     );
 
-    logDebug("wax_offsets:");
+    logTrace("wax_offsets:");
     for(uint32_t i = 0; i < 32; i++) {
         uint32_t waxOffset = waxOffsets[i];
         if(!waxOffset) break;
 
-        logTrace("- %d", waxOffset);
         memFileSeek(file, waxOffset, SEEK_SET);
         OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
             WAX*, wax, waxReadWax(file),
@@ -109,7 +115,7 @@ static OptionalOf(ListOf(WAXSequence*)*)* waxReadSequences(InMemoryFile* file){
         {waxCloseSequences(sequences);}
     );
 
-    logDebug("seq_offsets:");
+    logTrace("seq_offsets:");
     for(uint32_t i = 0; i < 32; i++) {
         uint32_t seqOffset = seqOffsets[i];
         if(!seqOffset) break;
@@ -142,10 +148,98 @@ static OptionalOf(WAXSequence*)* waxReadSequence(InMemoryFile* file) {
     memcpy(seq, header, length);
     memoryRelease(header);
 
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        ListOf(WAXFrame*)*, frames, waxReadFrames(file),
+        {waxCloseSequence(seq);}
+    );
+    seq->frames = frames;
+
     return optionalOf(seq);
 }
 
-static void waxCloseWaxList(ListOf(WAX*)* waxList);
+static OptionalOf(ListOf(WAXFrame*)*)* waxReadFrames(InMemoryFile* file){
+    ListOf(WAXFrame*)* frames = listCreate(0);
+    memoryTag(frames, "Frames");
+    logTrace("Allocating Frame List at %p", frames);
+
+
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        uint32_t*, frameOffsets, inMemFileReadStruct(file, UINT32_X_32),
+        {waxCloseFrames(frames);}
+    );
+
+    logTrace("frame_offsets:");
+    for(uint32_t i = 0; i < 32; i++) {
+        uint32_t frameOffset = frameOffsets[i];
+        if(!frameOffset) break;
+
+        logTrace("- %d", frameOffset);
+        memFileSeek(file, frameOffset, SEEK_SET);
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            WAXFrame*, frame, waxReadFrame(file),
+            {waxCloseFrames(frames);}
+        );
+        listAppend(frames, frame);
+    }
+
+    memoryRelease(frameOffsets);
+
+    return optionalOf(frames);
+}
+
+static OptionalOf(WAXFrame*)* waxReadFrame(InMemoryFile* file){
+    WAXFrame* frame = memoryAllocateWithTag(sizeof(WAXFrame), "WAXFrame");
+    logTrace("Allocating Frame at %p", frame);
+    frame->cell = NULL;
+
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        void*, header, inMemFileReadStruct(file, WAX_FRAME_FORMAT),
+        {waxCloseFrame(frame);}
+    )
+    size_t length = getBlockLenghtFromFormat(WAX_FRAME_FORMAT);
+    memcpy(frame, header, length);
+    memoryRelease(header);
+
+    memFileSeek(file, frame->cellOffset, SEEK_SET);
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        WAXCell*, cell, waxReadCell(file),
+        {waxCloseFrame(frame);}
+    );
+    frame->cell = cell;
+
+    return optionalOf(frame);
+}
+
+static OptionalOf(WAXCell*)* waxReadCell(InMemoryFile* file) {
+    WAXCell* cell = memoryAllocateWithTag(sizeof(WAXCell), "WAXCell");
+    logTrace("Allocating Cell at %p", cell);
+    cell->data = NULL;
+
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        void*, header, inMemFileReadStruct(file, WAX_CELL_FORMAT),
+        {waxCloseCell(cell);}
+    )
+    size_t length = getBlockLenghtFromFormat(WAX_CELL_FORMAT);
+    memcpy(cell, header, length);
+    memoryRelease(header);
+
+    if(cell->compressed) {
+        // Remove WAXCell from the dataSize
+        cell->dataSize = cell->dataSize - length;
+    } else {
+        // Calculate dataSize when dataSize is 0
+        cell->dataSize = cell->width * cell->height;
+    }
+
+    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+        uint8_t*, data, inMemFileRead(file, cell->dataSize),
+        {waxCloseCell(cell);}
+    );
+    cell->data = data;
+
+    return optionalOf(cell);
+}
+
 void waxClose(WAXFile* wax) {
     if(!wax) return;
     logTrace("Releasing WAXFile");
@@ -182,17 +276,45 @@ static void waxCloseSequences(ListOf(WAXSequence*)* sequences){
 
 static void waxCloseSequence(WAXSequence* sequence){
     logTrace("Releasing WAXSequence");
+    if(sequence->frames) waxCloseFrames(sequence->frames);
+
     memoryRelease(sequence);
+}
+
+static void waxCloseFrames(ListOf(WAXFrame*)* frames){
+    logTrace("Releasing ListOf(WAXFrame)");
+    forEachListItem(WAXFrame*, frame, frames, {
+        waxCloseFrame(frame);
+    });
+
+    listDelete(frames);
+}
+
+static void waxCloseFrame(WAXFrame* frame){
+    logTrace("Releasing WAXFrame");
+    if(frame->cell) waxCloseCell(frame->cell);
+
+    memoryRelease(frame);
+}
+
+static void waxCloseCell(WAXCell* cell){
+    logTrace("Releasing WAXCell");
+    if(cell->data) memoryRelease(cell->data);
+    memoryRelease(cell);
 }
 
 static void waxPrint(WAXFile* waxFile){
     logDebug("wax_file:");
-    logDebug("  wax_header:");
-    waxPrintHeader(waxFile->header);
-    logDebug("  waxes:");
-    forEachListItem(WAX*, wax, waxFile->waxList, {
+    if(waxFile->header) {
+        logDebug("  wax_header:");
+        waxPrintHeader(waxFile->header);
+    }
+    if(waxFile->waxList) {
+        logDebug("  waxes:");
+        forEachListItem(WAX*, wax, waxFile->waxList, {
         waxPrintWAX(wax);
-    });
+        });
+    }
 }
 
 static void waxPrintHeader(WAXHeader* header){
@@ -210,19 +332,39 @@ static void waxPrintWAX(WAX* wax) {
     logDebug("    height: %d", wax->height);
     logDebug("    framerate: %d", wax->framerate);
     logDebug("    frames: %d", wax->frames);
-    logDebug("    sequences:");
-    forEachListItem(WAXSequence*, seq, wax->sequences, {
+    if(wax->sequences) {
+        logDebug("    sequences:");
+        forEachListItem(WAXSequence*, seq, wax->sequences, {
         waxPrintSeq(seq);
-    })
+        })
+    }
 }
 
 static void waxPrintSeq(WAXSequence* seq) {
-    logDebug("    - frames:");
-    // forEachListItem(WAXFrame*, frame, seq->frames, {
-    //	   waxPrintFrame(frame);
-    // })
+    if(seq->frames) {
+        logDebug("      frames:");
+        forEachListItem(WAXFrame*, frame, seq->frames, {
+           waxPrintFrame(frame);
+        })
+    }
 }
 
 static void waxPrintFrame(WAXFrame* frame) {
+    logDebug("      - insert_x: %d", frame->insertX);
+    logDebug("        insert_y: %d", frame->insertX);
+    logDebug("        flip: %d", frame->flip);
+    logDebug("        width: %d", frame->width);
+    logDebug("        height: %d", frame->height);
+    if(frame->cell) {
+        logDebug("        cell:");
+        waxPrintCell(frame->cell);
+    }
+}
 
+static void waxPrintCell(WAXCell* cell) {
+    logDebug("          width: %d", cell->width);
+    logDebug("          height: %d", cell->height);
+    logDebug("          compressed: %d", cell->compressed);
+    logDebug("          dataSize: %d", cell->dataSize);
+    logDebug("          offset: %d", cell->offset);
 }

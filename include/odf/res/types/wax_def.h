@@ -46,10 +46,11 @@ struct WAXFrame {
     uint32_t insertX;
     uint32_t insertY;
     uint32_t flip;
-    uint32_t cell;
+    uint32_t cellOffset;
     uint32_t width;
     uint32_t height;
     uint32_t pad[2];
+    WAXCell* cell;
 };
 
 #define WAX_CELL_FORMAT "%l4%l4%l4%l4%l4%c4"
@@ -60,6 +61,7 @@ struct WAXCell {
     uint32_t dataSize;
     uint32_t offset;
     uint32_t pad;
+    uint8_t* data;
 };
 
 #endif

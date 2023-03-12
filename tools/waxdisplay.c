@@ -36,7 +36,7 @@ WAXFile* waxExtract(char* gobFile, char* waxFile) {
 int main(int argc, char** argv) {
 
     if(argc < 3) return 1;
-    logSetLevel(TRACE);
+    logSetLevel(DEBUG);
     WAXFile* wax = waxExtract(argv[1], argv[2]);
 
     waxClose(wax);
