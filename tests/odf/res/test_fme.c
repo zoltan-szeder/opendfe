@@ -21,7 +21,6 @@ int setUp(void** state) {
     fileContent = NULL;
     fmeInMemoryFile = NULL;
     fme = NULL;
-    logSetLevel(TRACE);
 
     return 0;
 }
