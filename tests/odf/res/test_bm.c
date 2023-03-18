@@ -198,14 +198,14 @@ void testBmCreateImage_4() {
 
     Image8Bit* img = bmCreateImage(&bm, &pal);
 
-    // +-----> x
-    // | R G
-    // | B A
+    // +-----> y
+    // | R B
+    // | G A
     // v
-    // y
+    // x
     assertPixel(img, 0, COL_R); // BL
-    assertPixel(img, 1, COL_G); // BR
-    assertPixel(img, 2, COL_B); // TL
+    assertPixel(img, 1, COL_B); // TL
+    assertPixel(img, 2, COL_G); // BR
     assertPixel(img, 3, COL_A); // TR
 
     img8bDelete(img);
@@ -233,14 +233,14 @@ void testRLE0EncodedBmCreateImage() {
 
     Image8Bit* img = bmCreateImage(&bm, &pal);
 
-    // +-----> x
-    // | R G
-    // | B A
+    // +-----> y
+    // | R B
+    // | G A
     // v
-    // y
+    // x
     assertPixel(img, 0, COL_R); // BL
-    assertPixel(img, 1, COL_G); // BR
-    assertPixel(img, 2, COL_B); // TL
+    assertPixel(img, 1, COL_B); // TL
+    assertPixel(img, 2, COL_G); // BR
     assertPixel(img, 3, COL_A); // TR
 
     img8bDelete(img);
