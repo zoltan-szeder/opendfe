@@ -308,27 +308,9 @@ static Image8Bit* bmCreateImageDecompressed(uint8_t* data, uint32_t width, uint3
     uint32_t length = width * height;
     Image8Bit* img = img8bCreate2D(width, height, 4);
     ucvec4* texture = (ucvec4*) img->data;
-    uint8_t* rotatedImage = rotcc90(data, width, height);
-    palUnindex(palette, texture, _isTransparent(transparent), rotatedImage, length);
-    memoryRelease(rotatedImage);
+    palUnindex(palette, texture, _isTransparent(transparent), data, length);
 
     return img;
-}
-
-
-
-static uint8_t* rotcc90(uint8_t* image, int w,int h) {
-    uint8_t* rotatedImage = memoryAllocate(w*h*sizeof(uint8_t));
-
-    for(int i1 = 0; i1 <  w*h; i1++) {
-        int x = i1/h;
-        int y = i1%h;
-        int i2 = x + w*y;
-
-        rotatedImage[i2] = image[i1];
-    }
-
-    return rotatedImage;
 }
 
 bool bmIsTransparent(BMFile* bmFile) {
