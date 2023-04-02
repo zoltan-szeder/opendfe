@@ -17,6 +17,7 @@ FMEFile* fme;
 OptionalPtr* fmeReadStringBuffer(StringBuffer* sb);
 
 int setUp(void** state) {
+    logSetLevel(TRACE);
     sb = stringBufferCreate();
     fileContent = NULL;
     fmeInMemoryFile = NULL;
@@ -104,26 +105,32 @@ void testFmeRead(){
 
 void testCompressedFmeRead(){
     // Header (0x00)
-    stringBufferAppendBytes(sb, "\x01\x00\x00\x00", 4); // insertX
-    stringBufferAppendBytes(sb, "\x02\x00\x00\x00", 4); // insertY
-    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // flip
-    stringBufferAppendBytes(sb, "\x20\x00\x00\x00", 4); // subHeaderPointer
-    stringBufferAppendBytes(sb, "\x03\x00\x00\x00", 4); // unitWidth
-    stringBufferAppendBytes(sb, "\x04\x00\x00\x00", 4); // unitHeight
-    stringBufferAppendBytes(sb, "\x00\x00\x00\x00\x00\x00\x00\x00", 8); // padding
+    stringBufferAppendBytes(sb, "\x01\x00\x00\x00", 4); // 0x00 insertX
+    stringBufferAppendBytes(sb, "\x02\x00\x00\x00", 4); // 0x04 insertY
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x08 flip
+    stringBufferAppendBytes(sb, "\x20\x00\x00\x00", 4); // 0x0c subHeaderPointer
+    stringBufferAppendBytes(sb, "\x03\x00\x00\x00", 4); // 0x10 unitWidth
+    stringBufferAppendBytes(sb, "\x04\x00\x00\x00", 4); // 0x14 unitHeight
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x18 padding
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x1c padding
 
     // SubHeader (0x20)
-    stringBufferAppendBytes(sb, "\x03\x00\x00\x00", 4); // SizeX
-    stringBufferAppendBytes(sb, "\x02\x00\x00\x00", 4); // SizeY
-    stringBufferAppendBytes(sb, "\x01\x00\x00\x00", 4); // Compressed
-    stringBufferAppendBytes(sb, "\x1e\x00\x00\x00", 4); // DataSize
-    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // ColOffs
-    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // pad1
+    stringBufferAppendBytes(sb, "\x03\x00\x00\x00", 4); // 0x20 SizeX
+    stringBufferAppendBytes(sb, "\x02\x00\x00\x00", 4); // 0x24 SizeY
+    stringBufferAppendBytes(sb, "\x01\x00\x00\x00", 4); // 0x28 Compressed
+    stringBufferAppendBytes(sb, "\x1e\x00\x00\x00", 4); // 0x2c DataSize
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x30 ColOffs
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x34 pad1
 
 
+    // ColumnOffsets
+    stringBufferAppendBytes(sb, "\x24\x00\x00\x00", 4); // 0x38 offset 1
+    stringBufferAppendBytes(sb, "\x25\x00\x00\x00", 4); // 0x3c offset 2
+    stringBufferAppendBytes(sb, "\x28\x00\x00\x00", 4); // 0x40 offset 3
 
     // Data
-    stringBufferAppendBytes(sb, "\x82\x04\x01\x02\x03\x04", 6);
+    stringBufferAppendBytes(sb, "\x82\x02\x03\x04", 4); // 0x44 (0x24)
+    stringBufferAppendBytes(sb, "\x02\x05\x06", 3);     // 0x48 (0x28)
 
     OptionalPtr* optFile = fmeReadStringBuffer(sb);
     assertOptionalNotEmpty(optFile);
@@ -143,7 +150,7 @@ void testCompressedFmeRead(){
     assert_int_equal(0, fme->subHeader->columnOffset);
 
     assert_non_null(fme->data);
-    assert_memory_equal("\x00\x00\x01\x02\x03\x04", fme->data, 6);
+    assert_memory_equal("\x00\x00\x03\x04\x05\x06", fme->data, 6);
 }
 
 

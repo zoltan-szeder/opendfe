@@ -93,7 +93,7 @@ OptionalPtr* gobReadFile(GobFile* gob_file){
             gobGetFileName(gob_file)
         );
 
-    content[gob_file->header->length-1] = (char) 0;
+    //content[gob_file->header->length-1] = (char) 0;
 
     return memFileCreate(content, gob_file->header->length);
 }

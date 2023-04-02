@@ -533,6 +533,26 @@ void testLREFileRead_15(){
     optionalDelete(optional);
 }
 
+void testLREFileRead_16(){
+    RLEConfig config = {
+        .type = RLE1,
+        .fileOffset = 0,
+        .offsetCount = 1,
+        .sequenceSize = 2
+    };
+    stringBufferAppendBytes(sb, "\x04\x00\x00\x00", 4);
+    stringBufferAppendBytes(sb, "\x00\x82\x01", 3);
+
+    file = optionalGet(
+        memFileCreate(stringBufferToString(sb), stringBufferSize(sb)));
+
+    uint8_t* data = optionalGet(rleReadFile(file, &config));
+
+    assert_memory_equal("\x01\x01", data, 2);
+
+    memoryRelease(data);
+}
+
 int main(int argc, char** argv){
     cmocka_set_message_output(CM_OUTPUT_TAP);
 
@@ -568,6 +588,7 @@ int main(int argc, char** argv){
         cmocka_unit_test_setup_teardown(testLREFileRead_13, setUp, tearDown),
         cmocka_unit_test_setup_teardown(testLREFileRead_14, setUp, tearDown),
         cmocka_unit_test_setup_teardown(testLREFileRead_15, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testLREFileRead_16, setUp, tearDown),
     };
 
     int ret = cmocka_run_group_tests_name("odf/res/lre.c", tests, NULL, NULL);

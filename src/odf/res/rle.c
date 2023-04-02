@@ -43,7 +43,7 @@ static OptionalOf(ListOf(uint8_t*))* rleReadOffsets(InMemoryFile* file, RLEConfi
             }
         );
         *offset = *offset + config->fileOffset;
-        logTrace("Found offset %x", *offset);
+        logTrace("Found offset 0x%x", *offset);
         listAppend(offsets, offset);
     }
 
@@ -53,7 +53,8 @@ static OptionalOf(ListOf(uint8_t*))* rleReadOffsets(InMemoryFile* file, RLEConfi
 static OptionalOf(uint8_t*)* rleReadData(InMemoryFile* file, ListOf(uint32_t*)* offsets, RLEConfig* config){
     uint32_t dataSize = config->offsetCount * config->sequenceSize;
     uint8_t* data = memoryAllocateWithTag(dataSize * sizeof(uint8_t), "Data");
-    uint8_t dataOffset = 0;
+    memset(data, 0, dataSize);
+    uint32_t dataOffset = 0;
     forEachListItem(uint32_t*, offset, offsets, {
         int32_t location = memFileSeek(file, *offset, SEEK_SET);
         if(location != 0) {
@@ -83,11 +84,13 @@ static OptionalOf(uint8_t*)* rleReadSequence(InMemoryFile* file, RLEConfig* conf
         uint8_t* controlByte = optionalGet(inMemFileRead(file, 1));
         memoryTag(controlByte, "ControlByte");
 
-        logTrace("Found control byte: %x", *controlByte);
         uint8_t blockSize = rleGetBlockSize(*controlByte);
-        if(blockSize > config->sequenceSize - sequenceOffset){
+        if(blockSize < 1) {
+            memoryRelease(controlByte);
+            continue;
+        } else if(blockSize > config->sequenceSize - sequenceOffset){
             memoryRelease(sequence);
-            OptionalPtr* opt =  (void*) optionalEmpty(
+            OptionalPtr* opt = (void*) optionalEmpty(
                 "The control byte contains lenght (%u) "
                 "larger than the sequence (%u) "
                 "from offset (%u)",
@@ -120,7 +123,7 @@ static OptionalOf(uint8_t*)* rleReadBlock(InMemoryFile* file, RLEConfig* config,
             value = *v;
             memoryRelease(v);
         }
-        uint8_t* block = memoryAllocateWithTag(blockSize, "RLE0Background");
+        uint8_t* block = memoryAllocate(blockSize);
         memset(block, value, blockSize);
         return optionalOf(block);
     }
