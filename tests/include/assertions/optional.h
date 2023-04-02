@@ -19,7 +19,7 @@ void assertOptionalIsEmpty(void* opt){
 void assertOptionalNotEmpty(void* opt){
     if(optionalIsEmpty(opt)) {
         char* msg = optionalGetMessage(opt);
-        fail();
+        fail_msg("%s", msg);
         memoryRelease(msg);
         return;
     }

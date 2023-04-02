@@ -104,21 +104,24 @@ static OptionalPtr* fmeReadSubHeader(InMemoryFile* file) {
 }
 
 static OptionalPtr* fmeReadData(InMemoryFile* file, FMESubHeader* subHeader) {
-    size_t subHeaderSize = getBlockLenghtFromFormat(FME_SUBHEADER_FORMAT);
+    if(subHeader->compressed == FME_COMPRESS_NONE) {
+        size_t subHeaderSize = getBlockLenghtFromFormat(FME_SUBHEADER_FORMAT);
 
-    size_t dataSize = subHeader->dataSize - subHeaderSize;
-    OPTIONAL_ASSIGN_OR_PASSTROUGH(
+        size_t dataSize = subHeader->dataSize - subHeaderSize;
+        OPTIONAL_ASSIGN_OR_PASSTROUGH(
         uint8_t*, data, inMemFileRead(file, dataSize)
-    );
-    memoryTag(data, "odf/res/fme/FMEFileData");
+        );
+        memoryTag(data, "odf/res/fme/FMEFileData");
 
-    if(subHeader->compressed == FME_COMPRESS_NONE)
         return optionalOf(data);
-
-    uint8_t* decompressedData = rle0Decompress(
-                data, dataSize, subHeader->sizeX, subHeader->sizeY
-    );
-    memoryRelease(data);
-
-    return optionalOf(decompressedData);
+    } else {
+        size_t headerSize = getBlockLenghtFromFormat(FME_HEADER_FORMAT);
+        RLEConfig config = {
+            .type = RLE0,
+            .fileOffset = headerSize,
+            .offsetCount = subHeader->sizeX,
+            .sequenceSize = subHeader->sizeY,
+        };
+        return rleReadFile(file, &config);
+    }
 }

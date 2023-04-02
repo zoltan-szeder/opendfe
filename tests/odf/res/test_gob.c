@@ -41,7 +41,7 @@ void testReadFile() {
     char* content = optionalGet(optContent);
 
     assert(gobCountFiles(archive) == 1);
-    assert_memory_equal("Hello World", content, 12);
+    assert_memory_equal("Hello World", content, 11);
 
     memoryRelease(content);
     inMemFileDelete(hello);
