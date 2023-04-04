@@ -53,13 +53,22 @@
     "\x3\x2\x01\x0"
 
 
+StringBuffer* sb;
+InMemoryFile* file;
+
 int setUp(void** state){
     logSetLevel(WARN);
+
+    sb = stringBufferCreate();
+    file = NULL;
 
     return 0;
 }
 
 int tearDown(void** state){
+    if(sb) stringBufferDelete(sb);
+    if(file) inMemFileDelete(file);
+
     if(memoryGetAllocations() != 0) {
         memoryDump(false);
         memoryReleaseAll();
@@ -211,76 +220,6 @@ void testBmCreateImage_4() {
     img8bDelete(img);
 }
 
-void testRLE0EncodedBmCreateImage() {
-    BMHeader header = getTransparentHeader(2, 2);
-    header.compressed = BM_COMPRESSION_RLE0;
-    // +-----> y
-    // | R B
-    // | G A
-    // v
-    // x
-    header.dataSize = 7;
-    unsigned char image[] = {
-        '\x01', PX_R, '\x01', PX_B,
-        '\x01', PX_G, '\x81',
-    };
-
-    BMFile bm;
-    bm.header = &header;
-    bm.data = image;
-
-    Palette pal = getSimplePalette();
-
-    Image8Bit* img = bmCreateImage(&bm, &pal);
-
-    // +-----> y
-    // | R B
-    // | G A
-    // v
-    // x
-    assertPixel(img, 0, COL_R); // BL
-    assertPixel(img, 1, COL_B); // TL
-    assertPixel(img, 2, COL_G); // BR
-    assertPixel(img, 3, COL_A); // TR
-
-    img8bDelete(img);
-}
-
-void testRLE1EncodedBmCreateImage() {
-    BMHeader header = getTransparentHeader(2, 2);
-    header.compressed = BM_COMPRESSION_RLE1;
-    // +-----> y
-    // | R B
-    // | G A
-    // v
-    // x
-    header.dataSize = 8;
-    unsigned char image[] = {
-        '\x01', PX_R, '\x81', PX_B,
-        '\x01', PX_G, '\x81', PX_A
-    };
-
-    BMFile bm;
-    bm.header = &header;
-    bm.data = image;
-
-    Palette pal = getSimplePalette();
-
-    Image8Bit* img = bmCreateImage(&bm, &pal);
-
-    // +-----> x
-    // | R G
-    // | B A
-    // v
-    // y
-    assertPixel(img, 0, COL_R); // BL
-    assertPixel(img, 1, COL_G); // BR
-    assertPixel(img, 2, COL_B); // TL
-    assertPixel(img, 3, COL_A); // TR
-
-    img8bDelete(img);
-}
-
 void testMultipleBM() {
     StringBuffer* sb = stringBufferCreate();
     stringBufferAppendBytes(sb, TEST_BM_HEADER_MULTIPLE,     sizeof(BMHeader));
@@ -365,6 +304,114 @@ void testInverseBM() {
     bmClose(bmFile);
 }
 
+OptionalOf(BMFile*)* bmTestRead() {
+    file = optionalGet(memFileCreate(stringBufferToString(sb), stringBufferSize(sb)));
+
+    return bmOpenInMemoryFile(file);
+}
+
+void testBmReadInMemFile(){
+    // Header
+    stringBufferAppendBytes(sb, "BM \x1e", 4);          // 0x00 Magic
+    stringBufferAppendBytes(sb, "\x01\x00", 2);         // 0x04 SizeX
+    stringBufferAppendBytes(sb, "\x01\x00", 2);         // 0x06 SizeY
+    stringBufferAppendBytes(sb, "\x00\x00", 2);         // 0x08 IdemX (ClipSize)
+    stringBufferAppendBytes(sb, "\x00\x00", 2);         // 0x0a IdemY (ClipSize)
+    stringBufferAppendBytes(sb, "\x36", 1);             // 0x0c Transparent
+    stringBufferAppendBytes(sb, "\x00", 1);             // 0x0d LogSizeY
+    stringBufferAppendBytes(sb, "\x00\x00", 2);         // 0x0e Compressed
+    stringBufferAppendBytes(sb, "\x01\x00\x00\x00", 4); // 0x10 DataSize
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x14 Pad1
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x18 Pad2
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x1c Pad3
+
+    stringBufferAppendBytes(sb, "\x01", 1);             // 0x20 Data
+
+    BMFile* bm = optionalGet(bmTestRead());
+
+    assert_memory_equal(bm->header->magic, "BM \x1e", 4);
+    assert_int_equal(bm->header->sizeX, 1);
+    assert_int_equal(bm->header->sizeY, 1);
+    assert_int_equal(bm->header->idemX, 0);
+    assert_int_equal(bm->header->idemY, 0);
+    assert_int_equal(bm->header->transparent, '\x36');
+    assert_int_equal(bm->header->logSizeY, 0);
+    assert_int_equal(bm->header->compressed, BM_COMPRESSION_NONE);
+    assert_memory_equal(bm->header->pad, "\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 12);
+    assert_memory_equal(bm->data, "\x01", 1);
+
+    bmClose(bm);
+}
+
+void testBmReadRLE1CompressedFile(){
+    // Header
+    stringBufferAppendBytes(sb, "BM \x1e", 4);          // 0x00 Magic
+    stringBufferAppendBytes(sb, "\x01\x00", 2);         // 0x04 SizeX
+    stringBufferAppendBytes(sb, "\x01\x00", 2);         // 0x06 SizeY
+    stringBufferAppendBytes(sb, "\x00\x00", 2);         // 0x08 IdemX (ClipSize)
+    stringBufferAppendBytes(sb, "\x00\x00", 2);         // 0x0a IdemY (ClipSize)
+    stringBufferAppendBytes(sb, "\x36", 1);             // 0x0c Transparent
+    stringBufferAppendBytes(sb, "\x00", 1);             // 0x0d LogSizeY
+    stringBufferAppendBytes(sb, "\x01\x00", 2);         // 0x0e Compressed
+    stringBufferAppendBytes(sb, "\x06\x00\x00\x00", 4); // 0x10 DataSize
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x14 Pad1
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x18 Pad2
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x1c Pad3
+
+    stringBufferAppendBytes(sb, "\x04\x00\x00\x00", 4); // 0x20 RLE Offset table
+    stringBufferAppendBytes(sb, "\x81\x01", 2);         // 0x24 RLE compressed data
+
+    BMFile* bm = optionalGet(bmTestRead());
+
+    assert_memory_equal(bm->header->magic, "BM \x1e", 4);
+    assert_int_equal(bm->header->sizeX, 1);
+    assert_int_equal(bm->header->sizeY, 1);
+    assert_int_equal(bm->header->idemX, 0);
+    assert_int_equal(bm->header->idemY, 0);
+    assert_int_equal(bm->header->transparent, '\x36');
+    assert_int_equal(bm->header->logSizeY, 0);
+    assert_int_equal(bm->header->compressed, BM_COMPRESSION_RLE1);
+    assert_memory_equal(bm->header->pad, "\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 12);
+    assert_memory_equal(bm->data, "\x01", 1);
+
+    bmClose(bm);
+}
+
+void testBmReadRLE0CompressedFile(){
+    // Header
+    stringBufferAppendBytes(sb, "BM \x1e", 4);          // 0x00 Magic
+    stringBufferAppendBytes(sb, "\x01\x00", 2);         // 0x04 SizeX
+    stringBufferAppendBytes(sb, "\x01\x00", 2);         // 0x06 SizeY
+    stringBufferAppendBytes(sb, "\x00\x00", 2);         // 0x08 IdemX (ClipSize)
+    stringBufferAppendBytes(sb, "\x00\x00", 2);         // 0x0a IdemY (ClipSize)
+    stringBufferAppendBytes(sb, "\x36", 1);             // 0x0c Transparent
+    stringBufferAppendBytes(sb, "\x00", 1);             // 0x0d LogSizeY
+    stringBufferAppendBytes(sb, "\x02\x00", 2);         // 0x0e Compressed
+    stringBufferAppendBytes(sb, "\x06\x00\x00\x00", 4); // 0x10 DataSize
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x14 Pad1
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x18 Pad2
+    stringBufferAppendBytes(sb, "\x00\x00\x00\x00", 4); // 0x1c Pad3
+
+    stringBufferAppendBytes(sb, "\x04\x00\x00\x00", 4); // 0x20 RLE Offset table
+    stringBufferAppendBytes(sb, "\x81", 1);         // 0x24 RLE compressed data
+
+    BMFile* bm = optionalGet(bmTestRead());
+
+    assert_memory_equal(bm->header->magic, "BM \x1e", 4);
+    assert_int_equal(bm->header->sizeX, 1);
+    assert_int_equal(bm->header->sizeY, 1);
+    assert_int_equal(bm->header->idemX, 0);
+    assert_int_equal(bm->header->idemY, 0);
+    assert_int_equal(bm->header->transparent, '\x36');
+    assert_int_equal(bm->header->logSizeY, 0);
+    assert_int_equal(bm->header->compressed, BM_COMPRESSION_RLE0);
+    assert_memory_equal(bm->header->pad, "\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 12);
+    assert_memory_equal(bm->data, "\x00", 1);
+
+    bmClose(bm);
+}
+
+
 
 int main(int argc, char** argv){
     cmocka_set_message_output(CM_OUTPUT_TAP);
@@ -375,9 +422,11 @@ int main(int argc, char** argv){
         cmocka_unit_test_setup_teardown(testBmCreateImage_2, setUp, tearDown),
         cmocka_unit_test_setup_teardown(testBmCreateImage_3, setUp, tearDown),
         cmocka_unit_test_setup_teardown(testBmCreateImage_4, setUp, tearDown),
-        cmocka_unit_test_setup_teardown(testRLE0EncodedBmCreateImage, setUp, tearDown),
         cmocka_unit_test_setup_teardown(testMultipleBM, setUp, tearDown),
         cmocka_unit_test_setup_teardown(testInverseBM, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testBmReadInMemFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testBmReadRLE1CompressedFile, setUp, tearDown),
+        cmocka_unit_test_setup_teardown(testBmReadRLE0CompressedFile, setUp, tearDown),
     };
 
     int ret = cmocka_run_group_tests_name("odf/res/bm.c", tests, NULL, NULL);
