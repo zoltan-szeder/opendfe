@@ -8,8 +8,9 @@
 #include "odf/res/types/bm_def.h"
 #include "odf/res/pal.h"
 
-#include "odf/sys/file.h"
 #include "odf/res/rle.h"
+#include "odf/sys/file.h"
+#include "odf/sys/strings.h"
 #include "odf/sys/memory.h"
 #include "odf/sys/optional.h"
 #include "odf/sys/log.h"
@@ -108,7 +109,7 @@ OptionalOf(BMFile*)* bmOpenInMemoryFile(InMemoryFile* file) {
         );
 
         bmFile->subBMFiles = innerSubFiles;
-    } else {
+    } else if (bmFile->header->compressed == BM_COMPRESSION_NONE) {
         logTrace("Reading BM Data");
         OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
             uint8_t*, innerData, inMemFileRead(file, bmHeader->dataSize),
@@ -117,6 +118,24 @@ OptionalOf(BMFile*)* bmOpenInMemoryFile(InMemoryFile* file) {
                 bmClose(bmFile);
             }
         )
+        bmFile->data = innerData;
+    } else {
+        logTrace("Reading Compressed BM Data");
+        RLEConfig config = {
+            .type = bmFile->header->compressed == BM_COMPRESSION_RLE0 ?
+                RLE0 : RLE1,
+            .fileOffset = getBlockLenghtFromFormat(BM_HEADER_FORMAT),
+            .offsetCount = bmFile->header->sizeX,
+            .sequenceSize = bmFile->header->sizeY,
+        };
+
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            uint8_t*, innerData, rleReadFile(file, &config),
+            {
+                logWarn("Could not read BM data");
+                bmClose(bmFile);
+            }
+        );
         bmFile->data = innerData;
     }
 
