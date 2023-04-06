@@ -34,12 +34,15 @@ WAXFile* waxExtract(char* gobFile, char* waxFile) {
 }
 
 int main(int argc, char** argv) {
+    logSetLevel(TRACE);
 
     if(argc < 3) return 1;
-    logSetLevel(DEBUG);
     WAXFile* wax = waxExtract(argv[1], argv[2]);
 
     waxClose(wax);
+
+    Display* display = dglCreateDisplay();
+    dglDestroyDisplay(display);
 
 
     if(!memoryIsEmpty()) {

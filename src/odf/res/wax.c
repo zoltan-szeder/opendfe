@@ -9,6 +9,7 @@
 #include "odf/sys/strings.h"
 #include "odf/sys/optional.h"
 #include "odf/sys/log.h"
+#include "odf/res/rle.h"
 
 static OptionalOf(ListOf(WAX*)*)* waxReadWaxList(InMemoryFile* file);
 static OptionalOf(WAX*)* waxReadWax(InMemoryFile* file);
@@ -215,6 +216,8 @@ static OptionalOf(WAXCell*)* waxReadCell(InMemoryFile* file) {
     logTrace("Allocating Cell at %p", cell);
     cell->data = NULL;
 
+    size_t cellPos = inMemFileCurrentPosition(file);
+
     OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
         void*, header, inMemFileReadStruct(file, WAX_CELL_FORMAT),
         {waxCloseCell(cell);}
@@ -224,18 +227,26 @@ static OptionalOf(WAXCell*)* waxReadCell(InMemoryFile* file) {
     memoryRelease(header);
 
     if(cell->compressed) {
-        // Remove WAXCell from the dataSize
-        cell->dataSize = cell->dataSize - length;
-    } else {
-        // Calculate dataSize when dataSize is 0
-        cell->dataSize = cell->width * cell->height;
-    }
+        RLEConfig config = {
+            .type = cell->compressed == 1 ? RLE0 : RLE1,
+            .fileOffset = cellPos + cell->offset,
+            .offsetCount = cell->width,
+            .sequenceSize = cell->height
+        };
 
-    OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
-        uint8_t*, data, inMemFileRead(file, cell->dataSize),
-        {waxCloseCell(cell);}
-    );
-    cell->data = data;
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            uint8_t*, data, rleReadFile(file, &config),
+            {waxCloseCell(cell);}
+        );
+        cell->data = data;
+    } else {
+        uint32_t actualDataSize = cell->width * cell->height;
+        OPTIONAL_ASSIGN_OR_CLEANUP_AND_PASS(
+            uint8_t*, data, inMemFileRead(file, actualDataSize),
+            {waxCloseCell(cell);}
+        );
+        cell->data = data;
+    }
 
     return optionalOf(cell);
 }

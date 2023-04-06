@@ -21,7 +21,6 @@ Display* dglCreateDisplay() {
     unsigned int shaderProgram = initializeOpenGl();
     if (shaderProgram == 0) return NULL;
 
-
     Display* display = memoryAllocateWithTag(sizeof(Display), "odf/ogl/main/Display");
     display->window = window;
     display->hudShader = shaderProgram;
