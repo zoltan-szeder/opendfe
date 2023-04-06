@@ -7,6 +7,7 @@
 #include "odf/sys/types/optional.h"
 
 OptionalPtr* memFileCreate(char* content, uint32_t length);
+size_t inMemFileCurrentPosition(InMemoryFile* file);
 int32_t memFileSeek(InMemoryFile* file, int64_t offset, int32_t origin);
 void inMemFileDelete(InMemoryFile* file);
 uint64_t inMemFileSize(InMemoryFile* file);

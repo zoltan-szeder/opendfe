@@ -29,7 +29,8 @@ unsigned int loadShaderProgram(char* vsFile, char* fragFile) {
     if(optionalIsEmpty(optionalVertexShader)) {
 		optionalPrint(stderr, (void*) optionalVertexShader);
 		return 0;
-	};
+    };
+    optionalDelete(optionalVertexShader);
 	glAttachShader(shaderProgram, vertexShader);
 
     unsigned int fragmentShader;
@@ -38,7 +39,8 @@ unsigned int loadShaderProgram(char* vsFile, char* fragFile) {
 		optionalPrint(stderr, (void*) optionalFragmentShader);
 		return 0;
 	}
-	glAttachShader(shaderProgram, fragmentShader);
+    optionalDelete(optionalFragmentShader);
+    glAttachShader(shaderProgram, fragmentShader);
 
 	glLinkProgram(shaderProgram);
 
